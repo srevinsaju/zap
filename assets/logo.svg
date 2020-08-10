@@ -73,6 +73,7 @@
        xlink:href="#linearGradient1034"
        inkscape:collect="always" />
     <linearGradient
+       gradientTransform="matrix(0.95719312,0,0,0.95719312,5.0977381,2.4316911)"
        gradientUnits="userSpaceOnUse"
        y2="11.868695"
        x2="78.120026"
@@ -97,9 +98,9 @@
      inkscape:document-rotation="0"
      inkscape:current-layer="g881"
      inkscape:document-units="mm"
-     inkscape:cy="178.95558"
-     inkscape:cx="88.06405"
-     inkscape:zoom="1.4"
+     inkscape:cy="156.46308"
+     inkscape:cx="2.2769456"
+     inkscape:zoom="0.98994949"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
@@ -135,13 +136,13 @@
          id="rect897"
          style="fill:url(#linearGradient1036);fill-opacity:1;stroke-width:1.836;stroke-linecap:round" />
       <rect
-         style="fill:url(#linearGradient1052);fill-opacity:1;stroke-width:1.73673;stroke-linecap:round"
+         style="fill:url(#linearGradient1052);fill-opacity:1;stroke-width:1.66239;stroke-linecap:round"
          id="rect897-6"
-         width="94.574081"
-         height="94.574081"
-         x="71.799767"
-         y="9.519002"
-         ry="14.418899" />
+         width="90.525658"
+         height="90.525658"
+         x="73.823982"
+         y="11.543214"
+         ry="13.80167" />
       <path
          sodipodi:nodetypes="ccssscccssscc"
          id="path883"
