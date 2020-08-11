@@ -50,7 +50,7 @@ class Zap:
             self.add_self_to_path()
         self.cfgmgr = ConfigManager()
 
-    def add_self_to_path(self):
+    def add_self_to_path(self, force=True):
         xdg_user_local_dir = \
             os.path.join(os.path.expanduser('~'), '.local', 'bin')
         if xdg_user_local_dir not in os.getenv('PATH').split(os.pathsep):
@@ -61,9 +61,13 @@ class Zap:
 
         if not os.path.exists(xdg_user_local_dir):
             os.makedirs(xdg_user_local_dir)
-        with open(os.path.join(xdg_user_local_dir, 'zap', 'w')) as w:
-            w.write(COMMAND_WRAPPER.format(
-                path_to_appimage=os.getenv('APPIMAGE')))
+
+        zap_bin_file = os.path.join(xdg_user_local_dir, 'zap')
+        if not os.path.exists(zap_bin_file) or force:
+            with open(zap_bin_file, 'w') as w:
+                w.write(COMMAND_WRAPPER.format(
+                    path_to_appimage=os.getenv('APPIMAGE')))
+
 
     @property
     def is_installed(self):

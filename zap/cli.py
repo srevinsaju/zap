@@ -137,5 +137,14 @@ def xdg(url):
         print("Invalid url")
 
 
+@cli.command()
+@click.argument('appname')
+def self_integrate(appname):
+    """Add the currently running appimage to PATH, making it accessible
+    elsewhere"""
+    z = Zap(appname)
+    z.add_self_to_path(force=True)
+
+
 if __name__ == "__main__":
     cli()
