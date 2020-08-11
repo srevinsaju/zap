@@ -90,6 +90,19 @@ def update(appname, use_appimageupdate=True):
     z.update(use_appimageupdate=use_appimageupdate)
 
 
+
+@cli.command()
+@click.argument('appname')
+@click.option('-a', '--appimageupdate/--no-appimageupdate',
+              'use_appimageupdate', default=True,
+              help="Use AppImageupdate tool to update apps.")
+def check_for_updates(appname, use_appimageupdate=True):
+    """Updates an appimage using appimageupdate tool"""
+    z = Zap(appname)
+    z.check_for_updates(use_appimageupdate=use_appimageupdate)
+
+
+
 @cli.command()
 def self_update():
     """Update myself"""
