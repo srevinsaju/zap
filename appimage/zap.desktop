@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=zap
+Exec=zap
+Type=Application
+Icon=zap
+Terminal=true
+Categories=Utility;
+Keywords=Python;AppImage;Package;Software;Building;
+StartupWMClass=zap

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>zap</id>
+	<name>Zap</name>
+    <metadata_license>MIT</metadata_license>
+    <project_license>MIT</project_license>
+    <summary>AppImage package manager</summary>
+    <description>
+        <p> Ultimate command line package manager for AppImages 
+        </p>
+    </description>
+    <launchable type="desktop-id">zap.desktop</launchable>
+    <url type="homepage">https://github.com/srevinsaju/zap</url>
+    <provides>
+        <binary>python{{ python-version }}</binary>
+    </provides>
+</component>
