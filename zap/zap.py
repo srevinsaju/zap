@@ -33,6 +33,8 @@ import re
 
 from halo import Halo
 
+from .libappimage.libappimage import LibAppImage, LibAppImageNotFoundError, \
+    LibAppImageRuntimeError
 from .appimage import AppImageCore
 from .config.config import ConfigManager
 from .constants import URL_ENDPOINT, YES_RESPONSES, URL_SHOWCASE, \
@@ -44,7 +46,24 @@ import requests
 class Zap:
     def __init__(self, app):
         self.app = app.lower()
+        if os.getenv('APPIMAGE'):
+            self.add_self_to_path()
         self.cfgmgr = ConfigManager()
+
+    def add_self_to_path(self):
+        xdg_user_local_dir = \
+            os.path.join(os.path.expanduser('~'), '.local', 'bin')
+        if xdg_user_local_dir not in os.getenv('PATH').split(os.pathsep):
+            print("Warning: {} is not on PATH. Consider adding it to PATH "
+                  "for a better experience")
+            print("Fallback to {}".format(self.cfgmgr['bin']))
+            xdg_user_local_dir = self.cfgmgr['bin']
+
+        if not os.path.exists(xdg_user_local_dir):
+            os.makedirs(xdg_user_local_dir)
+        with open(os.path.join(xdg_user_local_dir, 'zap', 'w')) as w:
+            w.write(COMMAND_WRAPPER.format(
+                path_to_appimage=os.getenv('APPIMAGE')))
 
     @property
     def is_installed(self):
@@ -86,6 +105,16 @@ class Zap:
         for path in (appimage_path, bin_path, config_path):
             if os.path.exists(path):
                 os.remove(path)
+        try:
+            libappimage = LibAppImage()
+            if libappimage.is_registered_in_system(appimage_path):
+                libappimage.unregister_in_system(appimage_path)
+        except LibAppImageNotFoundError:
+            pass
+        except LibAppImageRuntimeError:
+            print("Removing desktop integration failed. libappimage.so "
+                  "failed with some errors. Consider removing it manually.")
+
         print("{} successfully uninstalled!")
 
     @staticmethod
@@ -210,7 +239,51 @@ class Zap:
         with open(self.app_data_path, 'w') as w:
             json.dump(cb_data, w)
 
+        print("Integrating with desktop...")
+        try:
+            libappimage = LibAppImage()
+            if libappimage.is_registered_in_system(cb_data.get('path')):
+                libappimage.unregister_in_system(cb_data.get('path'))
+            libappimage.register_in_system(cb_data.get('path'))
+        except LibAppImageNotFoundError:
+            print("Warning: libappimage.so was not found on your system. "
+                  "For better features, like desktop integration, consider "
+                  "installing libappimage or install zap as an AppImage...")
+        except LibAppImageRuntimeError:
+            print("Warning: libappimage.so was found on the host system but "
+                  "failed to execute some functions due to some errors. "
+                  "Consider using Zap Appimage instead of a pip module.")
+
         print("Done!")
+
+    def _check_for_updates_with_appimageupdatetool(self, path_appimageupdate):
+        path_to_old_appimage = self.appdata().get('path')
+        spinner = Halo('Checking for updates', spinner='dots')
+        spinner.start()
+        _check_update_command = shlex.split(
+            "{au} --check-for-update {app}".format(
+                au=path_appimageupdate,
+                app=path_to_old_appimage,
+            )
+        )
+        _check_update_proc = subprocess.Popen(
+            _check_update_command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        e_code = _check_update_proc.wait(600)
+        if e_code == 0:
+            spinner.succeed("Already up-to-date!")
+            return
+        elif e_code == 1:
+            spinner.info("Updates found")
+        else:
+            spinner.fail("Update information is not embedded within the "
+                         "AppImage. ")
+            spinner.fail("Consider informing the AppImage author to add a "
+                         ".zsync file")
+            spinner.fail("Alternatively, pass the --no-appimageupdate option")
+        spinner.stop()
 
     def _update_with_appimageupdatetool(self, path_appimageupdate):
         path_to_old_appimage = self.appdata().get('path')
@@ -267,6 +340,18 @@ class Zap:
                     with open(command_wrapper_file_path, 'w') as fp:
                         fp.write(COMMAND_WRAPPER.format(
                             path_to_appimage=output_file))
+                    spinner.start("Configuring desktop files...")
+                    try:
+                        libappimage = LibAppImage()
+                        if libappimage.is_registered_in_system(
+                                path_to_old_appimage):
+                            libappimage.unregister_in_system(
+                                path_to_old_appimage)
+                        libappimage.register_in_system(output_file)
+                    except LibAppImageRuntimeError:
+                        pass  # TODO: add some more stuff here
+                    except LibAppImageNotFoundError:
+                        pass  # TODO: add some more stuff here
                     spinner.succeed("Done!")
                 else:
                     spinner.stop()
@@ -302,6 +387,16 @@ class Zap:
             self._update_with_appimageupdatetool(appimageupdate)
         else:
             raise NotImplementedError()
+
+    def check_for_updates(self, use_appimageupdate=True):
+        if use_appimageupdate:
+            zap_appimageupdate = Zap('appimageupdate')
+            zap_appimageupdate.install(select_default=True,
+                                       always_proceed=True)
+            appimageupdate = zap_appimageupdate.appdata().get('path')
+            self._check_for_updates_with_appimageupdatetool(appimageupdate)
+        else:
+            raise NotImplementedError
 
     def show(self):
         """
