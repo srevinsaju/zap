@@ -419,3 +419,27 @@ class Zap:
             print(appdata)
         return appdata
 
+    def get_md5(self):
+        if not self.is_installed:
+            # The app is not installed
+            print("{} is not yet installed.".format(self.app))
+            return
+
+        lb = LibAppImage()
+        path_to_old_appimage = self.appdata().get('path')
+        print(path_to_old_appimage)
+        print(lb.get_md5(path_to_old_appimage))
+
+    def is_integrated(self):
+        if not self.is_installed:
+            # The app is not installed
+            print("{} is not yet installed.".format(self.app))
+            return
+        lb = LibAppImage()
+        path_to_old_appimage = self.appdata().get('path')
+        print(path_to_old_appimage)
+        print(lb.is_registered_in_system(path_to_old_appimage))
+
+
+
+
