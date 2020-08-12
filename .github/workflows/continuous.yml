@@ -41,6 +41,7 @@ jobs:
         run: |
           python3 -m pip install nuitka --user
           sudo apt-get -y install clang
+          pip3 install -r requirements.txt --user
           python3 -m nuitka --standalone zap.py --plugin-enable=pylint-warnings --show-progress --clang
 
       - name: Configure Zap
@@ -73,8 +74,9 @@ jobs:
           cp $BUILD_ROOT/appimage/zap.appdata.xml $APPIMAGE_SQUASHFS/.
           cp $BUILD_ROOT/appimage/AppRun $APPIMAGE_SQUASHFS/.
           chmod +x $APPIMAGE_SQUASHFS/AppRun
-
-          ./appimagetool-x86_64.AppImage --appimage-extract-and-run --comp gzip squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync' zap-`git describe --tags`-GLIBC-`ldd --version | grep 'ldd ' | grep -o ').[0-9].[0-9][0-9]' | grep -o '[0-9].[0-9][0-9]'`.AppImage
+          
+          ./appimagetool-x86_64.AppImage --appimage-extract-and-run --comp gzip squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync'
+          sha256sum zap*.AppImage > zap-`git describe --tags`-GLIBC-`ldd --version | grep 'ldd ' | grep -o ').[0-9].[0-9][0-9]' | grep -o '[0-9].[0-9][0-9]'`.AppImage.SHA256SUM
           rm -rf ./appimagetool-x86_64.AppImage
           chmod +x *.AppImage
           rm -rf squashfs-root
@@ -104,4 +106,5 @@ jobs:
         files: |
           Zap-continuous-x86_64.AppImage
         repo_token: ${{ secrets.GITHUB_TOKEN }}
+
  
