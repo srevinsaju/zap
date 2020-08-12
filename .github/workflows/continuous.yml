@@ -57,7 +57,7 @@ jobs:
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x ./appimagetool-x86_64.AppImage
 
-          git clone https://github.com/AppImage/libappimage
+          git clone https://github.com/AppImage/libappimage --recursive
           cd libappimage && mkdir build && cd build
           sudo apt install wget vim desktop-file-utils librsvg2-dev fuse librsvg2-2 librsvg2-bin libfuse-dev libfuse2
           wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh
@@ -74,6 +74,7 @@ jobs:
           cp $BUILD_ROOT/appimage/zap.appdata.xml $APPIMAGE_SQUASHFS/.
           cp $BUILD_ROOT/appimage/AppRun $APPIMAGE_SQUASHFS/.
           chmod +x $APPIMAGE_SQUASHFS/AppRun
+          rm $APPIMAGE_SQUASHFS/libz.so.1
           
           ./appimagetool-x86_64.AppImage --appimage-extract-and-run --comp gzip squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync'
           sha256sum zap*.AppImage > zap-`git describe --tags`-GLIBC-`ldd --version | grep 'ldd ' | grep -o ').[0-9].[0-9][0-9]' | grep -o '[0-9].[0-9][0-9]'`.AppImage.SHA256SUM
