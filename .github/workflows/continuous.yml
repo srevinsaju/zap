@@ -13,7 +13,7 @@ jobs:
 
       - name: Install python-appimage
         run: |
-          python3 -m pip install nuita --user
+          python3 -m pip install nuitka --user
           sudo apt-get -y install clang
           nuitka3 --standalone zap.py --plugin-enable=pylint-warnings --show-progress --clang
 
