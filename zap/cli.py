@@ -146,5 +146,21 @@ def self_integrate(appname):
     z.add_self_to_path(force=True)
 
 
+@cli.command()
+@click.argument('appname')
+def get_md5(appname):
+    """Get md5 of an appimage"""
+    z = Zap(appname)
+    z.get_md5()
+
+
+@cli.command()
+@click.argument('appname')
+def is_integrated(appname):
+    """Get md5 of an appimage"""
+    z = Zap(appname)
+    z.is_integrated()
+
+
 if __name__ == "__main__":
     cli()
