@@ -25,22 +25,19 @@ jobs:
 
       - name: Configure Zap
         run: |
+          export BUILD_ROOT=$(realpath .)
           mkdir dist
-          mv *.AppImage dist/.
           cd dist
-          ./*.AppImage --appimage-extract
-          rm *.AppImage
+          mkdir squashfs-root
+          cp -r ../zap.dist/* squashfs-root/.
           export APPIMAGE_SQUASHFS=$(realpath squashfs-root)
           mkdir -p $APPIMAGE_SQUASHFS/usr
 
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x ./appimagetool-x86_64.AppImage
-          rm zap*.AppImage
 
           git clone https://github.com/AppImage/libappimage
-          cd libappimage
-          mkdir build
-          cd build
+          cd libappimage && mkdir build && cd build
           sudo apt install wget vim desktop-file-utils librsvg2-dev ibrsvg2-2 librsvg2-bin
           wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh
           chmod +x *.sh
@@ -48,9 +45,17 @@ jobs:
           ./bin/cmake .. -DBUILD_TESTING:bool=False
           make
           make DESTDIR=$APPIMAGE_SQUASHFS install
+
           cd $APPIMAGE_SQUASHFS/..
+          cp $BUILD_ROOT/appimage/zap.desktop $APPIMAGE_SQUASHFS/.
+          cp $BUILD_ROOT/appimage/zap.png $APPIMAGE_SQUASHFS/.
+          mkdir -p $APPIMAGE_SQUASHFS/usr/share/metainfo
+          cp $BUILD_ROOT/appimage/zap.appdata.xml $APPIMAGE_SQUASHFS/.
+          cp $BUILD_ROOT/appimage/AppRun $APPIMAGE_SQUASHFS/.
+          chmod +x $APPIMAGE_SQUASHFS/AppRun
+
           ./appimagetool-x86_64.AppImage --appimage-extract-and-run --comp gzip squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync' zap-`git describe --tags`-GLIBC-`ldd --version | grep 'ldd ' | grep -o ').[0-9].[0-9][0-9]' | grep -o '[0-9].[0-9][0-9]'`.AppImage
-          rm -r ./appimagetool-x86_64.AppImage
+          rm -rf ./appimagetool-x86_64.AppImage
           chmod +x *.AppImage
           rm -rf squashfs-root
           rm -rf libappimage
