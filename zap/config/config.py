@@ -16,12 +16,11 @@ class ConfigManager:
             'bin': os.path.join(appdirs.user_data_dir('zap'), 'bin')
         }
 
-        self.make_data_directory()
-
         if not os.path.exists(self._config_dir):
             self.make_config_directory()
         if not os.path.exists(self._cfgpath):
             self.write_file()
+        self.make_data_directory()
 
         self.read_file()
 
