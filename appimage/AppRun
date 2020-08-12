@@ -1,0 +1,28 @@
+#! /bin/bash
+
+# Export APPRUN if running from an extracted image
+self="$(readlink -f -- $0)"
+here="${self%/*}"
+APPDIR="${APPDIR:-${here}}"
+
+# Export TCl/Tk
+export TCL_LIBRARY="${APPDIR}/usr/share/tcltk/tcl8.4"
+export TK_LIBRARY="${APPDIR}/usr/share/tcltk/tk8.4"
+export TKPATH="${TK_LIBRARY}"
+
+# Call the entry point
+export LD_LIBRARY_PATH="$APPDIR:${APPDIR}/usr/lib:${APPDIR}/usr/local/lib:${LD_LIBRARY_PATH}"
+export ZAP="TRUE"
+
+if [ -z "$LC_ALL" ]
+then 
+	export LC_ALL=C.UTF-8
+fi
+
+if [ -z "$LANG" ]
+then
+	export LANG=C.UTF-8
+fi
+
+${APPDIR}/zap "$@"
+
