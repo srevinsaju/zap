@@ -1,0 +1,82 @@
+name: Continuous
+on:
+  - push
+
+jobs:
+  centos:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v2
+      strategy:
+        matrix:
+          version: ['3.8']
+
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-python@v1
+            with:
+              python-version: ${{ matrix.version }}
+
+      - name: Install python-appimage
+        run: |
+          python3 -m pip install nuita --user
+          sudo apt-get -y install clang
+          nuitka3 --standalone zap.py --plugin-enable=pylint-warnings --show-progress --clang
+
+      - name: Configure Zap
+        run: |
+          mkdir dist
+          mv *.AppImage dist/.
+          cd dist
+          ./*.AppImage --appimage-extract
+          rm *.AppImage
+          export APPIMAGE_SQUASHFS=$(realpath squashfs-root)
+          mkdir -p $APPIMAGE_SQUASHFS/usr
+
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x ./appimagetool-x86_64.AppImage
+          rm zap*.AppImage
+
+          git clone https://github.com/AppImage/libappimage
+          cd libappimage
+          mkdir build
+          cd build
+          sudo apt install wget vim desktop-file-utils librsvg2-dev ibrsvg2-2 librsvg2-bin
+          wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh
+          chmod +x *.sh
+          ./cmake-*.sh --skip-license
+          ./bin/cmake .. -DBUILD_TESTING:bool=False
+          make
+          make DESTDIR=$APPIMAGE_SQUASHFS install
+          cd $APPIMAGE_SQUASHFS/..
+          ./appimagetool-x86_64.AppImage --appimage-extract-and-run --comp gzip squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync' zap-`git describe --tags`-GLIBC-`ldd --version | grep 'ldd ' | grep -o ').[0-9].[0-9][0-9]' | grep -o '[0-9].[0-9][0-9]'`.AppImage
+          rm -r ./appimagetool-x86_64.AppImage
+          chmod +x *.AppImage
+          rm -rf squashfs-root
+          rm -rf libappimage
+
+      - name: Upload Appimage
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: Zap-continuous-x86_64.AppImage
+          path: 'dist/'
+
+  Release:
+    needs: [centos]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v1
+      with:
+        name: Zap-continuous-x86_64.AppImage
+
+    - name: Release
+      uses: marvinpinto/action-automatic-releases@latest
+      if: github.ref == 'refs/heads/master'
+      with:
+        automatic_release_tag: continuous
+        title: Beta AppImage Release
+        prerelease: false
+        files: |
+          Zap-continuous-x86_64.AppImage
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+ 
