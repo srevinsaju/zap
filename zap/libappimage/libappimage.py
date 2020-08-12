@@ -1,8 +1,8 @@
 import os
 import ctypes
 
-LD_LIBRARY_PATHS = ['/usr/lib', '/usr/local/lib'] + \
-                   os.getenv('LD_LIBRARY_PATH', '').split(os.pathsep)
+LD_LIBRARY_PATHS = os.getenv('LD_LIBRARY_PATH', '').split(os.pathsep) + \
+                   ['/usr/lib', '/usr/local/lib']
 
 
 def _encode(args):
