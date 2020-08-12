@@ -41,6 +41,7 @@ jobs:
         run: |
           python3 -m pip install nuitka --user
           sudo apt-get -y install clang
+          pip3 install -r requirements.txt --user
           python3 -m nuitka --standalone zap.py --plugin-enable=pylint-warnings --show-progress --clang
 
       - name: Configure Zap
