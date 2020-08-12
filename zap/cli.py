@@ -1,10 +1,39 @@
+#!/usr/bin/env python3
+"""
+MIT License
+
+Copyright (c) 2020 Srevin Saju
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-----------------------------
+This file is part of Zap AppImage Package Manager
+"""
+
+import json
 import click
 import urllib.parse
 
 from zap.config.config import ConfigManager
 from . import __version__
 from . import __doc__ as lic
-from .zap import Zap
+from .zap import Zap, parse_gh_url
 
 
 def show_version(ctx, param, value):
@@ -90,7 +119,6 @@ def update(appname, use_appimageupdate=True):
     z.update(use_appimageupdate=use_appimageupdate)
 
 
-
 @cli.command()
 @click.argument('appname')
 @click.option('-a', '--appimageupdate/--no-appimageupdate',
@@ -160,6 +188,43 @@ def is_integrated(appname):
     """Get md5 of an appimage"""
     z = Zap(appname)
     z.is_integrated()
+
+
+@cli.command()
+@click.argument('url')
+@click.option('-d', '--select-default',
+              'select_default',  default=False,
+              help="Always select first option while installing.")
+@click.option('-e', '--executable',
+              'executable',  default=False,
+              help="Name of the executable, (default: last part of url)")
+@click.option('-f', '--force/--no-force',
+              'force_refresh', default=False,
+              help="Force install the app without checking.")
+def install_gh(url, executable, **kwargs):
+    """Installs an appimage from GitHub repository URL (caution)"""
+    # https://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
+    import re
+    regex = re.compile(
+        r'^(?:http|ftp)s?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+'
+        r'(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+    is_valid_url = re.match(regex, url) is not None
+    if not is_valid_url:
+        print("Error: Invalid URL")
+    cb_data = json.loads(json.dumps(parse_gh_url(url)))
+    if executable:
+        appname = executable
+    else:
+        appname = url.split('/')[-1]
+    z = Zap(appname)
+
+    z.install(executable=executable, cb_data=cb_data, **kwargs)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 MIT License
 
@@ -21,6 +21,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-----------------------------
+This file is part of Zap AppImage Package Manager
 """
 
 import json
@@ -28,19 +31,55 @@ import os
 import shlex
 import subprocess
 import sys
+import urllib.parse
 import webbrowser
 import re
 
 from halo import Halo
 
+from .appimage.generator import AppImageConfigJsonGenerator
 from .libappimage.libappimage import LibAppImage, LibAppImageNotFoundError, \
     LibAppImageRuntimeError
 from .appimage import AppImageCore
 from .config.config import ConfigManager
 from .constants import URL_ENDPOINT, YES_RESPONSES, URL_SHOWCASE, \
-    COMMAND_WRAPPER
+    COMMAND_WRAPPER, BUG_TRACKER
 from .utils import format_colors as fc
 import requests
+
+
+def parse_gh_url(url):
+    """Should input something like this{
+        "type": "GitHub",
+        "url": "AkashaProject/Community"
+    },
+    {
+        "type": "Download",
+        "url": "https://github.com/AkashaProject/Community/releases"
+    }"""
+    root_url = urllib.parse.urlparse(url)
+    url_path = root_url.path[1:] if \
+        root_url.path.startswith('/') else root_url.path
+    data = [
+        {
+            'type': "GitHub",
+            'url': '{}'.format(url_path)
+        }
+    ]
+    ap = AppImageConfigJsonGenerator({'links': data})
+    cb_data = ap.get_app_metadata()
+    if cb_data:
+        print("Valid GitHub URL Found")
+        print(fc("{r}WARNING: Installing untested appimages are not "
+                 "suggested. These AppImages have not been tested on a LTS "
+                 "Ubuntu distribution. Use at your own risk{rst}"))
+        return cb_data
+    else:
+        print("Parsing GitHub URL failed. Probably the link provided is "
+              "non-existent or might not have a valid appimage release.")
+        print("If you think, this has been an error, consider creating an "
+              "issue at {}".format(BUG_TRACKER))
+        return False
 
 
 class Zap:
@@ -170,7 +209,7 @@ class Zap:
     def install(self,
                 select_default=False, force_refresh=False,
                 executable=False, tag_name=None, download_file_in_tag=None,
-                always_proceed=False):
+                always_proceed=False, cb_data=None):
         """
         Installs the app and configures it
         :return:
@@ -184,14 +223,20 @@ class Zap:
         if force_refresh:
             print("Force updating appimage...")
 
-        print("Fetching information for {}".format(self.app))
-        r = requests.get(URL_ENDPOINT.format(self.app))
-        if not r.status_code == 200:
-            # the app does not exist or the name provided is incorrect
-            print("Sorry. The app does not exist on our database.")
-            return False
+        if cb_data is None:
+            print("Fetching information for {}".format(self.app))
+            r = requests.get(URL_ENDPOINT.format(self.app))
+            if not r.status_code == 200:
+                # the app does not exist or the name provided is incorrect
+                print("Sorry. The app does not exist on our database.")
+                return False
 
-        result_core_api = r.json()
+            result_core_api = r.json()
+        elif isinstance(cb_data, dict):
+            result_core_api = cb_data
+        else:
+            raise ValueError("Invalid data was provided as cb_data")
+
         core = AppImageCore(result_core_api)
         releases = core.latest_releases()
 
@@ -439,6 +484,8 @@ class Zap:
         path_to_old_appimage = self.appdata().get('path')
         print(path_to_old_appimage)
         print(lb.is_registered_in_system(path_to_old_appimage))
+
+
 
 
 
