@@ -185,7 +185,7 @@ def get_md5(appname):
 @cli.command()
 @click.argument('appname')
 def is_integrated(appname):
-    """Get md5 of an appimage"""
+    """Checks if appimage is integrated with the desktop"""
     z = Zap(appname)
     z.is_integrated()
 
