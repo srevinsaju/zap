@@ -535,9 +535,3 @@ class Zap:
         path_to_old_appimage = self.appdata().get('path')
         print(path_to_old_appimage)
         print(lb.is_registered_in_system(path_to_old_appimage))
-
-
-
-
-
-
