@@ -47,37 +47,40 @@ jobs:
       - name: Install python3
         run: |
           sudo apt -y install python3 python3-pip
-          python3 -m pip install nuitka --user
+          python3 -m pip install setuptools --user
+          python3 -m pip install PyInstaller
           sudo apt -y install clang git wget
+
+      - name: Install libappimage
+        run: |
+          git clone https://github.com/AppImage/libappimage --recursive
+          cd libappimage && mkdir build && cd build
+          sudo apt install -y wget vim desktop-file-utils librsvg2-dev fuse librsvg2-2 librsvg2-bin libfuse-dev libfuse2 autotools-dev automake
+          sudo apt install -y libtool libcairo-dev
+
+          wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh && chmod +x cmake-3.13.4-Linux-x86_64.sh
+          ./cmake-*.sh --skip-license
+          ./bin/cmake .. -DBUILD_TESTING:bool=False
+          make
+          sudo make install
 
       - name: Install python-appimage
         run: |
           python3 -m pip install -r requirements.txt --user
-          python3 -m nuitka --standalone zap.py --plugin-enable=pylint-warnings --show-progress --clang
+          echo "from zap.cli import cli; cli()" > test.py
+          python3 -m PyInstaller test.py -n zap --clean --add-binary=/usr/local/lib/libappimage.so:usr/local/lib
 
       - name: Configure Zap
         run: |
           export BUILD_ROOT=$(realpath .)
-          mkdir dist
           cd dist
           mkdir squashfs-root
-          cp -r ../zap.dist/* squashfs-root/.
+          cp -r ../zap/* squashfs-root/.
           export APPIMAGE_SQUASHFS=$(realpath squashfs-root)
           mkdir -p $APPIMAGE_SQUASHFS/usr
 
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x ./appimagetool-x86_64.AppImage
-
-          git clone https://github.com/AppImage/libappimage --recursive
-          cd libappimage && mkdir build && cd build
-          sudo apt install -y wget vim desktop-file-utils librsvg2-dev fuse librsvg2-2 librsvg2-bin libfuse-dev libfuse2 autotools-dev automake
-          sudo apt install -y libtool libcairo-dev
-          
-          wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh && chmod +x cmake-3.13.4-Linux-x86_64.sh
-          ./cmake-*.sh --skip-license
-          ./bin/cmake .. -DBUILD_TESTING:bool=False
-          make
-          make DESTDIR=$APPIMAGE_SQUASHFS install
 
           cd $APPIMAGE_SQUASHFS/..
           cp $BUILD_ROOT/appimage/zap.desktop $APPIMAGE_SQUASHFS/.
