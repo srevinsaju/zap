@@ -29,6 +29,7 @@ This file is part of Zap AppImage Package Manager
 import json
 import os
 import shutil
+import sys
 
 import click
 import urllib.parse
@@ -220,7 +221,8 @@ def install_gh(url, executable, **kwargs):
 
     is_valid_url = re.match(regex, url) is not None
     if not is_valid_url:
-        print("Error: Invalid URL")
+        print(fc("{r}Error:{rst} Invalid URL"))
+        sys.exit(1)
     cb_data = json.loads(json.dumps(parse_gh_url(url)))
     if executable:
         appname = executable
