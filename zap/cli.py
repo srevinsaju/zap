@@ -27,6 +27,9 @@ This file is part of Zap AppImage Package Manager
 """
 
 import json
+import os
+import shutil
+
 import click
 import urllib.parse
 
@@ -34,6 +37,7 @@ from zap.config.config import ConfigManager
 from . import __version__
 from . import __doc__ as lic
 from .zap import Zap, parse_gh_url
+from .utils import format_colors as fc
 
 
 def show_version(ctx, param, value):
@@ -225,6 +229,30 @@ def install_gh(url, executable, **kwargs):
     z = Zap(appname)
 
     z.install(executable=executable, cb_data=cb_data, **kwargs)
+
+
+@cli.command()
+def disintegrate():
+    """Remove zap and optionally remove all the appimages installed with zap"""
+    click.confirm('Do you really want to uninstall?', abort=True)
+    if click.confirm('Do you want to remove installed AppImages?'):
+        cfgmgr = ConfigManager()
+        if os.path.exists(cfgmgr['bin']):
+            print(fc("{y}Removing bin for appimages{rst}"))
+            shutil.rmtree(cfgmgr['bin'], ignore_errors=True)
+        if os.path.exists(cfgmgr['storageDirectory']):
+            print(fc("{y}Removing storageDirectory for appimages{rst}"))
+            shutil.rmtree(cfgmgr['storageDirectory'], ignore_errors=True)
+    print(fc("{y}Removing zap binary entrypoint{rst}"))
+    for path in os.getenv('PATH').split(os.pathsep):
+        zap_bin = os.path.join(path, 'zap')
+        if os.path.exists(zap_bin):
+            os.remove(zap_bin)
+            break
+    print(fc("{y}Removing zap AppImage {rst}"))
+    dot_zap = os.path.join(os.path.expanduser('~'), '.zap')
+    if os.path.exists(dot_zap):
+        shutil.rmtree(dot_zap, ignore_errors=True)
 
 
 if __name__ == "__main__":
