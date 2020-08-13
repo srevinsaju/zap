@@ -229,8 +229,9 @@ def install_gh(url, executable, **kwargs):
     else:
         appname = url.split('/')[-1]
     z = Zap(appname)
-
-    z.install(executable=executable, cb_data=cb_data, **kwargs)
+    z.install(executable=executable, cb_data=cb_data,
+              additional_data={'url': url, 'executable': executable},
+              **kwargs)
 
 
 @cli.command()
