@@ -480,7 +480,8 @@ class Zap:
                     raise ValueError("A valid URL was not found in the "
                                      "configuration. Uninstall and reinstall "
                                      "this app to fix this error")
-                _cb_data = parse_gh_url(additional_data.get('url'))
+                _cb_data = json.loads(json.dumps(
+                    parse_gh_url(additional_data.get('url'))))
                 _executable = additional_data.get('executable')
             else:
                 _executable = None
