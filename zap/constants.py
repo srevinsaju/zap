@@ -50,5 +50,4 @@ COLORS = {
     'r': Fore.RED
 }
 
-
 BUG_TRACKER = "https://github.com/srevinsaju/zap/issues"
