@@ -47,6 +47,8 @@ jobs:
       - name: Install python3
         run: |
           sudo apt -y install python3 python3-pip
+          sudo apt install -y wget vim desktop-file-utils librsvg2-dev fuse librsvg2-2 librsvg2-bin libfuse-dev libfuse2 autotools-dev automake
+          sudo apt install -y libtool libcairo-dev
           python3 -m pip install setuptools --user
           sudo apt -y install clang git wget
           git clone https://github.com/pyinstaller/pyinstaller
@@ -62,9 +64,6 @@ jobs:
         run: |
           git clone https://github.com/AppImage/libappimage --recursive
           cd libappimage && mkdir build && cd build
-          sudo apt install -y wget vim desktop-file-utils librsvg2-dev fuse librsvg2-2 librsvg2-bin libfuse-dev libfuse2 autotools-dev automake
-          sudo apt install -y libtool libcairo-dev
-
           wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh && chmod +x cmake-3.13.4-Linux-x86_64.sh
           ./cmake-*.sh --skip-license
           ./bin/cmake .. -DBUILD_TESTING:bool=False
