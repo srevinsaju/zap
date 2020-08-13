@@ -81,7 +81,7 @@ jobs:
           export BUILD_ROOT=$(realpath .)
           cd dist
           mkdir squashfs-root
-          cp -r ../zap/* squashfs-root/.
+          cp -r zap/* squashfs-root/.
           export APPIMAGE_SQUASHFS=$(realpath squashfs-root)
           mkdir -p $APPIMAGE_SQUASHFS/usr
 
