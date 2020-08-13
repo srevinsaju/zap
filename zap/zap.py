@@ -66,7 +66,11 @@ def parse_gh_url(url):
             'url': '{}'.format(url_path)
         }
     ]
-    ap = AppImageConfigJsonGenerator({'links': data})
+    ap = AppImageConfigJsonGenerator(
+        {'links': data},
+        token=ConfigManager()['gh-token']
+    )
+
     cb_data = ap.get_app_metadata()
     if cb_data:
         print("Valid GitHub URL Found")
@@ -209,7 +213,8 @@ class Zap:
     def install(self,
                 select_default=False, force_refresh=False,
                 executable=False, tag_name=None, download_file_in_tag=None,
-                always_proceed=False, cb_data=None):
+                always_proceed=False, cb_data=None, remove_old=None,
+                **kwargs):
         """
         Installs the app and configures it
         :return:
@@ -277,16 +282,31 @@ class Zap:
                 print("Terminating on user request")
                 return False
 
-        cb_data = core.install(
+        _cb_data = core.install(
             asset_data,
             self.cfgmgr.storageDirectory,
             name=self.app if not executable else executable)
 
         print("Configuring...")
-        cb_data['uid'] = release.get('id')
+        _cb_data['uid'] = release.get('id')
+        if isinstance(cb_data, dict):
+            # installed using `install-gh` command
+            # set the key installed from-gh
+            _cb_data['source'] = 'gh'
+        elif cb_data is None:
+            _cb_data['source'] = 'official'
+
+        # check if any additional data is to be written to the datastore
+        additional_data = kwargs.get('additional_data', dict())
+
+        # fail if the data provided is not dictionary
+        assert isinstance(additional_data, dict)
+
+        _cb_data['data'] = additional_data
+
         # write data
         with open(self.app_data_path, 'w') as w:
-            json.dump(cb_data, w)
+            json.dump(_cb_data, w)
 
         print("Integrating with desktop...")
         try:
@@ -302,6 +322,12 @@ class Zap:
             print("Warning: libappimage.so was found on the host system but "
                   "failed to execute some functions due to some errors. "
                   "Consider using Zap Appimage instead of a pip module.")
+
+        # remove an older version of installed app
+        if isinstance(remove_old, str):
+            print("Removing older version {}".format(remove_old))
+            if os.path.exists(remove_old):
+                os.remove(remove_old)
 
         print("Done!")
 
@@ -428,14 +454,39 @@ class Zap:
         :return:
         :rtype:
         """
+        if not self.is_installed:
+            print(fc("{r}E: {app} is not installed yet{rst}", app=self.app))
+            return
+
         if use_appimageupdate:
             zap_appimageupdate = Zap('appimageupdate')
             zap_appimageupdate.install(select_default=True,
                                        always_proceed=True)
+
             appimageupdate = zap_appimageupdate.appdata().get('path')
             self._update_with_appimageupdatetool(appimageupdate)
         else:
-            raise NotImplementedError()
+            print(fc("{y}WARNING: Updating apps without appimageupdatetool "
+                     "is not recommended.{rst}"))
+            _appdata = self.appdata()
+            old_path = _appdata.get('path')
+            source = _appdata.get('source', 'official')
+            if source == 'gh':  # the file was installed from GitHub,
+                # so install it from there
+                additional_data = _appdata.get('data', dict())
+                assert isinstance(additional_data, dict)
+                if 'url' not in additional_data:
+                    raise ValueError("A valid URL was not found in the "
+                                     "configuration. Uninstall and reinstall "
+                                     "this app to fix this error")
+                _cb_data = parse_gh_url(additional_data.get('url'))
+                _executable = additional_data.get('executable')
+            else:
+                _executable = None
+                _cb_data = None
+
+            self.install(force_refresh=True, remove_old=old_path,
+                         cb_data=_cb_data, executable=_executable)
 
     def check_for_updates(self, use_appimageupdate=True):
         if use_appimageupdate:
