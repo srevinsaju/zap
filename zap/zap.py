@@ -329,6 +329,7 @@ class Zap:
             print("Removing older version {}".format(remove_old))
             if os.path.exists(remove_old):
                 os.remove(remove_old)
+        self.cfgmgr.add_app(self.app)
         print("Done!")
 
     def _check_for_updates_with_appimageupdatetool(self, path_appimageupdate):
