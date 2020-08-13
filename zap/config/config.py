@@ -152,3 +152,11 @@ class ConfigManager:
         self._config['storageDirectory'] = path_to_save_appimages
         self.write_file()
         print("Done!")
+
+    def add_app(self, data):
+        self['apps'].append(data)
+        self.write_file()
+
+    def remove_app(self, data):
+        self['apps'].remove(data)
+        self.write_file()
