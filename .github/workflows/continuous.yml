@@ -30,18 +30,29 @@ on:
 
 jobs:
   centos:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:16.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.8'
+      - name: Set up User
+        run: |
+          apt update
+          apt install -y sudo
+          echo "github ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          useradd -m github
+          usermod -aG sudo github
+          su - github
+          
+      - name: Install python3
+        run: |
+          sudo apt -y install python3 python3-pip
+          python3 -m pip install nuitka --user
+          sudo apt -y install clang git wget
 
       - name: Install python-appimage
         run: |
-          python3 -m pip install nuitka --user
-          sudo apt-get -y install clang
-          pip3 install -r requirements.txt --user
+          python3 -m pip install -r requirements.txt --user
           python3 -m nuitka --standalone zap.py --plugin-enable=pylint-warnings --show-progress --clang
 
       - name: Configure Zap
@@ -59,9 +70,10 @@ jobs:
 
           git clone https://github.com/AppImage/libappimage --recursive
           cd libappimage && mkdir build && cd build
-          sudo apt install wget vim desktop-file-utils librsvg2-dev fuse librsvg2-2 librsvg2-bin libfuse-dev libfuse2
-          wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh
-          chmod +x *.sh
+          sudo apt install -y wget vim desktop-file-utils librsvg2-dev fuse librsvg2-2 librsvg2-bin libfuse-dev libfuse2 autotools-dev automake
+          sudo apt install -y libtool libcairo-dev
+          
+          wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh && chmod +x cmake-3.13.4-Linux-x86_64.sh
           ./cmake-*.sh --skip-license
           ./bin/cmake .. -DBUILD_TESTING:bool=False
           make
