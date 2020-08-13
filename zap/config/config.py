@@ -41,7 +41,9 @@ class ConfigManager:
             'version': '0.1',
             'name': 'ZapConfiguration',
             'storageDirectory': appdirs.user_data_dir('zap'),
-            'bin': os.path.join(appdirs.user_data_dir('zap'), 'bin')
+            'bin': os.path.join(appdirs.user_data_dir('zap'), 'bin'),
+            'apps': [],
+            'gh-token': None
         }
 
         if not os.path.exists(self._config_dir):
