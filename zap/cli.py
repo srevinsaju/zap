@@ -203,7 +203,7 @@ def is_integrated(appname):
               help="Force install the app without checking.")
 def install_gh(url, executable, **kwargs):
     """Installs an appimage from GitHub repository URL (caution)"""
-    # https://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
+    # https://stackoverflow.com/q/7160737/
     import re
     regex = re.compile(
         r'^(?:http|ftp)s?://'  # http:// or https://

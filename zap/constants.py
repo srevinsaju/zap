@@ -40,7 +40,7 @@ export PATH=$PATH:$ZAP_PATH
 # ========================"""
 
 COMMAND_WRAPPER = \
-    """#!/bin/env sh
+    """#!/bin/sh
 {path_to_appimage} "$@" """
 
 COLORS = {
