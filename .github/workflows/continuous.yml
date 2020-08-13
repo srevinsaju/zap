@@ -74,7 +74,7 @@ jobs:
         run: |
           python3 -m pip install -r requirements.txt --user
           echo "from zap.cli import cli; cli()" > test.py
-          python3 -m PyInstaller test.py -n zap --clean --add-binary=/usr/local/lib/libappimage.so:usr/local/lib --add-binary=/usr/lib/x86_64-linux-gnu/librsvg-2.so.2:usr/local/lib
+          python3 -m PyInstaller test.py -n zap --clean --add-binary=/usr/local/lib/libappimage.so:usr/local/lib --add-binary=/usr/lib/x86_64-linux-gnu/librsvg-2.so.2:usr/local/lib --add-binary=/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
         run: |
