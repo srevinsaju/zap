@@ -111,7 +111,6 @@ class Zap:
                 w.write(COMMAND_WRAPPER.format(
                     path_to_appimage=os.getenv('APPIMAGE')))
 
-
     @property
     def is_installed(self):
         return os.path.exists(self.app_data_path)
@@ -161,8 +160,10 @@ class Zap:
         except LibAppImageRuntimeError:
             print("Removing desktop integration failed. libappimage.so "
                   "failed with some errors. Consider removing it manually.")
+        if self.app in self.cfgmgr.apps:
+            self.cfgmgr.remove_app(self.app)
 
-        print("{} successfully uninstalled!")
+        print("{} successfully removed.".format(self.app))
 
     @staticmethod
     def _iter_releases_show_tags_stdout_get_choice(releases,
@@ -328,7 +329,6 @@ class Zap:
             print("Removing older version {}".format(remove_old))
             if os.path.exists(remove_old):
                 os.remove(remove_old)
-
         print("Done!")
 
     def _check_for_updates_with_appimageupdatetool(self, path_appimageupdate):
