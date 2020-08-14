@@ -73,7 +73,7 @@ jobs:
       - name: Configure Zap
         run: |
           mkdir -p dist
-          python3 -m python-appimage build app appimage -p 3.8
+          python3 -m python_appimage build app appimage -p 3.8
           mv *.AppImage dist/.
           export BUILD_ROOT=$(realpath .)
           cd dist
