@@ -33,32 +33,21 @@ jobs:
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
 
       - name: Install python3
         run: |
-          sudo apt -y install python3 python3-pip
           sudo apt install -y wget vim desktop-file-utils librsvg2-dev fuse librsvg2-2 librsvg2-bin libfuse-dev libfuse2 autotools-dev automake
           sudo apt install -y libtool libcairo-dev
           python3 -m pip install setuptools --upgrade --user
           sudo apt -y install clang git wget
-          git clone https://github.com/pyinstaller/pyinstaller
-          cd pyinstaller
-          git checkout v4.0
-          cd bootloader
-          python3 ./waf all
-          cd ..
-          python3 setup.py install
-          cd ..
-
-      - name: Install libappimage
-        run: |
-
 
       - name: Install python-appimage
         run: |
           python3 -m pip install -r requirements.txt --user
           python3 -m pip install python-appimage
-
 
       - name: Configure Zap
         run: |
