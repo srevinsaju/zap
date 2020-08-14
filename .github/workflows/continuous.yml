@@ -74,6 +74,7 @@ jobs:
         run: |
           python3 -m pip install -r requirements.txt --user
           echo "from zap.cli import cli; cli()" > test.py
+          cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so libglib-2.0.so.0
           python3 -m PyInstaller test.py -n zap --clean \
             --add-binary=/usr/local/lib/libappimage.so:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/librsvg-2.so.2:usr/local/lib \
@@ -84,7 +85,7 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libpango-1.0.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libglib-2.0.so:usr/local/lib
+            --add-binary=libglib-2.0.so.0:usr/local/lib
 
 
       - name: Configure Zap
