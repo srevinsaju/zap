@@ -32,11 +32,13 @@ import shlex
 import subprocess
 import sys
 import urllib.parse
+import uuid
 import webbrowser
 import re
 
 from halo import Halo
 
+from .utils import is_valid_url
 from .appimage.generator import AppImageConfigJsonGenerator
 from .libappimage.libappimage import LibAppImage, LibAppImageNotFoundError, \
     LibAppImageRuntimeError
@@ -215,12 +217,13 @@ class Zap:
                 select_default=False, force_refresh=False,
                 executable=False, tag_name=None, download_file_in_tag=None,
                 always_proceed=False, cb_data=None, remove_old=None,
-                **kwargs):
+                from_url=False, **kwargs):
         """
         Installs the app and configures it
         :return:
         :rtype:
         """
+
         is_app_installed = self.check_app_installed_verbose()
         if is_app_installed and not force_refresh:
             # already installed, so skip!
@@ -229,7 +232,7 @@ class Zap:
         if force_refresh:
             print("Force updating appimage...")
 
-        if cb_data is None:
+        if cb_data is None and not from_url:
             print("Fetching information for {}".format(self.app))
             r = requests.get(URL_ENDPOINT.format(self.app))
             if not r.status_code == 200:
@@ -240,6 +243,34 @@ class Zap:
             result_core_api = r.json()
         elif isinstance(cb_data, dict):
             result_core_api = cb_data
+        elif isinstance(from_url, str):
+            if not is_valid_url(from_url) or \
+                    not from_url.lower().endswith('.appimage'):
+                print("Sorry, the URL provided cannot be installed. Make "
+                      "sure the URL ends with .AppImage or .appimage")
+                return False
+            result_core_api = {
+                "0": {
+                    "id": uuid.uuid4().hex,
+                    "author": "Unknown (unverifed)",
+                    "prerelease": False,
+                    "assets": {
+                        "{}".format(uuid.uuid4()): {
+                            "name": "{}".format(from_url),
+                            "download": "{}".format(from_url),
+                            "count": 0,
+                            "size": "unknown"
+                        },
+                    },
+                    "tag": "{}".format(from_url),
+                    "published_at": "Unknown"
+                },
+                "owner": "Unknown (unverifed)",
+                "source": {
+                    "type": None,
+                    "url": None
+                }
+            }
         else:
             raise ValueError("Invalid data was provided as cb_data")
 
@@ -361,8 +392,8 @@ class Zap:
             spinner.fail("Alternatively, pass the --no-appimageupdate option")
         spinner.stop()
 
-    def _update_with_appimageupdatetool(self, path_appimageupdate):
-        path_to_old_appimage = self.appdata().get('path')
+    def _update_with_appimageupdatetool(self, path_appimageupdate, path):
+        path_to_old_appimage = path
         spinner = Halo('Checking for updates', spinner='dots')
         spinner.start()
         _check_update_command = shlex.split(
@@ -465,7 +496,9 @@ class Zap:
                                        always_proceed=True)
 
             appimageupdate = zap_appimageupdate.appdata().get('path')
-            self._update_with_appimageupdatetool(appimageupdate)
+            path_to_appimage = self.appdata().get('path')
+            self._update_with_appimageupdatetool(appimageupdate,
+                                                 path=path_to_appimage)
         else:
             print(fc("{y}WARNING: Updating apps without appimageupdatetool "
                      "is not recommended.{rst}"))

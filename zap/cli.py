@@ -34,7 +34,9 @@ import sys
 import click
 import urllib.parse
 
+from .utils import is_valid_url
 from zap.config.config import ConfigManager
+from zap.execute.execute import Execute
 from . import __version__
 from . import __doc__ as lic
 from .zap import Zap, parse_gh_url
@@ -79,6 +81,10 @@ def cli():
 @click.option('-f', '--force/--no-force',
               'force_refresh', default=False,
               help="Force install the app without checking.")
+@click.option('--from',
+              'from_url', default=False,
+              help="Install a specific appimage from a URL (url should be "
+                   "downloadable by wget and should end with .AppImage)")
 def install(appname, **kwargs):
     """Installs an appimage"""
     z = Zap(appname)
@@ -135,13 +141,6 @@ def check_for_updates(appname, use_appimageupdate=True):
     z.check_for_updates(use_appimageupdate=use_appimageupdate)
 
 
-
-@cli.command()
-def self_update():
-    """Update myself"""
-    raise NotImplementedError("not yet zapped =)")
-
-
 @cli.command()
 @click.argument('appname')
 def show(appname):
@@ -168,15 +167,6 @@ def xdg(url):
         z.remove()
     else:
         print("Invalid url")
-
-
-@cli.command()
-@click.argument('appname')
-def self_integrate(appname):
-    """Add the currently running appimage to PATH, making it accessible
-    elsewhere"""
-    z = Zap(appname)
-    z.add_self_to_path(force=True)
 
 
 @cli.command()
@@ -209,18 +199,8 @@ def is_integrated(appname):
 def install_gh(url, executable, **kwargs):
     """Installs an appimage from GitHub repository URL (caution)"""
     # https://stackoverflow.com/q/7160737/
-    import re
-    regex = re.compile(
-        r'^(?:http|ftp)s?://'  # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+'
-        r'(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-        r'localhost|'  # localhost...
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-        r'(?::\d+)?'  # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
-    is_valid_url = re.match(regex, url) is not None
-    if not is_valid_url:
+    is_valid = is_valid_url(url)
+    if not is_valid:
         print(fc("{r}Error:{rst} Invalid URL"))
         sys.exit(1)
     cb_data = json.loads(json.dumps(parse_gh_url(url)))
@@ -257,6 +237,47 @@ def disintegrate():
     if os.path.exists(dot_zap):
         shutil.rmtree(dot_zap, ignore_errors=True)
 
+
+@cli.command()
+@click.argument('appname')
+@click.option('-F', '--firejail',
+              'firejail',  default=False,
+              help="Sandbox the app with firejail")
+def x(appname, firejail=False):
+    """Execute a Zap installed app (optionally with sandboxing / firejail)"""
+    z = Zap(appname)
+    if not z.is_installed:
+        print("{} is not installed yet.".format(appname))
+        return
+    path_to_appimage = z.appdata().get('path')
+    Execute(path_to_appimage, use_firejail=firejail)
+    print("Done!")
+
+
+if os.getenv('APPIMAGE'):
+    # Appimage specific options
+
+    @cli.command()
+    def self_update():
+        """Update myself"""
+        appimageupdatetool = Zap('appimageupdate')
+        appimageupdatetool.install(select_default=True,
+                                   always_proceed=True)
+        path_appimageupdate = appimageupdatetool.appdata().get('path')
+        zap = Zap('zap')
+        zap._update_with_appimageupdatetool(
+            path_appimageupdate=path_appimageupdate,
+            path=os.getenv('APPIMAGE')
+        )
+
+
+    @cli.command()
+    @click.argument('appname')
+    def self_integrate(appname):
+        """Add the currently running appimage to PATH, making it accessible
+        elsewhere"""
+        z = Zap(appname)
+        z.add_self_to_path(force=True)
 
 if __name__ == "__main__":
     cli()

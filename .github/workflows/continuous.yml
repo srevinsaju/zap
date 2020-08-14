@@ -62,60 +62,37 @@ jobs:
 
       - name: Install libappimage
         run: |
+
+
+      - name: Install python-appimage
+        run: |
+          python3 -m pip install -r requirements.txt --user
+          python3 -m pip install python-appimage
+
+
+      - name: Configure Zap
+        run: |
+          mkdir -p dist
+          python3 -m python-appimage build app appimage -p 3.8
+          mv *.AppImage dist/.
+          export BUILD_ROOT=$(realpath .)
+          cd dist
+          *.AppImage --appimage-extract
+          rm *.AppImage
+          export APPIMAGE_SQUASHFS=$(realpath squashfs-root)
+          mkdir -p $APPIMAGE_SQUASHFS/usr
           git clone https://github.com/AppImage/libappimage --recursive
           cd libappimage && mkdir build && cd build
           wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh && chmod +x cmake-3.13.4-Linux-x86_64.sh
           ./cmake-*.sh --skip-license
           ./bin/cmake .. -DBUILD_TESTING:bool=False
           make
-          sudo make install
-
-      - name: Install python-appimage
-        run: |
-          python3 -m pip install -r requirements.txt --user
-          echo "from zap.cli import cli; cli()" > test.py
-          cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so libglib-2.0.so.0
-          python3 -m PyInstaller test.py -n zap --clean \
-            --add-binary=/usr/local/lib/libappimage.so:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/librsvg-2.so.2:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libcairo.so.2:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpango-1.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libxml2.so.2:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libffi.so.6:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpixman-1.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libfreetype.so.6:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpng12.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-shm.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-render.so.0:usr/local/lib \
-            --add-binary=libglib-2.0.so.0:usr/local/lib
-
-      - name: Configure Zap
-        run: |
-          export BUILD_ROOT=$(realpath .)
-          cd dist
-          mkdir squashfs-root
-          cp -r zap/* squashfs-root/.
-          export APPIMAGE_SQUASHFS=$(realpath squashfs-root)
-          mkdir -p $APPIMAGE_SQUASHFS/usr
-
+          make DESTDIR="$APPIMAGE_SQUASHFS" install
+          cd $APPIMAGE_SQUASHFS/..
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x ./appimagetool-x86_64.AppImage
-
-          cd $APPIMAGE_SQUASHFS/..
-          cp $BUILD_ROOT/appimage/zap.desktop $APPIMAGE_SQUASHFS/.
-          cp $BUILD_ROOT/appimage/zap.png $APPIMAGE_SQUASHFS/.
-          mkdir -p $APPIMAGE_SQUASHFS/usr/share/metainfo
-          cp $BUILD_ROOT/appimage/zap.appdata.xml $APPIMAGE_SQUASHFS/.
           cp $BUILD_ROOT/appimage/AppRun $APPIMAGE_SQUASHFS/.
           chmod +x $APPIMAGE_SQUASHFS/AppRun
-          rm $APPIMAGE_SQUASHFS/libz.so.1
-          
           ./appimagetool-x86_64.AppImage --appimage-extract-and-run --comp gzip squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync'
           sha256sum zap*.AppImage > zap-`git describe --tags`-GLIBC-`ldd --version | grep 'ldd ' | grep -o ').[0-9].[0-9][0-9]' | grep -o '[0-9].[0-9][0-9]'`.AppImage.SHA256SUM
           rm -rf ./appimagetool-x86_64.AppImage
