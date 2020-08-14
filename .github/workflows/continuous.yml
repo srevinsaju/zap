@@ -83,7 +83,8 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libpango-1.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3:usr/local/lib
+            --add-binary=/usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0:usr/local/lib
 
 
       - name: Configure Zap
@@ -113,6 +114,7 @@ jobs:
           chmod +x *.AppImage
           rm -rf squashfs-root
           rm -rf libappimage
+          rm -rf zap
 
       - name: Upload Appimage
         uses: actions/upload-artifact@v1.0.0
