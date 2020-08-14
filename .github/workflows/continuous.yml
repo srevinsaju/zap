@@ -88,6 +88,7 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libxml2.so.2:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libffi.so.6:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libpixman-1.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1:usr/local/lib \
             --add-binary=libglib-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
