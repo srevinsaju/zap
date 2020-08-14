@@ -91,6 +91,7 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libfreetype.so.6:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libpng12.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-shm.so.0:usr/local/lib \
             --add-binary=libglib-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
