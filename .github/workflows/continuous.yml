@@ -92,14 +92,13 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libxml2.so.2:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libffi.so.6:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpixman-1.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libfreetype.so.6:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libpng12.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-shm.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-render.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libthai.so.0:usr/local/lib \
             --add-binary=libglib-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
