@@ -103,6 +103,7 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libdatrie.so.1:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libicudata.so.55:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libgraphite2.so.3:usr/local/lib \
             --add-binary=libglib-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
