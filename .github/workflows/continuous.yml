@@ -71,7 +71,7 @@ jobs:
           cd libappimage && mkdir build && cd build
           wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh && chmod +x cmake-3.13.4-Linux-x86_64.sh
           ./cmake-*.sh --skip-license
-          ./bin/cmake .. -DBUILD_TESTING:bool=False -DLIBAPPIMAGE_STANDALONE=ON
+          ./bin/cmake .. -DBUILD_TESTING:bool=False
           make
           sudo make install
 
@@ -81,7 +81,30 @@ jobs:
           echo "from zap.cli import cli; cli()" > test.py
           cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so libglib-2.0.so.0
           python3.8 -m PyInstaller test.py -n zap --clean \
-            --add-binary=/usr/local/lib/libappimage.so:usr/local/lib
+            --add-binary=/usr/local/lib/libappimage.so:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/librsvg-2.so.2:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libcairo.so.2:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libpango-1.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libxml2.so.2:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libffi.so.6:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libfreetype.so.6:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libpng12.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-shm.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-render.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libthai.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libicuuc.so.55:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libdatrie.so.1:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libicudata.so.55:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libgraphite2.so.3:usr/local/lib \
+            --add-binary=libglib-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
         run: |
