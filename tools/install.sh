@@ -53,6 +53,7 @@ main() {
   echo "Adding zap to PATH"
   if command_exists systemd-path; then
     BIN_PATH=$(systemd-path user-binaries)
+    mkdir -p "$BIN_PATH" 
   else
     mkdir -p ~/.local/bin
     if ! echo "$PATH"|grep -q ~/.local/bin; then
@@ -64,6 +65,7 @@ main() {
     else
       BIN_PATH="$HOME/.local/bin"
     fi
+    mkdir -p "$BIN_PATH" 
   fi
 
 
