@@ -75,12 +75,21 @@ jobs:
           make
           sudo make install
 
+      - name: Patch ELF
+        run: |
+          cp /lib/x86_64-linux-gnu/libselinux.so.1 libselinux.so.1
+          cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so libglib-2.0.so.0
+          wget -cq https://github.com/niess/patchelf.appimage/releases/download/rolling/patchelf-x86_64.AppImage
+          chmod +x patchelf-x86_64.AppImage
+          ./patchelf-x86_64.AppImage --appimage-extract-and-run libglib-2.0.so.0 --replace-needed libpcre.so.3 libpcre.so.1
+          ./patchelf-x86_64.AppImage --appimage-extract-and-run libselinux.so.1 --replace-needed libpcre.so.3 libpcre.so.1
+
       - name: Install python-appimage
         run: |
           
           python3.8 -m pip install -r requirements.txt --user
           echo "from zap.cli import cli; cli()" > test.py
-          cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so libglib-2.0.so.0
+          
           python3.8 -m PyInstaller test.py -n zap --clean \
             --add-binary=/usr/local/lib/libappimage.so:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/librsvg-2.so.2:usr/local/lib \
@@ -106,7 +115,7 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libicudata.so.55:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libgraphite2.so.3:usr/local/lib \
-            --add-binary=/lib/x86_64-linux-gnu/libselinux.so.1:usr/local/lib \
+            --add-binary=libselinux.so.1:usr/local/lib \
             --add-binary=libglib-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
