@@ -75,8 +75,16 @@ jobs:
           make
           sudo make install
 
+      - name: create dummy selinux 
+        run: |
+          echo "extern int is_selinux_enabled(void){return 0;}" >> selinux-mock.c
+          gcc -s -shared -o libselinux.so.1 -Wl,-soname,libselinux.so.1 selinux-mock.c 
+          gcc -s -shared -o libselinux.so.1 -Wl,-soname,libselinux.so.1 selinux-mock.c 
+          strip libselinux.so.1
+
       - name: Install python-appimage
         run: |
+          
           python3.8 -m pip install -r requirements.txt --user
           echo "from zap.cli import cli; cli()" > test.py
           cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so libglib-2.0.so.0
@@ -103,7 +111,9 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libdatrie.so.1:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libicudata.so.55:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libgraphite2.so.3:usr/local/lib \
+            --add-binary=libselinux.so.1:usr/local/lib
             --add-binary=libglib-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
