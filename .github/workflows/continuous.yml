@@ -100,6 +100,7 @@ jobs:
             --add-binary=/usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libthai.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libicuuc.so.55:usr/local/lib \
+            --add-binary=/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0:usr/local/lib \
             --add-binary=libglib-2.0.so.0:usr/local/lib
 
       - name: Configure Zap
