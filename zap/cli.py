@@ -267,7 +267,8 @@ if os.getenv('APPIMAGE'):
         zap = Zap('zap')
         zap._update_with_appimageupdatetool(
             path_appimageupdate=path_appimageupdate,
-            path=os.getenv('APPIMAGE')
+            path=os.getenv('APPIMAGE'),
+            update_old_data=False
         )
 
 

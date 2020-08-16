@@ -392,7 +392,8 @@ class Zap:
             spinner.fail("Alternatively, pass the --no-appimageupdate option")
         spinner.stop()
 
-    def _update_with_appimageupdatetool(self, path_appimageupdate, path):
+    def _update_with_appimageupdatetool(self, path_appimageupdate, path
+                                        update_old_data=True):
         path_to_old_appimage = path
         spinner = Halo('Checking for updates', spinner='dots')
         spinner.start()
@@ -435,30 +436,31 @@ class Zap:
                 if len(_file) == 1:
                     output_file = _file[0]
                     spinner.info("New file name is {}".format(output_file))
-                    _cb_data = self.appdata()
-                    _cb_data['path'] = output_file
-                    directory = self.cfgmgr.local_storage
-                    command_wrapper_file_path = \
-                        os.path.join(directory, 'bin', self.app)
+                    if update_old_data:
+                        _cb_data = self.appdata()
+                        _cb_data['path'] = output_file
+                        directory = self.cfgmgr.local_storage
+                        command_wrapper_file_path = \
+                            os.path.join(directory, 'bin', self.app)
 
-                    with open(self.app_data_path, 'w') as w:
-                        json.dump(_cb_data, w)
+                        with open(self.app_data_path, 'w') as w:
+                            json.dump(_cb_data, w)
 
-                    with open(command_wrapper_file_path, 'w') as fp:
-                        fp.write(COMMAND_WRAPPER.format(
-                            path_to_appimage=output_file))
-                    spinner.start("Configuring desktop files...")
-                    try:
-                        libappimage = LibAppImage()
-                        if libappimage.is_registered_in_system(
-                                path_to_old_appimage):
-                            libappimage.unregister_in_system(
-                                path_to_old_appimage)
-                        libappimage.register_in_system(output_file)
-                    except LibAppImageRuntimeError:
-                        pass  # TODO: add some more stuff here
-                    except LibAppImageNotFoundError:
-                        pass  # TODO: add some more stuff here
+                        with open(command_wrapper_file_path, 'w') as fp:
+                            fp.write(COMMAND_WRAPPER.format(
+                                path_to_appimage=output_file))
+                        spinner.start("Configuring desktop files...")
+                        try:
+                            libappimage = LibAppImage()
+                            if libappimage.is_registered_in_system(
+                                    path_to_old_appimage):
+                                libappimage.unregister_in_system(
+                                    path_to_old_appimage)
+                            libappimage.register_in_system(output_file)
+                        except LibAppImageRuntimeError:
+                            pass  # TODO: add some more stuff here
+                        except LibAppImageNotFoundError:
+                            pass  # TODO: add some more stuff here
                     spinner.succeed("Done!")
                 else:
                     spinner.stop()
