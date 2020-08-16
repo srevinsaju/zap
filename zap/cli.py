@@ -186,6 +186,14 @@ def is_integrated(appname):
 
 
 @cli.command()
+@click.argument('appname')
+def integrate(appname):
+    """Checks if appimage is integrated with the desktop"""
+    z = Zap(appname)
+    z.integrate()
+
+
+@cli.command()
 @click.argument('url')
 @click.option('-d', '--select-default',
               'select_default',  default=False,

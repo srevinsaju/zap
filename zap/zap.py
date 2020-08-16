@@ -392,7 +392,7 @@ class Zap:
             spinner.fail("Alternatively, pass the --no-appimageupdate option")
         spinner.stop()
 
-    def _update_with_appimageupdatetool(self, path_appimageupdate, path
+    def _update_with_appimageupdatetool(self, path_appimageupdate, path,
                                         update_old_data=True):
         path_to_old_appimage = path
         spinner = Halo('Checking for updates', spinner='dots')
@@ -572,3 +572,19 @@ class Zap:
         path_to_old_appimage = self.appdata().get('path')
         print(path_to_old_appimage)
         print(lb.is_registered_in_system(path_to_old_appimage))
+    
+    def integrate(self):
+        if not self.is_installed:
+            # The app is not installed
+            print("{} is not yet installed.".format(self.app))
+            return
+        lb = LibAppImage()
+        path_to_old_appimage = self.appdata().get('path')
+        print(path_to_old_appimage)
+        if not lb.is_registered_in_system(path_to_old_appimage):
+            lb.register_in_system(path_to_old_appimage)
+            print("Done!")
+        else:
+            print("{app} is already registered as a "
+                  "desktop application".format(self.app))
+        
