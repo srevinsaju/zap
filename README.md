@@ -77,12 +77,15 @@ Commands:
   get-md5            Get md5 of an appimage
   install            Installs an appimage
   install-gh         Installs an appimage from GitHub repository URL...
+  integrate          Checks if appimage is integrated with the desktop
   is-integrated      Checks if appimage is integrated with the desktop
   remove             Removes an appimage
   self-integrate     Add the currently running appimage to PATH, making it...
   self-update        Update myself
   show               Get the url to the app and open it in your web browser...
   update             Updates an appimage using appimageupdate tool
+  x                  Execute a Zap installed app (optionally with
+                     sandboxing...
   xdg                Parse xdg url
 ```
 
