@@ -38,7 +38,7 @@ import re
 
 from halo import Halo
 
-from .utils import is_valid_url
+from .utils import is_valid_url, download_file
 from .appimage.generator import AppImageConfigJsonGenerator
 from .libappimage.libappimage import LibAppImage, LibAppImageNotFoundError, \
     LibAppImageRuntimeError
@@ -217,7 +217,7 @@ class Zap:
                 select_default=False, force_refresh=False,
                 executable=False, tag_name=None, download_file_in_tag=None,
                 always_proceed=False, cb_data=None, remove_old=None,
-                from_url=False, **kwargs):
+                from_url=False, downloader=download_file, **kwargs):
         """
         Installs the app and configures it
         :return:
@@ -317,7 +317,8 @@ class Zap:
         _cb_data = core.install(
             asset_data,
             self.cfgmgr.storageDirectory,
-            name=self.app if not executable else executable)
+            name=self.app if not executable else executable,
+            downloader=downloader)
 
         print("Configuring...")
         _cb_data['uid'] = release.get('id')
@@ -343,9 +344,9 @@ class Zap:
         print("Integrating with desktop...")
         try:
             libappimage = LibAppImage()
-            if libappimage.is_registered_in_system(cb_data.get('path')):
-                libappimage.unregister_in_system(cb_data.get('path'))
-            libappimage.register_in_system(cb_data.get('path'))
+            if libappimage.is_registered_in_system(_cb_data.get('path')):
+                libappimage.unregister_in_system(_cb_data.get('path'))
+            libappimage.register_in_system(_cb_data.get('path'))
         except LibAppImageNotFoundError:
             print("Warning: libappimage.so was not found on your system. "
                   "For better features, like desktop integration, consider "

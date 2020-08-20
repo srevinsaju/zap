@@ -78,10 +78,10 @@ class AppImageCore:
         else:
             return assets_data
 
-    def install(self, data, directory, name=False):
+    def install(self, data, directory, name=False, downloader=download_file):
         print("Installing {}".format(data.get('name')))
-        downloaded_file = download_file(
-            data.get('download'),
+        downloaded_file = downloader(
+            url=data.get('download'),
             output_directory=directory, left_description=' ')
         os.chmod(downloaded_file, 0o755)
         print("Downloaded {file} from {author}".format(

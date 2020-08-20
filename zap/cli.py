@@ -153,6 +153,7 @@ def show(appname):
 @click.argument('url')
 def xdg(url):
     """Parse xdg url"""
+    from .gui.xdg import gtk_zap_downloader
     p_url = urllib.parse.urlparse(url)
     query = urllib.parse.parse_qs(p_url.query)
     appname = query.get('app')[0]
@@ -162,7 +163,9 @@ def xdg(url):
     z = Zap(appname)
     if p_url.netloc == 'install':
         print(tag, asset_id)
-        z.install(tag_name=tag, download_file_in_tag=asset_id)
+        z.install(tag_name=tag,
+                  download_file_in_tag=asset_id,
+                  downloader=gtk_zap_downloader, always_proceed=True)
     elif p_url.netloc == 'remove':
         z.remove()
     else:

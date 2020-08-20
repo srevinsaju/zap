@@ -15,7 +15,7 @@ Operating System :: POSIX :: Linux
 
 
 setup(
-    name='zap',
+    name='zap-cli',
     version=__version__,
     packages=find_packages(),
     url='https://github.com/srevinsaju/zap',
