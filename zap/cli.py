@@ -284,11 +284,10 @@ if os.getenv('APPIMAGE'):
 
 
     @cli.command()
-    @click.argument('appname')
-    def self_integrate(appname):
+    def self_integrate():
         """Add the currently running appimage to PATH, making it accessible
         elsewhere"""
-        z = Zap(appname)
+        z = Zap('zap')
         z.add_self_to_path(force=True)
 
 if __name__ == "__main__":
