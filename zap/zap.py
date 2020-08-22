@@ -91,7 +91,7 @@ def parse_gh_url(url):
 class Zap:
     def __init__(self, app):
         self.app = app.lower()
-        if os.getenv('APPIMAGE'):
+        if os.getenv('APPIMAGE') and os.getenv('ZAP'):
             self.add_self_to_path()
         self.cfgmgr = ConfigManager()
 
