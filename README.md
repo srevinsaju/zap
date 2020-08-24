@@ -3,12 +3,10 @@
 	:zap: Zap 
 </h1>
 
+<h3 align="center">
+	The delightful package manager for AppImages :package:
+</h3>
 <div align="center">
-<br>
-The delightful package manager for AppImages :package:
-	
-	
-<br>
 
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)<br/><br/>
 
