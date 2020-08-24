@@ -28,7 +28,6 @@ This file is part of Zap AppImage Package Manager
 
 import os
 import platform
-import stat
 
 from zap.constants import COMMAND_WRAPPER
 from zap.utils import download_file
@@ -80,9 +79,8 @@ class AppImageCore:
 
     def install(self, data, directory, name=False, downloader=download_file):
         print("Installing {}".format(data.get('name')))
-        downloaded_file = downloader(
-            url=data.get('download'),
-            output_directory=directory, left_description=' ')
+        downloaded_file = downloader(url=data.get('download'),
+                                     output_directory=directory)
         os.chmod(downloaded_file, 0o755)
         print("Downloaded {file} from {author}".format(
             file=data.get('download'),

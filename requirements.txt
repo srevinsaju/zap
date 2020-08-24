@@ -1,6 +1,7 @@
 appdirs~=1.4
 click~=7.1
 colorama~=0.4
-halo==0.0.29
+halo==0.0.30
 requests~=2.24
-tqdm~=4.47.0
+downloader-cli==0.2.0
+tqdm~=4.48.0
