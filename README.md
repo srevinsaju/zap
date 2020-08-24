@@ -8,7 +8,7 @@
 The delightful package manager for AppImages :package:
 
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)<br/><br/>
-
+<br>
 
 ![Continuous](https://github.com/srevinsaju/zap/workflows/Continuous/badge.svg) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/srevinsaju/zap) ![GitHub](https://img.shields.io/github/license/srevinsaju/zap) ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/srevinsaju/zap?sort=semver) [![irc](https://img.shields.io/badge/IRC-%23AppImage%20on%20freenode-blue.svg)](https://webchat.freenode.net/?channels=AppImage) ![Discord](https://img.shields.io/discord/743158702344896574)
 
