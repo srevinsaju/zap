@@ -42,6 +42,7 @@ class ConfigManager:
             'name': 'ZapConfiguration',
             'storageDirectory': appdirs.user_data_dir('zap'),
             'bin': os.path.join(appdirs.user_data_dir('zap'), 'bin'),
+            'database': os.path.join(appdirs.user_data_dir('zap'), 'db'),
             'apps': [],
             'gh-token': None
         }
