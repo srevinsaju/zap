@@ -14,15 +14,5 @@ export TKPATH="${TK_LIBRARY}"
 export LD_LIBRARY_PATH="$APPDIR:${APPDIR}/usr/lib:${APPDIR}/usr/local/lib:${LD_LIBRARY_PATH}"
 export ZAP="TRUE"
 
-if [ -z "$LC_ALL" ]
-then 
-	export LC_ALL=en_US.UTF-8
-fi
-
-if [ -z "$LANG" ]
-then
-	export LANG=en_US.UTF-8
-fi
-
 ${APPDIR}/zap "$@"
 
