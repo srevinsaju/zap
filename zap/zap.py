@@ -602,5 +602,5 @@ class Zap:
             print("Done!")
         else:
             print("{app} is already registered as a "
-                  "desktop application".format(self.app))
-        
+                  "desktop application".format(app=self.app))
+
