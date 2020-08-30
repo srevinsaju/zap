@@ -2,13 +2,20 @@
 	<img src="./assets/logo.svg" alt="Zap Logo" height=200 width=200 align="middle">
 	:zap: Zap 
 </h1>
-The delightful package manager for AppImages :package:
+
+<h3 align="center">
+	The delightful package manager for AppImages :package:
+</h3>
+<div align="center">
+
+[![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)<br/><br/>
 
 ![Continuous](https://github.com/srevinsaju/zap/workflows/Continuous/badge.svg) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/srevinsaju/zap) ![GitHub](https://img.shields.io/github/license/srevinsaju/zap) ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/srevinsaju/zap?sort=semver) [![irc](https://img.shields.io/badge/IRC-%23AppImage%20on%20freenode-blue.svg)](https://webchat.freenode.net/?channels=AppImage) ![Discord](https://img.shields.io/discord/743158702344896574)
 
 [![Mentioned in Awesome AppImage](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/AppImage/awesome-appimage)
 
 ![GitHub followers](https://img.shields.io/github/followers/srevinsaju?label=Follow%20me&style=social) ![GitHub stars](https://img.shields.io/github/stars/srevinsaju/zap?style=social)
+</div>
 
 
 
@@ -200,6 +207,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## Copyright
+(C) Srevin Saju 2020
 
 
 

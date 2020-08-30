@@ -29,7 +29,7 @@ setup(
     },
     platforms=['Linux'],
     include_package_data=True,
-    install_requires=['click', 'colorama', 'appdirs', 'halo', 'requests', 'tqdm'],
+    install_requires=['click', 'colorama', 'appdirs', 'halo', 'requests', 'tqdm', 'downloader-cli'],
     python_requires='>=3.4',
     entry_points={
         'console_scripts': (
