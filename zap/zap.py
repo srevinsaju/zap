@@ -140,7 +140,7 @@ class Zap:
             print("{} is not yet installed.".format(self.app))
             return
         response = input("Are you sure you want to remove {}? "
-                         "(Y/n)".format(self.app))
+                         "(Y/n) ".format(self.app)).lower().strip()
         if response not in YES_RESPONSES:
             print("Aborted!")
             return
@@ -299,6 +299,19 @@ class Zap:
         if download_file_in_tag and download_file_in_tag in assets.keys():
             tag_release_asset_choice = download_file_in_tag
             asset_data = assets[tag_release_asset_choice]
+        elif kwargs.get('match_filename', False) and len(assets) >= 1:
+            for i in assets:
+                string = assets[i].get('name')
+                if re.match(kwargs['match_filename'], string):
+                    tag_release_asset_choice = i
+                    asset_data = assets[tag_release_asset_choice]
+                    break
+            else:
+                raise RuntimeError(
+                    "regex {} failed to match {}. "
+                    "Internal Error".format(
+                        kwargs['match_filename'], string
+                    ))
         else:
             tag_release_asset_choice = \
                 self._iter_releases_show_assets_stdout_get_choice(
@@ -496,7 +509,8 @@ class Zap:
         if use_appimageupdate:
             zap_appimageupdate = Zap('appimageupdate')
             zap_appimageupdate.install(select_default=True,
-                                       always_proceed=True)
+                                       always_proceed=True,
+                                       match_filename='.*tool*.')
 
             appimageupdate = zap_appimageupdate.appdata().get('path')
             path_to_appimage = self.appdata().get('path')
@@ -530,7 +544,8 @@ class Zap:
         if use_appimageupdate:
             zap_appimageupdate = Zap('appimageupdate')
             zap_appimageupdate.install(select_default=True,
-                                       always_proceed=True)
+                                       always_proceed=True,
+                                       match_filename='.*tool*.')
             appimageupdate = zap_appimageupdate.appdata().get('path')
             self._check_for_updates_with_appimageupdatetool(appimageupdate)
         else:
