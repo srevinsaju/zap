@@ -43,6 +43,32 @@ from .zap import Zap, parse_gh_url
 from .utils import format_colors as fc
 
 
+class AliasedMultiCommand(click.Group):
+    """
+    Command line commands with aliases as in `npm install` and `npm i`
+    indicate the same thing
+    https://stackoverflow.com/q/46641928/
+    """
+    def command(self, *args, **kwargs):
+        """Behaves the same as `click.Group.command()` except if passed
+        a list of names, all after the first will be aliases for the first.
+        """
+        def decorator(f):
+            if len(args) >= 1 and isinstance(args[0], list):
+                _args = [args[0][0]] + list(args[1:])
+                for alias in args[0][1:]:
+                    cmd = super(AliasedMultiCommand, self).command(
+                        alias, *args[1:], **kwargs)(f)
+                    cmd.short_help = "Alias for '{}'".format(_args[0])
+            else:
+                _args = args
+            cmd = super(AliasedMultiCommand, self).command(
+                *_args, **kwargs)(f)
+            return cmd
+
+        return decorator
+
+
 def show_version(ctx, param, value):
     """Prints the version of the utility"""
     if not value or ctx.resilient_parsing:
@@ -60,7 +86,7 @@ def show_license(ctx, param, value):
     ctx.exit()
 
 
-@click.group()
+@click.group(cls=AliasedMultiCommand)
 @click.option('--version', is_flag=True, callback=show_version,
               expose_value=False, is_eager=True)
 @click.option('--license', '--lic', is_flag=True, callback=show_license,
@@ -70,7 +96,7 @@ def cli():
     pass
 
 
-@cli.command()
+@cli.command(['install', 'i'])
 @click.argument('appname')
 @click.option('-d', '--select-default',
               'select_default',  default=False,
@@ -186,6 +212,15 @@ def is_integrated(appname):
     """Checks if appimage is integrated with the desktop"""
     z = Zap(appname)
     z.is_integrated()
+
+
+@cli.command(['list', 'ls'])
+def ls():
+    """Lists all the appimages"""
+    cfgmgr = ConfigManager()
+    apps = cfgmgr['apps']
+    for i in apps:
+        print(fc("- {g}{appname}{rst}", appname=i))
 
 
 @cli.command()
