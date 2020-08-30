@@ -62,7 +62,7 @@ jobs:
           cd bootloader
           python3.8 ./waf all
           cd ..
-          python3.8 setup.py install
+          python3.8 setup.py install --user
           cd ..
       - name: Install libappimage
         run: |
