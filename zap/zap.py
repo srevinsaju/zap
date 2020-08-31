@@ -455,7 +455,7 @@ class Zap:
                         _cb_data['path'] = output_file
                         directory = self.cfgmgr.local_storage
                         command_wrapper_file_path = \
-                            os.path.join(directory, 'bin', self.app)
+                            os.path.join(self.cfgmgr.bin, self.app)
 
                         with open(self.app_data_path, 'w') as w:
                             json.dump(_cb_data, w)

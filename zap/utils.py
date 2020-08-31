@@ -8,7 +8,6 @@ def download_file(url, output_directory, filename=None):
         local_filename = os.path.join(output_directory, url.split('/')[-1])
     else:
         local_filename = os.path.join(output_directory, filename)
-
     dw = Download(url, des=local_filename, overwrite=True, )
     dw.download()
     return local_filename
@@ -28,8 +27,12 @@ def is_valid_url(url):
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
         r'(?::\d+)?'  # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
-    return re.match(regex, url) is not None
+    file_regex = re.compile(
+        r'^(?:file)s?://'
+        r'(?:/?|[/?]\S+)$'
+    )
+    return re.match(regex, url) is not None or \
+           re.match(file_regex, url) is not None
 
 
 def get_executable_path(executable, raise_error=True):

@@ -77,7 +77,8 @@ class AppImageCore:
         else:
             return assets_data
 
-    def install(self, data, directory, name=False, downloader=download_file):
+    def install(self, data, directory, name=False, bin_path=None,
+                downloader=download_file):
         print("Installing {}".format(data.get('name')))
         downloaded_file = downloader(url=data.get('download'),
                                      output_directory=directory)
@@ -93,7 +94,7 @@ class AppImageCore:
                 downloaded_file.split(os.path.sep)[-1].lower().split('-')[0]
 
         command_wrapper_file_path = \
-            os.path.join(directory, 'bin', downloaded_file_absolute_name)
+            os.path.join(bin_path, downloaded_file_absolute_name)
 
         with open(command_wrapper_file_path, 'w') as fp:
             fp.write(COMMAND_WRAPPER.format(path_to_appimage=downloaded_file))
