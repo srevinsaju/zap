@@ -330,6 +330,7 @@ class Zap:
         _cb_data = core.install(
             asset_data,
             self.cfgmgr.storageDirectory,
+            bin_path=self.cfgmgr.bin,
             name=self.app if not executable else executable,
             downloader=downloader)
 
