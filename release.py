@@ -17,4 +17,5 @@ with open(os.path.join('zap', '__init__.py'), 'w') as fp:
     fp.write('"""')
     fp.write('\n\n')
     fp.write('__version__ = "{}"'.format(version))
+    fp.write('\n')
 print("Released {}".format(version))
