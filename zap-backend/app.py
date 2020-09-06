@@ -17,8 +17,11 @@ def get_feed_json():
 def get_app_data_from_feed(appname):
     feed = get_feed_json().get('items')
     for appdata in feed:
-        if appdata.get('name') in (appname, appname.lower(), appname.upper()):
+        if appdata.get('name').lower() == appname.lower():
             return appdata
+        elif appdata.get('name').replace('_', '-') == appname.lower().replace('_', '-'):
+            return appdata
+
 
 @app.route('/core/<appname>', methods=['GET'])
 def return_data(appname):
