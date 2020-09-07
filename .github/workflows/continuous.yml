@@ -115,6 +115,7 @@ jobs:
             --add-binary=libglib-2.0.so.0:usr/local/lib
       - name: Configure Zap
         run: |
+          export APPIMAGE_EXTRACT_AND_RUN=1
           export PATCHELF=$(realpath patchelf-x86_64.AppImage)
           export BUILD_ROOT=$(realpath .)
           cd dist
