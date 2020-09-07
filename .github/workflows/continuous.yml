@@ -81,9 +81,10 @@ jobs:
           chmod +x patchelf-x86_64.AppImage
           ./patchelf-x86_64.AppImage --appimage-extract-and-run libglib-2.0.so.0 --replace-needed libpcre.so.3 libpcre.so.1
           ./patchelf-x86_64.AppImage --appimage-extract-and-run libselinux.so.1 --replace-needed libpcre.so.3 libpcre.so.1
+          echo $(ldd /usr/local/lib/libappimage.so)
+
       - name: Install python-appimage
         run: |
-          
           python3.8 -m pip install -r requirements.txt --user
           echo "from zap.cli import cli; cli()" > test.py
           python3.8 -m PyInstaller test.py -n zap --clean \
