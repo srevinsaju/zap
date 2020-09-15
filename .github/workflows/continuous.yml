@@ -79,15 +79,15 @@ jobs:
           cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so libglib-2.0.so.0
           wget -cq https://github.com/niess/patchelf.appimage/releases/download/rolling/patchelf-x86_64.AppImage
           chmod +x patchelf-x86_64.AppImage
-          ./patchelf-x86_64.AppImage --appimage-extract-and-run libglib-2.0.so.0 --replace-needed libpcre.so.3 libpcre.so.1
-          ./patchelf-x86_64.AppImage --appimage-extract-and-run libselinux.so.1 --replace-needed libpcre.so.3 libpcre.so.1
+          echo $(ldd /usr/local/lib/libappimage.so)
+
       - name: Install python-appimage
         run: |
-          
           python3.8 -m pip install -r requirements.txt --user
           echo "from zap.cli import cli; cli()" > test.py
           python3.8 -m PyInstaller test.py -n zap --clean \
             --add-binary=/usr/local/lib/libappimage.so:usr/local/lib \
+            --add-binary=/lib/x86_64-linux-gnu/libpcre.so.3:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/librsvg-2.so.2:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:usr/local/lib \
             --add-binary=/usr/lib/x86_64-linux-gnu/libcairo.so.2:usr/local/lib \
@@ -115,6 +115,8 @@ jobs:
             --add-binary=libglib-2.0.so.0:usr/local/lib
       - name: Configure Zap
         run: |
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          export PATCHELF=$(realpath patchelf-x86_64.AppImage)
           export BUILD_ROOT=$(realpath .)
           cd dist
           mkdir squashfs-root
@@ -131,8 +133,12 @@ jobs:
           cp $BUILD_ROOT/appimage/AppRun $APPIMAGE_SQUASHFS/.
           chmod +x $APPIMAGE_SQUASHFS/AppRun
           rm $APPIMAGE_SQUASHFS/libz.so.1
-          
-          ./appimagetool-x86_64.AppImage --appimage-extract-and-run --comp gzip squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync'
+          cd $APPIMAGE_SQUASHFS/usr/local/lib
+          for i in *; 
+            do $PATCHELF --replace-needed libpcre.so.1 libpcre.so.3 $i
+          done
+          cd $APPIMAGE_SQUASHFS/..
+          ./appimagetool-x86_64.AppImage --appimage-extract-and-run squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync'
           sha256sum zap*.AppImage > zap-`git describe --tags`-GLIBC-`ldd --version | grep 'ldd ' | grep -o ').[0-9].[0-9][0-9]' | grep -o '[0-9].[0-9][0-9]'`.AppImage.SHA256SUM
           rm -rf ./appimagetool-x86_64.AppImage
           chmod +x *.AppImage
