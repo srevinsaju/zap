@@ -44,7 +44,7 @@ from .libappimage.libappimage import LibAppImage, LibAppImageNotFoundError, \
     LibAppImageRuntimeError
 from .appimage import AppImageCore
 from .config.config import ConfigManager
-from .constants import URL_ENDPOINT, YES_RESPONSES, URL_SHOWCASE, \
+from .constants import YES_RESPONSES, URL_SHOWCASE, \
     COMMAND_WRAPPER, BUG_TRACKER
 from .utils import format_colors as fc
 import requests
@@ -234,7 +234,7 @@ class Zap:
 
         if cb_data is None and not from_url:
             print("Fetching information for {}".format(self.app))
-            r = requests.get(URL_ENDPOINT.format(self.app))
+            r = requests.get(self.cfgmgr['mirror'].format(self.app))
             if not r.status_code == 200:
                 # the app does not exist or the name provided is incorrect
                 print("Sorry. The app does not exist on our database.")
@@ -497,7 +497,7 @@ class Zap:
         print(out, err)
         spinner.stop()
 
-    def update(self, use_appimageupdate=True):
+    def update(self, use_appimageupdate=True, check_appimage_update=True):
         """
         Updates an app using appimageupdate / redownloads the app with new data
         :return:
@@ -509,9 +509,10 @@ class Zap:
 
         if use_appimageupdate:
             zap_appimageupdate = Zap('appimageupdate')
-            zap_appimageupdate.install(select_default=True,
-                                       always_proceed=True,
-                                       match_filename='.*tool*.')
+            if check_appimage_update:
+                zap_appimageupdate.install(select_default=True,
+                                           always_proceed=True,
+                                           match_filename='.*tool*.')
 
             appimageupdate = zap_appimageupdate.appdata().get('path')
             path_to_appimage = self.appdata().get('path')

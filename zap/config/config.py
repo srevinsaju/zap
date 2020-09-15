@@ -29,8 +29,17 @@ This file is part of Zap AppImage Package Manager
 import json
 import os
 import appdirs
+import click
 
-from zap.constants import ZAP_PATH_RC_PATCH
+from zap.constants import ZAP_PATH_RC_PATCH, MIRRORS
+
+
+def does_config_exist():
+    cfgpath = os.path.join(appdirs.user_config_dir('zap'), 'config.json')
+    if os.path.exists(cfgpath):
+        return True
+    else:
+        return False
 
 
 class ConfigManager:
@@ -43,6 +52,7 @@ class ConfigManager:
             'storageDirectory': appdirs.user_data_dir('zap'),
             'bin': os.path.join(appdirs.user_data_dir('zap'), 'bin'),
             'database': os.path.join(appdirs.user_data_dir('zap'), 'db'),
+            'mirror': MIRRORS.get("0")[0],
             'apps': [],
             'gh-token': None
         }
@@ -152,7 +162,27 @@ class ConfigManager:
                                      "directory")
         self._config['storageDirectory'] = path_to_save_appimages
         self.write_file()
+
+        print("Listing available mirrors: ")
+        for mirror_id in MIRRORS:
+            print("[{id}] {desc}:\t{h}".format(
+                id=mirror_id,
+                desc=MIRRORS[mirror_id][0],
+                h=MIRRORS[mirror_id][1]
+            ))
+        mirror_selection = \
+            click.prompt("Select mirror:",
+                         show_choices=click.Choice(list(MIRRORS.keys())))
+        if mirror_selection in MIRRORS.keys():
+            self._config['mirror'] = MIRRORS.get(mirror_selection)[0]
+            self.write_file()
+        else:
+            click.echo("Invalid selection!")
         print("Done!")
+        print()
+        print("To re-run the configuration wizard, just run")
+        print("$ zap config -i")
+        print()
 
     def add_app(self, data):
         self['apps'].append(data)
@@ -161,3 +191,5 @@ class ConfigManager:
     def remove_app(self, data):
         self['apps'].remove(data)
         self.write_file()
+
+

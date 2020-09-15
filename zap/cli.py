@@ -35,7 +35,7 @@ import click
 import urllib.parse
 
 from .utils import is_valid_url
-from zap.config.config import ConfigManager
+from zap.config.config import ConfigManager, does_config_exist
 from zap.execute.execute import Execute
 from . import __version__
 from . import __doc__ as lic
@@ -147,6 +147,19 @@ def show(appname):
     """Get the url to the app and open it in your web browser ($BROWSER)"""
     z = Zap(appname)
     z.show()
+
+
+@cli.command()
+def upgrade():
+    """Upgrade all appimages using AppImageUpdate"""
+    config = ConfigManager()
+    apps = config['apps']
+    for i, app in enumerate(apps):
+        z = Zap(app)
+        if i == 0:
+            z.update()
+        else:
+            z.update(check_appimage_update=False)
 
 
 @cli.command()

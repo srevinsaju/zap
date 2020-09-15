@@ -27,7 +27,12 @@ This file is part of Zap AppImage Package Manager
 """
 from colorama import Fore
 
-URL_ENDPOINT = "https://srevinsaju.me/get-appimage/{}/core.json"
+
+MIRRORS = {
+    "0": ["https://srevinsaju.me/get-appimage/{}/core.json", "Stable AppImage Database. Updated hourly"],
+    "1": ["http://zapacman.pythonanywhere.com/core/{}", "Live AppImage Database. Update on request (beta)"]
+}
+
 URL_SHOWCASE = "https://srevinsaju.me/get-appimage/{}/"
 YES_RESPONSES = ("yes", "y", "yea", "yup", "ye")
 
