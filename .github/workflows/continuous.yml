@@ -42,7 +42,7 @@ jobs:
             docker: 'ubuntu:16.04'
 
     container:
-      image: ${{ matrix.archubuntu:16.04
+      image: ${{ matrix.docker }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up User
