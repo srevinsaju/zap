@@ -31,8 +31,18 @@ on:
 jobs:
   centos:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: ['x86_64', 'i386']
+        docker: ['ubuntu:16.04', 'i386/ubuntu:16.04']
+        exclude:
+          - arch: 'x86_64'
+            docker: 'i386/ubuntu:16.04'
+          - arch: 'i386'
+            docker: 'ubuntu:16.04'
+
     container:
-      image: ubuntu:16.04
+      image: ${{ matrix.archubuntu:16.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up User
@@ -68,18 +78,16 @@ jobs:
         run: |
           git clone https://github.com/AppImage/libappimage --recursive
           cd libappimage && mkdir build && cd build
-          wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh && chmod +x cmake-3.13.4-Linux-x86_64.sh
+          wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-${{ matrix.arch }}.sh && chmod +x cmake-3.13.4-Linux-${{ matrix.arch }}.sh
           ./cmake-*.sh --skip-license
           ./bin/cmake .. -DBUILD_TESTING:bool=False
           make
           sudo make install
       - name: Patch ELF
         run: |
-          cp /lib/x86_64-linux-gnu/libselinux.so.1 libselinux.so.1
-          cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so libglib-2.0.so.0
-          wget -cq https://github.com/niess/patchelf.appimage/releases/download/rolling/patchelf-x86_64.AppImage
-          chmod +x patchelf-x86_64.AppImage
-          echo $(ldd /usr/local/lib/libappimage.so)
+          cp /lib/${{ matrix.arch }}-linux-gnu/libselinux.so.1 libselinux.so.1
+          cp /usr/lib/${{ matrix.arch }}-linux-gnu/libglib-2.0.so libglib-2.0.so.0
+
 
       - name: Install python-appimage
         run: |
@@ -87,44 +95,44 @@ jobs:
           echo "from zap.cli import cli; cli()" > test.py
           python3.8 -m PyInstaller test.py -n zap --clean \
             --add-binary=/usr/local/lib/libappimage.so:usr/local/lib \
-            --add-binary=/lib/x86_64-linux-gnu/libpcre.so.3:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/librsvg-2.so.2:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libcairo.so.2:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpango-1.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libcroco-0.6.so.3:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libxml2.so.2:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libffi.so.6:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libfreetype.so.6:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpng12.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-shm.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libxcb-render.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libthai.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libicuuc.so.55:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libdatrie.so.1:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libicudata.so.55:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1:usr/local/lib \
-            --add-binary=/usr/lib/x86_64-linux-gnu/libgraphite2.so.3:usr/local/lib \
+            --add-binary=/lib/l-linux-gnu/libpcre.so.3:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/librsvg-2.so.2:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libgobject-2.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libcairo.so.2:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libgdk_pixbuf-2.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libgio-2.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libpangocairo-1.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libpango-1.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libcroco-0.6.so.3:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libxml2.so.2:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libffi.so.6:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libfreetype.so.6:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libpng12.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}linux-gnu/libxcb-shm.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libxcb-render.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libgmodule-2.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libpangoft2-1.0.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libthai.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libicuuc.so.55:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libharfbuzz.so.0:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}linux-gnu/libdatrie.so.1:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libicudata.so.55:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libfontconfig.so.1:usr/local/lib \
+            --add-binary=/usr/lib/${{ matrix.arch }}-linux-gnu/libgraphite2.so.3:usr/local/lib \
             --add-binary=libselinux.so.1:usr/local/lib \
             --add-binary=libglib-2.0.so.0:usr/local/lib
       - name: Configure Zap
         run: |
           export APPIMAGE_EXTRACT_AND_RUN=1
-          export PATCHELF=$(realpath patchelf-x86_64.AppImage)
+          export PATCHELF=$(realpath patchelf-${{ matrix.arch }}.AppImage)
           export BUILD_ROOT=$(realpath .)
           cd dist
           mkdir squashfs-root
           cp -r zap/* squashfs-root/.
           export APPIMAGE_SQUASHFS=$(realpath squashfs-root)
           mkdir -p $APPIMAGE_SQUASHFS/usr
-          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x ./appimagetool-x86_64.AppImage
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${{ matrix.arch }}.AppImage
+          chmod +x ./appimagetool-${{ matrix.arch }}.AppImage
           cd $APPIMAGE_SQUASHFS/..
           cp $BUILD_ROOT/appimage/zap.desktop $APPIMAGE_SQUASHFS/.
           cp $BUILD_ROOT/appimage/zap.png $APPIMAGE_SQUASHFS/.
@@ -138,7 +146,7 @@ jobs:
             do $PATCHELF --replace-needed libpcre.so.1 libpcre.so.3 $i
           done
           cd $APPIMAGE_SQUASHFS/..
-          ./appimagetool-x86_64.AppImage --appimage-extract-and-run squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync'
+          ARCH=${{ matrix.arch }} ./appimagetool-${{ matrix.arch }}.AppImage --appimage-extract-and-run squashfs-root -n -u 'gh-releases-zsync|srevinsaju|zap|continuous|zap*.AppImage.zsync'
           sha256sum zap*.AppImage > zap-`git describe --tags`-GLIBC-`ldd --version | grep 'ldd ' | grep -o ').[0-9].[0-9][0-9]' | grep -o '[0-9].[0-9][0-9]'`.AppImage.SHA256SUM
           rm -rf ./appimagetool-x86_64.AppImage
           chmod +x *.AppImage
@@ -148,7 +156,7 @@ jobs:
       - name: Upload Appimage
         uses: actions/upload-artifact@v1.0.0
         with:
-          name: Zap-continuous-x86_64.AppImage
+          name: Zap-continuous-${{ matrix.arch }}.AppImage
           path: 'dist/'
 
   Release:
@@ -158,6 +166,9 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: Zap-continuous-x86_64.AppImage
+    - uses: actions/download-artifact@v1
+      with:
+        name: Zap-continuous-i386.AppImage
 
     - name: Release
       uses: marvinpinto/action-automatic-releases@latest
@@ -168,4 +179,5 @@ jobs:
         prerelease: false
         files: |
           Zap-continuous-x86_64.AppImage
+          Zap-continuous-i386.AppImage
         repo_token: ${{ secrets.GITHUB_TOKEN }}
