@@ -14,7 +14,7 @@
 
 [![Mentioned in Awesome AppImage](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/AppImage/awesome-appimage)
 
-![GitHub followers](https://img.shields.io/github/followers/srevinsaju?label=Follow%20me&style=social) ![GitHub stars](https://img.shields.io/github/stars/srevinsaju/zap?style=social)
+[![GitHub followers](https://img.shields.io/github/followers/srevinsaju?label=Follow%20me&style=social)](https://github.com/srevinsaju) [![GitHub stars](https://img.shields.io/github/stars/srevinsaju/zap?style=social)](https://github.com/srevinsaju/zap/stargazers)
 </div>
 
 
