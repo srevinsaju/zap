@@ -454,7 +454,6 @@ class Zap:
                     if update_old_data:
                         _cb_data = self.appdata()
                         _cb_data['path'] = output_file
-                        directory = self.cfgmgr.local_storage
                         command_wrapper_file_path = \
                             os.path.join(self.cfgmgr.bin, self.app)
 
@@ -590,7 +589,7 @@ class Zap:
         path_to_old_appimage = self.appdata().get('path')
         print(path_to_old_appimage)
         print(lb.is_registered_in_system(path_to_old_appimage))
-    
+
     def integrate(self):
         if not self.is_installed:
             # The app is not installed
@@ -605,4 +604,3 @@ class Zap:
         else:
             print("{app} is already registered as a "
                   "desktop application".format(app=self.app))
-

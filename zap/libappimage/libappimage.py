@@ -2,7 +2,7 @@ import os
 import ctypes
 
 LD_LIBRARY_PATHS = os.getenv('LD_LIBRARY_PATH', '').split(os.pathsep) + \
-                   ['/usr/lib', '/usr/local/lib']
+    ['/usr/lib', '/usr/local/lib']
 
 
 def _encode(args):
@@ -56,5 +56,3 @@ class LibAppImage:
 
     def unregister_in_system(self, *args):
         return self._core.appimage_unregister_in_system(*_encode(args))
-
-

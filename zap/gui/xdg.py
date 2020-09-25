@@ -1,3 +1,4 @@
+from gi.repository import Gtk, GLib
 import os
 import threading
 import queue
@@ -6,7 +7,6 @@ import requests
 
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk, GLib
 
 # https://stackoverflow.com/q/55868685
 
@@ -37,7 +37,7 @@ class Downloader(threading.Thread):
             for chunk in r.iter_content(chunk_size=chunk_size):
                 # for chunk in range(num_bars):
                 fp.write(chunk)
-                self._queue.put((1/num_bars) * 100)
+                self._queue.put((1 / num_bars) * 100)
         self.root.local_filename = local_filename
 
 
@@ -106,4 +106,3 @@ if __name__ == '__main__':
     filename = input("Enter filename: ")
     od = input("Enter output directory: ")
     gtk_zap_downloader(url, filename, od)
-

@@ -191,5 +191,3 @@ class ConfigManager:
     def remove_app(self, data):
         self['apps'].remove(data)
         self.write_file()
-
-

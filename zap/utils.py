@@ -32,7 +32,7 @@ def is_valid_url(url):
         r'(?:/?|[/?]\S+)$'
     )
     return re.match(regex, url) is not None or \
-           re.match(file_regex, url) is not None
+        re.match(file_regex, url) is not None
 
 
 def get_executable_path(executable, raise_error=True):

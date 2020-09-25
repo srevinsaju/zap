@@ -35,7 +35,7 @@ import click
 import urllib.parse
 
 from .utils import is_valid_url
-from zap.config.config import ConfigManager, does_config_exist
+from zap.config.config import ConfigManager
 from zap.execute.execute import Execute
 from . import __version__
 from . import __doc__ as lic
@@ -73,10 +73,10 @@ def cli():
 @cli.command('install')
 @click.argument('appname')
 @click.option('-d', '--select-default',
-              'select_default',  default=False,
+              'select_default', default=False,
               help="Always select first option while installing.")
 @click.option('-e', '--executable',
-              'executable',  default=False,
+              'executable', default=False,
               help="Name of the executable, (default: appname)")
 @click.option('-f', '--force/--no-force',
               'force_refresh', default=False,
@@ -221,10 +221,10 @@ def integrate(appname):
 @cli.command()
 @click.argument('url')
 @click.option('-d', '--select-default',
-              'select_default',  default=False,
+              'select_default', default=False,
               help="Always select first option while installing.")
 @click.option('-e', '--executable',
-              'executable',  default=False,
+              'executable', default=False,
               help="Name of the executable, (default: last part of url)")
 @click.option('-f', '--force/--no-force',
               'force_refresh', default=False,
@@ -274,7 +274,7 @@ def disintegrate():
 @cli.command()
 @click.argument('appname')
 @click.option('-F', '--firejail',
-              'firejail',  default=False,
+              'firejail', default=False,
               help="Sandbox the app with firejail")
 def x(appname, firejail=False):
     """Execute a Zap installed app (optionally with sandboxing / firejail)"""
@@ -303,7 +303,6 @@ if os.getenv('APPIMAGE'):
             path=os.getenv('APPIMAGE'),
             update_old_data=False
         )
-
 
     @cli.command()
     def self_integrate():

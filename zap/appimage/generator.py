@@ -31,7 +31,6 @@ import html
 import json
 import urllib.request
 import urllib.error
-import uuid
 from colorama import Fore
 
 
@@ -141,7 +140,7 @@ class AppImageConfigJsonGenerator:
             # pre check if the appimage is from github, if not, exit
             return False
 
-        print('[GH] Parsing information from GitHub'.format(
+        print('[GH] Parsing information for {} from GitHub'.format(
             self.title
         ))
 
@@ -167,8 +166,10 @@ class AppImageConfigJsonGenerator:
                 download_url = asset.get('browser_download_url')
                 if download_url.lower().endswith('.appimage'):
                     # a valid appimage file found in release assets
-                    uid = hashlib.sha256((
-                            asset.get('name') + ":" + download_url).encode()).hexdigest()
+                    uid = hashlib.sha256(
+                        (asset.get('name') +
+                         ":" + download_url
+                         ).encode()).hexdigest()
                     appimages_assets[uid] = {
                         'name': asset.get('name'),
                         'download': download_url,
@@ -205,4 +206,3 @@ class AppImageConfigJsonGenerator:
     def get_app_metadata(self):
         if self.is_github():
             return self.github_info
-
