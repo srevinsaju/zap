@@ -213,7 +213,7 @@ def ls():
 @cli.command()
 @click.argument('appname')
 def integrate(appname):
-    """Checks if appimage is integrated with the desktop"""
+    """Integrate an installed appimage to the desktop"""
     z = Zap(appname)
     z.integrate()
 
