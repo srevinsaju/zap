@@ -221,7 +221,7 @@ def integrate(appname):
 @cli.command()
 @click.argument('url')
 @click.option('-d', '--select-default',
-              'select_default', default=False,
+              'select_default', default=False, is_flag=True,
               help="Always select first option while installing.")
 @click.option('-e', '--executable',
               'executable', default=False,
