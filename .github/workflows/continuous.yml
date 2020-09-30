@@ -46,6 +46,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip wheel
           pip3 install -r requirements.txt
+          pip3 install flake8
           pip3 install .
       
       - name: Run tests
