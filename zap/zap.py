@@ -328,8 +328,8 @@ class Zap:
                 return False
 
         _cb_data = core.install(
-            asset_data,
-            self.cfgmgr.storageDirectory,
+            data=asset_data,
+            directory=self.cfgmgr.storageDirectory,
             bin_path=self.cfgmgr.bin,
             name=self.app if not executable else executable,
             downloader=downloader)

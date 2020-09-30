@@ -28,6 +28,7 @@ This file is part of Zap AppImage Package Manager
 
 import os
 import platform
+import shutil
 
 from zap.constants import COMMAND_WRAPPER
 from zap.utils import download_file
@@ -80,8 +81,16 @@ class AppImageCore:
     def install(self, data, directory, name=False, bin_path=None,
                 downloader=download_file):
         print("Installing {}".format(data.get('name')))
-        downloaded_file = downloader(url=data.get('download'),
-                                     output_directory=directory)
+
+        # temporarily download the file to a .tmp folder within
+        # the output directory to prevent conflicts
+        output_temporary_directory = os.path.join(directory, '.tmp')
+        if not os.path.exists(output_temporary_directory):
+            os.makedirs(output_temporary_directory, exist_ok=True)
+        downloaded_file = downloader(
+            url=data.get('download'),
+            output_directory=output_temporary_directory)
+        downloaded_file = shutil.move(downloaded_file, directory)
         os.chmod(downloaded_file, 0o755)
         print("Downloaded {file} from {author}".format(
             file=data.get('download'),
