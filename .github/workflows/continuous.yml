@@ -53,8 +53,8 @@ jobs:
         run: |
           flake8 zap
           python3 -m zap.cli
-          python3 -m zap.cli install appimagetool -d
-          python3 -m zap.cli update appimagetool
+          yes | python3 -m zap.cli install appimagetool -d
+          yes | python3 -m zap.cli update appimagetool
           yes | python3 -m zap.cli remove appimagetool
           
   centos:
