@@ -27,9 +27,38 @@
 name: Continuous
 on:
   - push
-
+  
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix: 
+        python: [3.8, 3.6, 3.7]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python ${{ matrix.python }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+        
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip wheel
+          pip3 install -r requirements.txt
+          pip3 install flake8
+          pip3 install .
+      
+      - name: Run tests
+        run: |
+          flake8 zap
+          python3 -m zap.cli
+          python3 -m zap.cli install appimagetool -d
+          python3 -m zap.cli update appimagetool
+          yes | python3 -m zap.cli remove appimagetool
+          
   centos:
+    needs: [tests]
     runs-on: ubuntu-latest
     container:
       image: ubuntu:16.04
