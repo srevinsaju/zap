@@ -50,14 +50,14 @@ jobs:
       
       - name: Run tests
         run: |
+          flake8 zap
           python3 -m zap.cli
-          python3 -m zap.cli install appimagetool
+          python3 -m zap.cli install appimagetool -d
           python3 -m zap.cli update appimagetool
-          python3 -m zap.cli remove appimagetool
-          
-          
+          yes | python3 -m zap.cli remove appimagetool
           
   centos:
+    needs: [tests]
     runs-on: ubuntu-latest
     container:
       image: ubuntu:16.04
