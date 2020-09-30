@@ -3,5 +3,5 @@ click~=7.1
 colorama~=0.4
 halo==0.0.30
 requests~=2.24
-downloader-cli==0.2.0
+https://github.com/deepjyoti30/downloader-cli/archive/926e260f1637fa0fa5c53b709ef7a6c3da407331.tar.gz
 tqdm~=4.48.0
