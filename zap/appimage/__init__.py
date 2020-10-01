@@ -92,7 +92,7 @@ class AppImageCore:
             output_directory=output_temporary_directory)
 
         _destination_file = os.path.join(
-                directory, downloaded_file.split(os.path.sep))
+            directory, downloaded_file.split(os.path.sep)[-1])
 
         if os.path.exists(_destination_file):
             os.remove(_destination_file)
