@@ -90,6 +90,13 @@ class AppImageCore:
         downloaded_file = downloader(
             url=data.get('download'),
             output_directory=output_temporary_directory)
+
+        _destination_file = os.path.join(
+                directory, downloaded_file.split(os.path.sep))
+
+        if os.path.exists(_destination_file):
+            os.remove(_destination_file)
+
         downloaded_file = shutil.move(downloaded_file, directory)
         os.chmod(downloaded_file, 0o755)
         print("Downloaded {file} from {author}".format(
