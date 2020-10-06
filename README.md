@@ -35,13 +35,13 @@ Zap Package Manager can be installed by running one of the following commands, w
 ##### via `curl`
 
 ```bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/srevinsaju/zap/master/tools/install.sh)"
+sh -c "$(curl -fsSL https://git.io/zapinit)"
 ```
 
 ##### via `wget`
 
 ```bash
-sh -c "$(wget -O- https://raw.githubusercontent.com/srevinsaju/zap/master/tools/install.sh)"
+sh -c "$(wget -O- https://git.io/zapinit)"
 ```
 
 Just copy paste these into the terminal, and you are all ready.
