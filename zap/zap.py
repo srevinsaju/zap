@@ -378,10 +378,14 @@ class Zap:
         self.cfgmgr.add_app(self.app)
         print("Done!")
 
-    def _check_for_updates_with_appimageupdatetool(self, path_appimageupdate):
+    def _check_for_updates_with_appimageupdatetool(self, path_appimageupdate,
+                                                   show_spinner=True):
         path_to_old_appimage = self.appdata().get('path')
-        spinner = Halo('Checking for updates', spinner='dots')
-        spinner.start()
+
+        if show_spinner:
+            spinner = Halo('Checking for updates', spinner='dots')
+            spinner.start()
+
         _check_update_command = shlex.split(
             "{au} --check-for-update {app}".format(
                 au=path_appimageupdate,
@@ -395,23 +399,32 @@ class Zap:
         )
         e_code = _check_update_proc.wait(600)
         if e_code == 0:
-            spinner.succeed("Already up-to-date!")
+            if show_spinner:
+                spinner.succeed("Already up-to-date!")
             return
         elif e_code == 1:
-            spinner.info("Updates found")
+            if show_spinner:
+                spinner.info("Updates found")
         else:
-            spinner.fail("Update information is not embedded within the "
-                         "AppImage. ")
-            spinner.fail("Consider informing the AppImage author to add a "
-                         ".zsync file")
-            spinner.fail("Alternatively, pass the --no-appimageupdate option")
-        spinner.stop()
+            if show_spinner:
+                spinner.fail("Update information is not embedded within the "
+                             "AppImage. ")
+                spinner.fail("Consider informing the AppImage author to add a "
+                             ".zsync file")
+                spinner.fail(
+                    "Alternatively, pass the --no-appimageupdate option")
+                spinner.stop()
 
-    def _update_with_appimageupdatetool(self, path_appimageupdate, path,
-                                        update_old_data=True):
+    def _update_with_appimageupdatetool(
+            self,
+            path_appimageupdate,
+            path,
+            update_old_data=True,
+            show_spinner=True):
         path_to_old_appimage = path
         spinner = Halo('Checking for updates', spinner='dots')
-        spinner.start()
+        if show_spinner:
+            spinner.start()
         _check_update_command = shlex.split(
             "{au} --check-for-update {app}".format(
                 au=path_appimageupdate,
@@ -426,11 +439,13 @@ class Zap:
         )
         e_code = _check_update_proc.wait(600)
         if e_code == 0:
-            spinner.succeed("Already up-to-date!")
+            if show_spinner:
+                spinner.succeed("Already up-to-date!")
             return
         elif e_code == 1:
-            spinner.info("Updates found")
-            spinner.start("Updating {}".format(self.app))
+            if show_spinner:
+                spinner.info("Updates found")
+                spinner.start("Updating {}".format(self.app))
             _update_proc = subprocess.Popen(
                 shlex.split("{au} --remove-old {app}".format(
                     au=path_appimageupdate,
@@ -444,13 +459,15 @@ class Zap:
                 (x.decode() for x in _update_proc.communicate())
             if _update_proc_e_code == 0:
                 # update completed successfully
-                spinner.succeed("Update Successful!")
-                spinner.start("Setting up new AppImage")
+                if show_spinner:
+                    spinner.succeed("Update Successful!")
+                    spinner.start("Setting up new AppImage")
                 _file = re.findall(r"Target file: (.*)", _update_proc_out)
 
                 if len(_file) == 1:
                     output_file = _file[0]
-                    spinner.info("New file name is {}".format(output_file))
+                    if show_spinner:
+                        spinner.info("New file name is {}".format(output_file))
                     if update_old_data:
                         _cb_data = self.appdata()
                         _cb_data['path'] = output_file
@@ -463,7 +480,8 @@ class Zap:
                         with open(command_wrapper_file_path, 'w') as fp:
                             fp.write(COMMAND_WRAPPER.format(
                                 path_to_appimage=output_file))
-                        spinner.start("Configuring desktop files...")
+                        if show_spinner:
+                            spinner.start("Configuring desktop files...")
                         try:
                             libappimage = LibAppImage()
                             if libappimage.is_registered_in_system(
@@ -475,17 +493,20 @@ class Zap:
                             pass  # TODO: add some more stuff here
                         except LibAppImageNotFoundError:
                             pass  # TODO: add some more stuff here
-                    spinner.succeed("Done!")
+                    if show_spinner:
+                        spinner.succeed("Done!")
                 else:
-                    spinner.stop()
+                    if show_spinner:
+                        spinner.stop()
                     print(_file)
                     raise RuntimeError("More than one link found")
             else:
                 # Was unsuccessful
-                spinner.fail("Update failed! :'(")
-                spinner.start("Cleaning up")
+                if show_spinner:
+                    spinner.fail("Update failed! :'(")
+                    spinner.start("Cleaning up")
                 print(_update_proc_out, _update_proc_err)
-        else:
+        elif show_spinner:
             spinner.fail("Update information is not embedded within the "
                          "AppImage. ")
             spinner.fail("Consider informing the AppImage author to add a "
@@ -494,9 +515,11 @@ class Zap:
 
         out, err = (x.decode() for x in _check_update_proc.communicate())
         print(out, err)
-        spinner.stop()
+        if show_spinner:
+            spinner.stop()
 
-    def update(self, use_appimageupdate=True, check_appimage_update=True):
+    def update(self, use_appimageupdate=True, check_appimage_update=True,
+               show_spinner=True):
         """
         Updates an app using appimageupdate / redownloads the app with new data
         :return:
@@ -516,6 +539,7 @@ class Zap:
             appimageupdate = zap_appimageupdate.appdata().get('path')
             path_to_appimage = self.appdata().get('path')
             self._update_with_appimageupdatetool(appimageupdate,
+                                                 show_spinner=show_spinner,
                                                  path=path_to_appimage)
         else:
             print(fc("{y}WARNING: Updating apps without appimageupdatetool "

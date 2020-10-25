@@ -37,6 +37,7 @@ import urllib.parse
 from .utils import is_valid_url
 from zap.config.config import ConfigManager
 from zap.execute.execute import Execute
+from progressbar import progressbar
 from . import __version__
 from . import __doc__ as lic
 from .zap import Zap, parse_gh_url
@@ -154,12 +155,12 @@ def upgrade():
     """Upgrade all appimages using AppImageUpdate"""
     config = ConfigManager()
     apps = config['apps']
-    for i, app in enumerate(apps):
+    for i, app in progressbar(enumerate(apps), redirect_stdout=True):
         z = Zap(app)
         if i == 0:
-            z.update()
+            z.update(show_spinner=False)
         else:
-            z.update(check_appimage_update=False)
+            z.update(check_appimage_update=False, show_spinner=False)
 
 
 @cli.command()
