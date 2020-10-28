@@ -44,6 +44,7 @@ main() {
     wget -O "$ZAP_ROOT/zap-x86_64.AppImage" -q --show-progress \
       https://github.com/srevinsaju/zap/releases/download/continuous/zap-x86_64.AppImage
   elif command_exists curl; then
+    rm -rf ~/.zap/zap-x86_64.AppImage
     curl -LJO --progress-bar \
       https://github.com/srevinsaju/zap/releases/download/continuous/zap-x86_64.AppImage > ~/.zap/zap-x86_64.AppImage
   else
