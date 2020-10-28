@@ -128,7 +128,9 @@ class AppImageCore:
             if 'untagged' in self._json[app].get('tag'):
                 break
             releases[app] = self._json[app].get('tag')
-            if '.' in self._json[app].get('tag') or \
-                    self._json[app].get('tag').isdigit():
+            if ('.' in self._json[app].get('tag') or
+                self._json[app].get('tag').isdigit() or
+                'rc' in self._json[app].get('tag')) and \
+               self._json[app].get('tag', ' ')[0] == "r":
                 break
         return releases
