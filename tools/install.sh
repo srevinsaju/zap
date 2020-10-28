@@ -76,7 +76,7 @@ main() {
   mkdir -p ~/.bin
   cp $BIN_PATH/zap ~/.bin/zap
   hash -r
-  if [[ ! command_exists zap ]]; then
+  if ! command_exists zap; then
       echo "$GREEN zap $RESET was not installed correctly"
       echo "~/.local/bin does not appear to be on PATH"
       echo "you can add \n"
