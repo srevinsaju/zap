@@ -5,14 +5,17 @@ from flask import abort
 from flask import jsonify
 import json
 from zap.appimage.generator import AppImageConfigJsonGenerator
+
+
 app = flask.Flask(__name__)
 app.config['DEBUG'] = True
-
 FEED_URL = "http://appimage.github.io/feed.json"
+
 
 def get_feed_json():
     feed_request = requests.get(FEED_URL)
     return feed_request.json()
+
 
 def get_app_data_from_feed(appname):
     feed = get_feed_json().get('items')
@@ -35,6 +38,5 @@ def return_data(appname):
                     app_core_json.get_app_metadata())))
 
 
-    
 if __name__ == "__main__":
     app.run()
