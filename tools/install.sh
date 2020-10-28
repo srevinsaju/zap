@@ -37,6 +37,7 @@ setup_color() {
 
 main() {
   setup_color
+  echo "Creating $ZAP_ROOT"
   mkdir -p "$ZAP_ROOT"
   echo "$YELLOW Downloading the latest 🗲 Zap Release $RESET"
   if command_exists wget; then
@@ -65,13 +66,24 @@ main() {
     else
       BIN_PATH="$HOME/.local/bin"
     fi
+    mkdir -p ~/.bin
     mkdir -p "$BIN_PATH" 
   fi
-
-
   echo "$ZAP_ROOT/zap-x86_64.AppImage \"\$@\"" > "$BIN_PATH/zap"
   chmod +x "$BIN_PATH/zap"
   hash -r
+  mkdir -p ~/.bin
+  cp $BIN_PATH/zap ~/.bin/zap
+  hash -r
+  if [[ ! command_exists zap ]]; then
+      echo "$GREEN zap $RESET was not installed correctly"
+      echo "~/.local/bin does not appear to be on PATH"
+      echo "you can add \n"
+      echo "$YELLOW" 'export PATH=$PATH:~/.bin:~/.local/bin' "$RESET"
+      echo "\n"
+      echo "to you ~/.zshrc ~/.bashrc ~/.basrc.local or your shell profile file"
+      echo "\n"
+  fi
   echo "$YELLOW 🗲 Zap $RESET is installed"
   echo ""
   echo "  • Join our chat on $BLUE Discord $RESET: https://discord.gg/Yv7KC68"
