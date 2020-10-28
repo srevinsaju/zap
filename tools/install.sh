@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This script has code initially used from github.com/ohymzsh project
 # Thanks OhMyZsh for an amazing project
