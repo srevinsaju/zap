@@ -44,8 +44,8 @@ main() {
     wget -O "$ZAP_ROOT/zap-x86_64.AppImage" -q --show-progress \
       https://github.com/srevinsaju/zap/releases/download/continuous/zap-x86_64.AppImage
   elif command_exists curl; then
-    rm -rf ~/.zap/zap-x86_64.AppImage
-    cd .zap && { curl -LJO --progress-bar \
+    rm -rf "$ZAP_ROOT/zap-x86_64.AppImage"
+    cd "$ZAP_ROOT" && { curl -LJO --progress-bar \
       https://github.com/srevinsaju/zap/releases/download/continuous/zap-x86_64.AppImage ; cd -; }
   else
     error Zap requires wget or curl to download the zap binary.
