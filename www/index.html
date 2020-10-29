@@ -32,8 +32,8 @@
         <a class="navbar-item" href="#main">
           <img src="/img/ss-logo-small.png" height="28" alt="Srevin Saju Logo">
         </a>
-    
-        <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="ssNavBarTop" 
+
+        <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="ssNavBarTop"
         onclick="document.querySelector('.navbar-menu').classList.toggle('is-active');">
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
@@ -53,7 +53,7 @@
             <a class="navbar-link" href="#"  onclick="return false;">
               More
             </a>
-    
+
             <div class="navbar-dropdown">
               <a class="navbar-item" href="#about">
                 About
@@ -68,7 +68,7 @@
             </div>
           </div>
         </div>
-    
+
         <div class="navbar-end">
           <div class="navbar-item">
             <div class="field" style="margin: 0.5em;">
@@ -89,10 +89,10 @@
         <div class="ss-aboutbox-content">
           <h1 class="title" style="font-size: 6em; line-height: 0.5em;">Zap ⚡</h1>
           <h2 class="subtitle">
-            The amazingly <br> 
-            simple <br> 
-            AppImage package manager <br> 
-            for Linux 🐧</h2> 
+            The amazingly <br>
+            simple <br>
+            AppImage package manager <br>
+            for Linux 🐧</h2>
         </div>
         <div id="termynal" data-termynal>
           <span data-ty="input">zap install firefox</span>
@@ -123,16 +123,16 @@
             Yet another command line tool? 🤔
           </h1>
           <p class="subtitle">
-            Zap supports desktop integration, delta updates 
+            Zap supports desktop integration, delta updates
             and your favorite command line syntax. Want more?
             Install appimages directly
-            from your browser, a click away by downloading AppImages supporting the zap protocol* <i class="fa fa-zap"></i> 
-          </p> 
+            from your browser, a click away by downloading AppImages supporting the zap protocol* <i class="fa fa-zap"></i>
+          </p>
         </div>
 
       </div>
     </section>
-    
+
     <!-- DELTA SECTION -->
     <section id="main" class="section" >
       <div class="ss-aboutbox">
@@ -152,14 +152,14 @@
           <p class="subtitle">
             Download only what has changed between the versions, not the entire thing! <code>zap</code> makes your daily updates easier for all your appimages with either <code>zap update</code> or
             <code>zap upgrade</code> to upgrade all of them at a go!
-          </p> 
-          <p>* AppImages built with embedded updateinformation supports delta updates. 
+          </p>
+          <p>* AppImages built with embedded updateinformation supports delta updates.
           Zap automatically can be configured to fallback to direct download if the author of the appimage did not include the update information.</p>
         </div>
 
       </div>
     </section>
-    
+
     <!-- INSTALL SECTION -->
     <section id="main" class="section" >
       <div class="ss-aboutbox">
@@ -167,15 +167,15 @@
           <h1 class="title">Get it now! ⚡</h1>
           <p class="subtitle">
             Zap itself is provided as an AppImage, Just copy paste this line into your terminal and you are done!
-          </p> 
+          </p>
         </div>
         <div id="termynal" data-termynal>
           <span data-ty id="zapinstallcommand">
             curl -fsSL https://git.io/zapinit | bash
           </span>
         </div>
-        <button id="copyToClipboardButton"
-        style="width: 100%;" 
+        <button id="copyToClipboardButton" value="./css/termynal.css"
+        style="width: 100%;"
         class="button" data-clipboard-target="#zapinstallcommand"
         onclick="onClickAnnounce()">
           Copy to clipboard
@@ -191,15 +191,15 @@
           <h1 class="title">Free as in Freedom</h1>
           <h2 class="subtitle">Customizable. Open Source.</h1>
           <p class="subtitle">
-            Zap is an MIT Licensed Open source software. 
-            You can get the complete source code at 
+            Zap is an MIT Licensed Open source software.
+            You can get the complete source code at
             <a href="https://github.com/srevinsaju/zap">
-            <i class="fa fa-github"></i>  GitHub</a>. Feel free to 
+            <i class="fa fa-github"></i>  GitHub</a>. Feel free to
             open an issue or create a pull request. Contributions are welcome!
-          </p> 
+          </p>
           <p>
-            You can configure almost everything without writing code, 
-            by using the interactive configuration wizard, where you can 
+            You can configure almost everything without writing code,
+            by using the interactive configuration wizard, where you can
             specify where you would like to store AppImages. Everything is right
             under your control
           </p>
@@ -214,7 +214,7 @@
     <!-- <script src="./js/index.js" defer></script> -->
     <script>
       function onClickAnnounce() {
-        $('#copyToClipboardButton').text("Copied!")
+        new ClipboardJS('#copyToClipboardButton').text("Copied!")
       }
 
       function darkTheme() {
@@ -280,7 +280,7 @@
         <br>
         Icons provided by <a href="https://fontawesome.com/" target="_blank" rel="noreferrer">FontAwesome</a> and <a href="https://vedico-org.github.io/" target="_blank" rel="noreferrer">Vedico</a>
         <br>
- 
+
       </p>
       <a href="http://creativecommons.org/licenses/by-nc-nd/4.0" target="_blank" rel="noreferrer"><img src="img/by-nc-nd.svg" alt="CC-BY-NC-ND"></a>
 
