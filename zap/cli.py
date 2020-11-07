@@ -170,7 +170,7 @@ def upgrade():
             res = z.update(show_spinner=False)
         else:
             res = z.update(check_appimage_update=False, show_spinner=False)
-        if res == False:
+        if res is False:
             spinner.fail("Updating {} failed!".format(app))
     spinner.succeed("Upgrade completed!")
 
