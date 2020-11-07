@@ -246,13 +246,6 @@
             darkTheme();
         }
 
-        $(window).scroll(function(){
-          const newOpacity = ($(window).scrollTop() / $('#main').height())*2
-          if (newOpacity <= 1) {
-            $("#main").css("opacity", 1 - newOpacity);
-          }
-        });
-
         $('#themeSwitch').change(function() {
           if (this.checked) {
             darkTheme();
