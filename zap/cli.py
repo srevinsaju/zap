@@ -34,10 +34,11 @@ import sys
 import click
 import urllib.parse
 
+from halo import Halo
+
 from .utils import is_valid_url
 from zap.config.config import ConfigManager
 from zap.execute.execute import Execute
-from progressbar import progressbar
 from . import __version__
 from . import __doc__ as lic
 from .zap import Zap, parse_gh_url
@@ -155,12 +156,23 @@ def upgrade():
     """Upgrade all appimages using AppImageUpdate"""
     config = ConfigManager()
     apps = config['apps']
-    for i, app in progressbar(enumerate(apps), redirect_stdout=True):
+    spinner = Halo(text='Getting updates...', spinner='dots')
+    spinner.start()
+    total_appimages = len(apps)
+    for i, app in enumerate(apps):
         z = Zap(app)
+        spinner.start("Updating {app} ({x}/{total})".format(
+            app=app,
+            x=i+1,
+            total=total_appimages
+        ))
         if i == 0:
-            z.update(show_spinner=False)
+            res = z.update(show_spinner=False)
         else:
-            z.update(check_appimage_update=False, show_spinner=False)
+            res = z.update(check_appimage_update=False, show_spinner=False)
+        if res == False:
+            spinner.fail("Updating {} failed!".format(app))
+    spinner.succeed("Upgrade completed!")
 
 
 @cli.command()

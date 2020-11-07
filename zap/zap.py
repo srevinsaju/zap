@@ -505,18 +505,20 @@ class Zap:
                 if show_spinner:
                     spinner.fail("Update failed! :'(")
                     spinner.start("Cleaning up")
-                print(_update_proc_out, _update_proc_err)
+                    print(_update_proc_out, _update_proc_err)
+                    return False
         elif show_spinner:
             spinner.fail("Update information is not embedded within the "
                          "AppImage. ")
             spinner.fail("Consider informing the AppImage author to add a "
                          ".zsync file")
             spinner.fail("Alternatively, pass the --no-appimageupdate option")
+            return False
 
-        out, err = (x.decode() for x in _check_update_proc.communicate())
-        print(out, err)
-        if show_spinner:
-            spinner.stop()
+        # if show_spinner:
+        #    out, err = (x.decode() for x in _check_update_proc.communicate())
+        #    print(out, err)
+        #   spinner.stop()
 
     def update(self, use_appimageupdate=True, check_appimage_update=True,
                show_spinner=True):
