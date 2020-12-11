@@ -70,7 +70,8 @@ main() {
     mkdir -p ~/.bin
     mkdir -p "$BIN_PATH" 
   fi
-  echo "$ZAP_ROOT/zap-x86_64.AppImage \"\$@\"" > "$BIN_PATH/zap"
+  echo "#!/bin/bash" > "$BIN_PATH/zap"
+  echo "$ZAP_ROOT/zap-x86_64.AppImage \"\$@\"" >> "$BIN_PATH/zap"
   chmod +x "$BIN_PATH/zap"
   hash -r
   mkdir -p ~/.bin
