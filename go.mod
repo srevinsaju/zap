@@ -4,6 +4,8 @@ go 1.15
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.7
+	github.com/buger/jsonparser v1.1.1
+	github.com/fatih/color v1.10.0
 	github.com/go-resty/resty/v2 v2.4.0
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/urfave/cli/v2 v2.3.0
