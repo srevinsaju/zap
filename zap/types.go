@@ -59,3 +59,20 @@ func (r ZapReleases) GetAssetsFromTag(tag string) (map[string]ZapDlAsset, error)
 	}
 	return map[string]ZapDlAsset{}, errors.New("could not find tag in release")
 }
+
+func ZapAssetNameArray(assets map[string]ZapDlAsset) []string {
+	var arr []string
+	for i := range assets {
+		arr = append(arr, assets[i].Name)
+	}
+	return arr
+}
+
+func GetAssetFromName(assets map[string]ZapDlAsset, assetName string) (ZapDlAsset, error) {
+	for i := range assets {
+		if assets[i].Name == assetName {
+			return assets[i], nil
+		}
+	}
+	return ZapDlAsset{}, errors.New("could not find asset with name")
+}

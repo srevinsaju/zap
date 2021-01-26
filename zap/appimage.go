@@ -38,12 +38,11 @@ func InstallAppImage(options InstallAppImageOptions) error {
 	releaseUserResponse := ""
 
 	logger.Debug("Preparing survey for release selection")
-	var releasePrompt = &survey.Select{
+	releasePrompt := &survey.Select{
 		Message: "Choose a Release",
 		Options: releases.GetReleasesArray(),
 		Default: releases.GetLatestRelease(),
 	}
-
 	err = survey.AskOne(releasePrompt, &releaseUserResponse)
 	if err != nil {
 		return err
@@ -57,7 +56,26 @@ func InstallAppImage(options InstallAppImageOptions) error {
 		return err
 	}
 
-	logger.Info(assets)
+	assetsUserResponse := ""
+	assetsPrompt := &survey.Select{
+		Message: "Choose an asset",
+		Options: ZapAssetNameArray(assets),
+	}
+	err = survey.AskOne(assetsPrompt, &assetsUserResponse)
+	if err != nil {
+		return err
+	}
+
+	asset, err := GetAssetFromName(assets, assetsUserResponse)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug(asset)
+
+	// let the user know what is going to happen next
+	fmt.Printf("Downloading %s of size %s. \n", green(asset.Name), yellow(asset.Size))
+
 
 	// check if the target app is already installed
 	//if options.from.Host == "github.com" {
