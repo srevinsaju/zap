@@ -8,7 +8,13 @@ import (
 
 var logger = log.New(os.Stderr).WithColor()
 
+
 func main() {
+
+	// check if need to add Debug
+	if os.Getenv("ZAP_DEBUG") == "1" {
+		logger = logger.WithDebug()
+	}
 
 	// initialize the command line interface
 	app := &cli.App{
@@ -20,7 +26,7 @@ func main() {
 			Name:   "install",
 			Usage:  "Installs an AppImage",
 			Action: installAppImageCliContextWrapper,
-			Flags: 	[]cli.Flag{
+			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name: "executable",
 				},
