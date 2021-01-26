@@ -1,23 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/buger/jsonparser"
 	"github.com/go-resty/resty/v2"
 	"strconv"
 )
-
-
-func InterfaceMarshall(jsonObj interface{}, targetStruct interface{}) error {
-	b, err := json.Marshal(jsonObj)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(b, &targetStruct)
-	return err
-}
-
 
 func GetZapReleases(executable string) (*ZapReleases, error) {
 	// declare the stuff which we are going to return
@@ -34,63 +22,101 @@ func GetZapReleases(executable string) (*ZapReleases, error) {
 		SetHeader("Accept", "application/json").
 		Get(targetUrl)
 	if err != nil {
-		return zapReleases, err
+		return nil, err
 	}
 
-
-	var rawResponse interface{}
-	err = json.Unmarshal(resp.Body(), &rawResponse)
+	// get owner
+	owner, err := jsonparser.GetString(resp.Body(), "owner")
 	if err != nil {
-		return zapReleases, err
+		return nil, err
+	}
+	zapReleases.Author = owner
+
+	// get source
+	sourceType, err := jsonparser.GetString(resp.Body(), "source", "type")
+	sourceUrl, err := jsonparser.GetString(resp.Body(), "source", "url")
+	zapReleases.Source = ZapSource{
+		Type: sourceType,
+		Url:  sourceUrl,
 	}
 
-	rawResponseMap := rawResponse.(map[string]interface{})
+	zapReleases.Releases = make(map[int]ZapRelease)
 
-	var zapReleasesArray = make([]ZapRelease, 0)
-	for k, v := range rawResponseMap {
-		switch jsonObj := v.(type) {
-		case string:
-			if k == "owner" {
-				// handle cases when the key defines the owner
-				zapReleases.Author = v.(string)
-				break
-			} else if k == "source" {
-				// handle the sources attribute in the json file
-				zapSource := &ZapSource{}
-				err = InterfaceMarshall(v, zapSource)
-				if err != nil {
-					return zapReleases, err
-				}
-				zapReleases.Source = *zapSource
-				break
-			} else {
-				return zapReleases, errors.New("invalid data received")
-			}
-		case interface{}:
-			// handles all other cases
-			zapRelease := &ZapRelease{}
+	// iterate through each release
+	err = jsonparser.ObjectEach(resp.Body(), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 
-			err = InterfaceMarshall(jsonObj, zapRelease)
-			if err != nil {
-				return zapReleases, nil
-			}
-			logger.Debug(zapRelease)
-			if zapRelease.Id != "" {
-				zapRelease.Roll, err = strconv.Atoi(k)
-				if err != nil {
-					return zapReleases, err
-				}
+		k := string(key)
 
-				zapReleasesArray = append(zapReleasesArray, *zapRelease)
-			}
-
-		default:
-			return zapReleases, errors.New("was expecting JSON, got something else instead")
+		i, err := strconv.Atoi(k)
+		if err != nil {
+			return nil // skip
 		}
-	}
 
-	// return the array of zap releases
-	zapReleases.Releases = zapReleasesArray
+		logger.Debugf("Getting is_prerelease for %s", k)
+		isPreRelease, err := jsonparser.GetBoolean(value, "prerelease")
+		if err != nil {
+			return err
+		}
+
+		logger.Debugf("Getting is_tag for %s", k)
+		tag, err := jsonparser.GetString(value, "tag")
+		if err != nil {
+			return err
+		}
+
+		logger.Debug("Getting published_at for %s", k)
+		publishedAt, err := jsonparser.GetString(value, "published_at")
+		if err != nil {
+			return err
+		}
+
+		// iterate through all assets and generate mapping
+		zapDlAssetsMap := map[string]ZapDlAsset{}
+		err = jsonparser.ObjectEach(value, func(key_ []byte, value_ []byte, dataType jsonparser.ValueType, offset int) error {
+			k_ := string(key_)
+
+			logger.Debugf("Getting Asset Name for %s", k_)
+			zapDlAssetName, err := jsonparser.GetString(value_, "name")
+			if err != nil {
+				return err
+			}
+
+			logger.Debugf("Getting Asset Download URL for %s", k_)
+			zapDlAssetDownloadUrl, err := jsonparser.GetString(value_, "download")
+			if err != nil {
+				return err
+			}
+
+			logger.Debugf("Getting Asset Size for %s", k_)
+			zapDlAssetSize, err := jsonparser.GetString(value_, "size")
+			if err != nil {
+				return err
+			}
+
+			logger.Debugf("Creating Asset %s with [%s, %s]", k_, zapDlAssetName, zapDlAssetSize)
+			zapDlAssetsMap[k_] = ZapDlAsset{
+				Name:     zapDlAssetName,
+				Download: zapDlAssetDownloadUrl,
+				Size:     zapDlAssetSize,
+			}
+			return nil
+		}, "assets")
+		if err != nil {
+			return err
+		}
+
+		zapReleases.Releases[i] = ZapRelease{
+			PreRelease:  isPreRelease,
+			Assets:      zapDlAssetsMap,
+			Tag:         tag,
+			PublishedAt: publishedAt,
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	logger.Infof("Found %d releases", len(zapReleases.Releases))
 	return zapReleases, nil
