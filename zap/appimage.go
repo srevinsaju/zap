@@ -1,9 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/schollz/progressbar/v3"
 	"github.com/urfave/cli/v2"
+	"io"
+	"net/http"
+	"os"
 )
 
 type InstallAppImageOptions struct {
@@ -30,7 +35,6 @@ func InstallAppImage(options InstallAppImageOptions) error {
 	if err != nil {
 		return err
 	}
-
 
 	// sort.Slice(releases.Releases, releases.SortByReleaseDate)
 
