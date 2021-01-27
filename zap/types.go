@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"path"
 )
 
 type ZapDlAsset struct {
