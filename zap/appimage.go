@@ -123,7 +123,6 @@ func InstallAppImage(options InstallAppImageOptions, config ZapConfig) error {
 			BarEnd:        "]",
 		}))
 
-
 	_, err = io.Copy(io.MultiWriter(f, bar), resp.Body)
 	if err != nil {
 		return err

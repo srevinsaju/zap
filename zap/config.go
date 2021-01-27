@@ -7,9 +7,8 @@ import (
 )
 
 type ZapConfig struct {
-	mirror 			string
-	localStore 		string
-
+	mirror     string
+	localStore string
 }
 
 func NewZapDefaultConfig() ZapConfig {
@@ -49,4 +48,3 @@ func NewZapConfig(configPath string) (ZapConfig, error) {
 
 	return *zapConfig, nil
 }
-

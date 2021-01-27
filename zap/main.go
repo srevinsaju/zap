@@ -64,7 +64,6 @@ func installAppImageCliContextWrapper(context *cli.Context) error {
 		zapConfigPath = zapXdgCompliantConfigPath
 	}
 
-
 	zapConfig, err := NewZapConfig(zapConfigPath)
 
 	err = InstallAppImage(installAppImageOptionsInstance, zapConfig)
