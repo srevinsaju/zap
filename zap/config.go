@@ -19,6 +19,7 @@ func NewZapDefaultConfig() ZapConfig {
 	if err != nil || err_ != nil {
 		logger.Fatal("Could not find XDG path")
 	}
+	_ = os.MkdirAll(iconStore, 0777)
 
 	zapDefaultConfig := ZapConfig{
 		mirror:     "https://g.srevinsaju.me/get-appimage/%s/core.json",
