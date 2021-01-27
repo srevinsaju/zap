@@ -49,7 +49,7 @@ func InstallAppImage(options InstallAppImageOptions) error {
 	}
 
 	// get selected version
-	fmt.Printf("Downloading %s \n", yellow(releaseUserResponse))
+	logger.Debugf("Downloading %s \n", yellow(releaseUserResponse))
 
 	assets, err := releases.GetAssetsFromTag(releaseUserResponse)
 	if err != nil {
@@ -75,7 +75,55 @@ func InstallAppImage(options InstallAppImageOptions) error {
 
 	// let the user know what is going to happen next
 	fmt.Printf("Downloading %s of size %s. \n", green(asset.Name), yellow(asset.Size))
+	confirmDownload := false
+	confirmDownloadPrompt := &survey.Confirm{
+		Message: "Proceed?",
+	}
+	err = survey.AskOne(confirmDownloadPrompt, &confirmDownload)
+	if err != nil {
+		return err
+	} else if !confirmDownload {
+		return errors.New("aborting on user request")
+	}
 
+	logger.Debugf("Connecting to %s", asset.Download)
+
+	req, err := http.NewRequest("GET", asset.Download, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	logger.Debugf("Target file path %s", asset.getBaseName())
+	f, _ := os.OpenFile(asset.getBaseName(), os.O_CREATE|os.O_WRONLY, 0755)
+	defer f.Close()
+
+	logger.Debug("Setting up progressbar")
+	bar := progressbar.NewOptions(int(resp.ContentLength),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionSetWidth(20),
+		progressbar.OptionSetDescription(
+			fmt.Sprintf("[cyan][1/3][reset] Downloading %s : ", options.executable)),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[green]=[reset]",
+			SaucerHead:    "[green]>[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}))
+
+
+	_, err = io.Copy(io.MultiWriter(f, bar), resp.Body)
+	if err != nil {
+		return err
+	}
 
 	// check if the target app is already installed
 	//if options.from.Host == "github.com" {
