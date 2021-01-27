@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/adrg/xdg"
 	"github.com/urfave/cli/v2"
 	"github.com/withmandala/go-log"
 	"os"
 )
 
 var logger = log.New(os.Stderr).WithColor()
-
 
 func main() {
 
@@ -55,7 +55,19 @@ func installAppImageCliContextWrapper(context *cli.Context) error {
 		logger.Fatal(err)
 	}
 
-	err = InstallAppImage(installAppImageOptionsInstance)
+	// get configuration path
+	logger.Debug("Get configuration path")
+	zapXdgCompliantConfigPath, err := xdg.ConfigFile("zap/v2/config.yml")
+	zapConfigPath := os.Getenv("ZAP_CONFIG")
+	if zapConfigPath == "" {
+		logger.Debug("Didn't find $ZAP_CONFIG. Fallback to XDG")
+		zapConfigPath = zapXdgCompliantConfigPath
+	}
+
+
+	zapConfig, err := NewZapConfig(zapConfigPath)
+
+	err = InstallAppImage(installAppImageOptionsInstance, zapConfig)
 	return err
 }
 

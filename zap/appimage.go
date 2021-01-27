@@ -28,10 +28,10 @@ func InstallAppImageOptionsFromCLIContext(context *cli.Context) (InstallAppImage
 
 }
 
-func InstallAppImage(options InstallAppImageOptions) error {
+func InstallAppImage(options InstallAppImageOptions, config ZapConfig) error {
 
 	logger.Debugf("Fetching releases from api for %s", options.executable)
-	releases, err := GetZapReleases(options.executable)
+	releases, err := GetZapReleases(options.executable, config)
 	if err != nil {
 		return err
 	}
