@@ -10,6 +10,10 @@ type ZapDlAsset struct {
 	Size     string `size:"size"`
 }
 
+func (asset ZapDlAsset) getBaseName() string {
+	return path.Base(asset.Name)
+}
+
 type ZapRelease struct {
 	Roll        int
 	Id          string                `json:"id"`
@@ -36,7 +40,7 @@ func (r ZapReleases) GetReleasesArray() []string {
 	arr := make([]string, 0, len(r.Releases))
 	// keys := make([]int, 0, len(r.Releases))
 	// logger.Debug(r.Releases)
-	for i := 0; i < len(r.Releases); i++  {
+	for i := 0; i < len(r.Releases); i++ {
 		arr = append(arr, r.Releases[i].Tag)
 	}
 
