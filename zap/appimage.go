@@ -7,8 +7,12 @@ import (
 	"github.com/schollz/progressbar/v3"
 	"github.com/urfave/cli/v2"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
 )
 
 type InstallAppImageOptions struct {
@@ -18,6 +22,48 @@ type InstallAppImageOptions struct {
 	force         bool
 	selectDefault bool
 }
+
+
+type AppImage struct {
+	filepath	string
+}
+
+
+func (appimage AppImage) ExtractThumbnail(target string) {
+
+	dir, err := ioutil.TempDir("", "zap")
+	if err != nil {
+		logger.Debug("Creating temporary directory for thumbnail extraction failed")
+		return
+	}
+	defer os.RemoveAll(dir)
+
+	logger.Debug("Trying to extract .DirIcon")
+	cmd := exec.Command(appimage.filepath, "--appimage-extract",  ".DirIcon")
+	cmd.Dir = dir
+
+	err = cmd.Run()
+	output, _ := cmd.Output()
+	logger.Debug(string(output))
+	if err != nil {
+		logger.Debugf("%s --appimage-extract .DirIcon failed with %s.", appimage.filepath, err)
+		return
+	}
+
+	dirIcon := path.Join(dir, "squashfs-root", ".DirIcon")
+	if _, err = os.Stat(dirIcon); os.IsNotExist(err) {
+		logger.Debug("Attempt to extract .DirIcon was successful, but no target extracted file")
+		return
+	}
+
+	_, err = CopyFile(dirIcon, target)
+	if err != nil {
+		logger.Warnf("copying thumbnail failed %s", err)
+		return
+	}
+
+}
+
 
 func InstallAppImageOptionsFromCLIContext(context *cli.Context) (InstallAppImageOptions, error) {
 	return InstallAppImageOptions{
@@ -104,9 +150,10 @@ func InstallAppImage(options InstallAppImageOptions, config ZapConfig) error {
 
 	defer resp.Body.Close()
 
-	logger.Debugf("Target file path %s", asset.getBaseName())
-	f, _ := os.OpenFile(asset.getBaseName(), os.O_CREATE|os.O_WRONLY, 0755)
-	defer f.Close()
+	targetAppImagePath := path.Join(config.localStore, asset.getBaseName())
+	targetAppImagePath, _ = filepath.Abs(targetAppImagePath)
+	logger.Debugf("Target file path %s", targetAppImagePath)
+	f, _ := os.OpenFile(targetAppImagePath, os.O_CREATE|os.O_WRONLY, 0755)
 
 	logger.Debug("Setting up progressbar")
 	bar := progressbar.NewOptions(int(resp.ContentLength),
@@ -128,9 +175,15 @@ func InstallAppImage(options InstallAppImageOptions, config ZapConfig) error {
 		return err
 	}
 
-	// check if the target app is already installed
-	//if options.from.Host == "github.com" {
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+	// need a newline here
+	fmt.Print("\n")
 
-	// }
+	appimage := AppImage{filepath: targetAppImagePath}
+	appimage.ExtractThumbnail(config.iconStore)
+
 	return nil
 }
