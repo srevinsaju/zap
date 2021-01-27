@@ -3,38 +3,41 @@ package main
 import (
 	"fmt"
 	"github.com/buger/jsonparser"
-	"github.com/go-resty/resty/v2"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 )
 
-func GetZapReleases(executable string) (*ZapReleases, error) {
+func GetZapReleases(executable string, config ZapConfig) (*ZapReleases, error) {
 	// declare the stuff which we are going to return
 	zapReleases := &ZapReleases{}
 
 	// get the target URL based on the executable name
-	targetUrl := fmt.Sprintf(ZapDefaultConfig.mirror, executable)
+	targetUrl := fmt.Sprintf(config.mirror, executable)
 	logger.Infof("Fetching %s", targetUrl)
 
 	// create http client and fetch JSON
-	client := resty.New()
-	resp, err := client.R().
-		EnableTrace().
-		SetHeader("Accept", "application/json").
-		Get(targetUrl)
+	resp, err := http.Get(targetUrl)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	// get owner
-	owner, err := jsonparser.GetString(resp.Body(), "owner")
+	owner, err := jsonparser.GetString(body, "owner")
 	if err != nil {
 		return nil, err
 	}
 	zapReleases.Author = owner
 
 	// get source
-	sourceType, err := jsonparser.GetString(resp.Body(), "source", "type")
-	sourceUrl, err := jsonparser.GetString(resp.Body(), "source", "url")
+	sourceType, err := jsonparser.GetString(body, "source", "type")
+	sourceUrl, err := jsonparser.GetString(body, "source", "url")
 	zapReleases.Source = ZapSource{
 		Type: sourceType,
 		Url:  sourceUrl,
@@ -43,7 +46,7 @@ func GetZapReleases(executable string) (*ZapReleases, error) {
 	zapReleases.Releases = make(map[int]ZapRelease)
 
 	// iterate through each release
-	err = jsonparser.ObjectEach(resp.Body(), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	err = jsonparser.ObjectEach(body, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 
 		k := string(key)
 
