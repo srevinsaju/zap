@@ -28,6 +28,10 @@ type AppImage struct {
 	filepath	string
 }
 
+func (appimage AppImage) getBaseName() string {
+	return path.Base(appimage.filepath)
+}
+
 
 func (appimage AppImage) ExtractThumbnail(target string) {
 
@@ -56,11 +60,13 @@ func (appimage AppImage) ExtractThumbnail(target string) {
 		return
 	}
 
-	_, err = CopyFile(dirIcon, target)
+	targetIconPath := path.Join(target, fmt.Sprintf("%s.png", appimage.getBaseName()))
+	_, err = CopyFile(dirIcon, targetIconPath)
 	if err != nil {
 		logger.Warnf("copying thumbnail failed %s", err)
 		return
 	}
+	logger.Debugf("Copied .DirIcon -> %s", targetIconPath)
 
 }
 
