@@ -2,10 +2,13 @@ package appimage
 
 import (
 	"fmt"
+	"github.com/adrg/xdg"
 	"github.com/srevinsaju/zap/config"
 	"github.com/srevinsaju/zap/internal/helpers"
 	"gopkg.in/ini.v1"
 	"io/ioutil"
+	"image"
+	_ "image/png"
 	"os"
 	"os/exec"
 	"path"
@@ -53,12 +56,48 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 		return
 	}
 
-	targetIconPath := path.Join(target, fmt.Sprintf("zap-%s.png", appimage.Executable))
+	baseIconName := fmt.Sprintf("zap-%s.png", appimage.Executable)
+	targetIconPath := path.Join(target, baseIconName)
 	_, err = helpers.CopyFile(dirIcon, targetIconPath)
 	if err != nil {
 		logger.Warnf("copying thumbnail failed %s", err)
 		return
 	}
+
+	logger.Debugf("Trying to read image dimensions from %s", targetIconPath)
+	file, err := os.Open(targetIconPath)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	logger.Debug("Decoding PNG image")
+	im, _, err := image.DecodeConfig(file)
+	if err != nil {
+		logger.Warn(err)
+		return
+	}
+
+	err = file.Close()
+	if err != nil {
+		logger.Warn(err)
+		return
+	}
+
+	logger.Debugf("Calculating symlink location")
+	xdgIconPath, err := xdg.DataFile(fmt.Sprintf("icons/hicolor/%dx%d/apps/", im.Width, im.Width))
+	if err != nil {
+		logger.Warn(err)
+		return
+	}
+
+	targetXdgIconPath := filepath.Join(xdgIconPath, baseIconName)
+	logger.Debugf("Attempting to create symlink to %s", targetXdgIconPath)
+	err = os.Symlink(targetIconPath, targetXdgIconPath)
+	if err != nil {
+		logger.Warn(err)
+		return
+	}
+
 	appimage.IconPath = targetIconPath
 	logger.Debugf("Copied .DirIcon -> %s", targetIconPath)
 
@@ -102,6 +141,8 @@ func (appimage AppImage) Extract(dir string, relPath string) string {
 			return dirIcon
 		}
 	}
+
+
 
 }
 
