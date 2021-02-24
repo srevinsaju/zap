@@ -226,7 +226,7 @@ func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 	}
 
 	logger.Debug("Parsing INI v1 desktop file")
-	desktopFile, err := ini.Load(data)
+	desktopFile, err := ini.LoadSources(ini.LoadOptions{IgnoreInlineComment: true}, data)
 	if err != nil {
 		logger.Debug("failed to parse desktop file with ini")
 		return
@@ -258,6 +258,10 @@ func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 
 	targetDesktopFile := path.Join(config.ApplicationStore, fmt.Sprintf("%s.desktop", appimage.Executable))
 	logger.Debugf("Preparing %s for writing new desktop file", targetDesktopFile)
+
+
+	// add Exec
+	desktopEntry.Key("Exec").SetValue(fmt.Sprintf("%s %%U", appimage.Executable ))
 
 	err = desktopFile.SaveTo(targetDesktopFile)
 	if err != nil {

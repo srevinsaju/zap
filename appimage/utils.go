@@ -19,6 +19,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 func Install(options Options, config config.Store) error {
@@ -131,40 +132,59 @@ func Install(options Options, config config.Store) error {
 
 	logger.Debugf("Connecting to %s", asset.Download)
 
-	req, err := http.NewRequest("GET", asset.Download, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
 
 	targetAppImagePath := path.Join(config.LocalStore, asset.GetBaseName())
 	targetAppImagePath, _ = filepath.Abs(targetAppImagePath)
 	logger.Debugf("Target file path %s", targetAppImagePath)
-	f, _ := os.OpenFile(targetAppImagePath, os.O_CREATE | os.O_WRONLY, 0755)
 
-	logger.Debug("Setting up progressbar")
-	bar := tui.NewProgressBar(
-		int(resp.ContentLength),
-		"install",
-		fmt.Sprintf("Downloading %s", options.Executable))
+	if strings.HasPrefix(asset.Download, "file://") {
+		logger.Debug("file:// protocol detected, copying the file")
+		sourceFile := strings.Replace(asset.Download, "file://", "", 1)
+		_, err = helpers.CopyFile(sourceFile, targetAppImagePath)
+		if err != nil {
+			return err
+		}
+		err := os.Chmod(targetAppImagePath, 0755)
+		if err != nil {
+			return err
+		}
 
-	_, err = io.Copy(io.MultiWriter(f, bar), resp.Body)
-	if err != nil {
-		return err
+	} else {
+		logger.Debug("Attempting to do http request")
+		req, err := http.NewRequest("GET", asset.Download, nil)
+		if err != nil {
+			return err
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+
+		defer resp.Body.Close()
+
+		f, _ := os.OpenFile(targetAppImagePath, os.O_CREATE | os.O_WRONLY, 0755)
+
+		logger.Debug("Setting up progressbar")
+		bar := tui.NewProgressBar(
+			int(resp.ContentLength),
+			"install",
+			fmt.Sprintf("Downloading %s", options.Executable))
+
+		_, err = io.Copy(io.MultiWriter(f, bar), resp.Body)
+		if err != nil {
+			return err
+		}
+
+		err = f.Close()
+		if err != nil {
+			return err
+		}
+		// need a newline here
+		fmt.Print("\n")
 	}
 
-	err = f.Close()
-	if err != nil {
-		return err
-	}
-	// need a newline here
-	fmt.Print("\n")
+
 
 	app := &AppImage{Filepath: targetAppImagePath, Executable: options.Executable}
 	if options.Executable == "" {
@@ -207,6 +227,8 @@ func Install(options Options, config config.Store) error {
 
 	// <- finished
 	logger.Debug("Completed all tasks")
+
+	fmt.Printf("%s installed successfully ✨\n", app.Executable)
 	return nil
 }
 
