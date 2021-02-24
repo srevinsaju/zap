@@ -174,6 +174,8 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 
 
 func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
+	ini.PrettyFormat = false
+
 	data, err := appimage.ExtractDesktopFile()
 	if err != nil {
 		return
@@ -204,8 +206,15 @@ func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 		desktopEntry.Key("Icon").SetValue(fmt.Sprintf("zap-%s", appimage.Executable))
 	}
 
+	// set the name again, so that the name looks like
+	// Name = appimagetool (AppImage)
+	// as an identifier
+	name := desktopEntry.Key("Name").String()
+	desktopEntry.Key("Name").SetValue(fmt.Sprintf("%s (AppImage)", name))
+
 	targetDesktopFile := path.Join(config.ApplicationStore, fmt.Sprintf("%s.desktop", appimage.Executable))
 	logger.Debugf("Preparing %s for writing new desktop file", targetDesktopFile)
+
 	err = desktopFile.SaveTo(targetDesktopFile)
 	if err != nil {
 		logger.Debugf("desktop file could not be saved to %s", targetDesktopFile)
