@@ -18,6 +18,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 )
 
 func Install(options Options, config config.Store) error {
@@ -35,16 +36,29 @@ func Install(options Options, config config.Store) error {
 		// let the user decide which version to install
 		releaseUserResponse := ""
 
-		logger.Debug("Preparing survey for release selection")
-		releasePrompt := &survey.Select{
-			Message: "Choose a Release",
-			Options: releases.GetReleasesArray(),
-			Default: releases.GetLatestRelease(),
+		if len(releases.Releases) == 0 {
+			// there are no items in release
+			logger.Fatalf("%s has no valid releases", options.Name)
+			return errors.New("release_arr_empty")
+
+		} else if len(releases.Releases) > 1 {
+			// there are a lot of items in the release, hmm...
+			logger.Debug("Preparing survey for release selection")
+			releasePrompt := &survey.Select{
+				Message: "Choose a Release",
+				Options: releases.GetReleasesArray(),
+				Default: releases.GetLatestRelease(),
+			}
+			err = survey.AskOne(releasePrompt, &releaseUserResponse)
+			if err != nil {
+				return err
+			}
+		} else {
+			// only one release, so select the first one.
+			logger.Debugf("Only one release found, selecting default.")
+			releaseUserResponse = releases.Releases[0].Tag
 		}
-		err = survey.AskOne(releasePrompt, &releaseUserResponse)
-		if err != nil {
-			return err
-		}
+
 
 		// get selected version
 		logger.Debugf("Downloading %s \n", tui.Yellow(releaseUserResponse))
@@ -54,20 +68,43 @@ func Install(options Options, config config.Store) error {
 			return err
 		}
 
-		assetsUserResponse := ""
-		assetsPrompt := &survey.Select{
-			Message: "Choose an asset",
-			Options: helpers.ZapAssetNameArray(assets),
-		}
-		err = survey.AskOne(assetsPrompt, &assetsUserResponse)
-		if err != nil {
-			return err
+
+
+		logger.Debugf("Running on GOARCH: %s", runtime.GOARCH)
+
+
+		var filteredAssets map[string]types.ZapDlAsset
+		if options.DoNotFilter == true {
+			logger.Debug("Explicitly not filtering")
+			filteredAssets = assets
+		} else {
+			logger.Debugf("Filtering assets based on ARCH")
+			filteredAssets = GetFilteredAssets(assets)
 		}
 
-		asset, err = helpers.GetAssetFromName(assets, assetsUserResponse)
-		if err != nil {
-			return err
+		assetsUserResponse := ""
+		if len(filteredAssets) == 0 {
+			logger.Fatal("⚠️ Sorry, this release has no valid downloadable AppImage asset.")
+			return errors.New("assets_err_empty")
+		} else if len(filteredAssets) == 1 {
+			asset = helpers.GetFirst(filteredAssets)
+		} else {
+			assetsPrompt := &survey.Select{
+				Message: "Choose an asset",
+				Options: helpers.ZapAssetNameArray(filteredAssets),
+			}
+			err = survey.AskOne(assetsPrompt, &assetsUserResponse)
+			if err != nil {
+				return err
+			}
+
+			// get the asset from the map, based on the filename
+			asset, err = helpers.GetAssetFromName(filteredAssets, assetsUserResponse)
+			if err != nil {
+				return err
+			}
 		}
+
 
 		logger.Debug(asset)
 
@@ -171,6 +208,28 @@ func Install(options Options, config config.Store) error {
 	// <- finished
 	logger.Debug("Completed all tasks")
 	return nil
+}
+
+func GetFilteredAssets(assets map[string]types.ZapDlAsset) map[string]types.ZapDlAsset {
+	filteredAssets := map[string]types.ZapDlAsset{}
+
+	for k, v := range assets {
+		if helpers.HasArch(v.Name) {
+			filteredAssets[k] = v
+		}
+	}
+	logger.Debug("Filtered list received", filteredAssets)
+
+	// if the filtration returned an empty asset list
+	// the filtration went unsuccessful
+	// so we need to return back the entire list
+	// and let the user choose by themselves
+	if len(filteredAssets) == 0 {
+		logger.Debug("no releases were found in the filtered list")
+		return assets
+	}
+
+	return filteredAssets
 }
 
 

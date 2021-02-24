@@ -20,6 +20,7 @@ type Options struct {
 	Force         bool
 	SelectDefault bool
 	Integrate     bool
+	DoNotFilter   bool
 }
 
 

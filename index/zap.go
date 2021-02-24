@@ -16,7 +16,7 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 
 	// get the target URL based on the Executable name
 	targetUrl := fmt.Sprintf(config.Mirror, executable)
-	logger.Infof("Fetching %s", targetUrl)
+	logger.Debugf("Fetching %s", targetUrl)
 
 	// create http client and fetch JSON
 	resp, err := http.Get(targetUrl)
@@ -123,7 +123,7 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 		return nil, err
 	}
 
-	logger.Infof("Found %d releases", len(zapReleases.Releases))
+	logger.Debugf("Found %d releases", len(zapReleases.Releases))
 	return zapReleases, nil
 }
 

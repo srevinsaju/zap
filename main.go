@@ -15,12 +15,13 @@ func main() {
 	// initialize the command line interface
 	app := &cli.App{
 		Name:  "Zap",
-		Usage: "A command line interface to install appimages.",
+		Usage: "⚡️ A command line interface to install appimages.",
 	}
 	app.Commands = []*cli.Command{
 		{
 			Name:   "install",
 			Usage:  "Installs an AppImage",
+			Aliases: []string{"i"},
 			Action: installAppImageCliContextWrapper,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
@@ -37,7 +38,7 @@ func main() {
 			Action: updateAppImageCliContextWrapper,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name: "Executable",
+					Name: "executable",
 				},
 				&cli.BoolFlag{
 					Name: "with-au",
