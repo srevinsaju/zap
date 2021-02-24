@@ -1,0 +1,217 @@
+package appimage
+
+import (
+	"fmt"
+	"gopkg.in/ini.v1"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
+	"strings"
+)
+
+type Options struct {
+	name          	string
+	from          	string
+	executable    	string
+	force         	bool
+	selectDefault 	bool
+	integrate 		bool
+}
+
+
+type AppImage struct {
+	Filepath   string `json:"filepath"`
+	Executable string `json:"executable"`
+	IconPath   string `json:"icon_path"`
+	DesktopFile string `json:"desktop_file"`
+}
+
+func (appimage AppImage) getBaseName() string {
+	return path.Base(appimage.Filepath)
+}
+
+/* ExtractThumbnail helps to extract the thumbnails to config.icons directory
+ * with the apps' basename and png as the name */
+func (appimage *AppImage) ExtractThumbnail(target string) {
+
+	dir, err := ioutil.TempDir("", "zap")
+	if err != nil {
+		logger.Debug("Creating temporary directory for thumbnail extraction failed")
+		return
+	}
+	defer os.RemoveAll(dir)
+
+	dirIcon := appimage.Extract(dir, ".DirIcon")
+
+	if _, err = os.Stat(dirIcon); os.IsNotExist(err) {
+		logger.Debug("Attempt to extract .DirIcon was successful, but no target extracted file")
+		return
+	}
+
+	targetIconPath := path.Join(target, fmt.Sprintf("zap-%s.png", appimage.Executable))
+	_, err = CopyFile(dirIcon, targetIconPath)
+	if err != nil {
+		logger.Warnf("copying thumbnail failed %s", err)
+		return
+	}
+	appimage.IconPath = targetIconPath
+	logger.Debugf("Copied .DirIcon -> %s", targetIconPath)
+
+}
+
+func (appimage AppImage) Extract(dir string, relPath string) string {
+
+	logger.Debugf("Trying to extract %s", relPath)
+
+	cmd := exec.Command(appimage.Filepath, "--appimage-extract", relPath)
+	cmd.Dir = dir
+
+	err := cmd.Run()
+	output, _ := cmd.Output()
+	logger.Debug(string(output))
+	if err != nil {
+		logger.Debugf("%s --appimage-extract %s failed with %s.", appimage.Filepath, relPath, err)
+		return ""
+	}
+
+	dirIcon := path.Join(dir, "squashfs-root", relPath)
+
+	fileInfo, err := os.Lstat(dirIcon)
+	if os.IsNotExist(err) {
+		logger.Debugf("Attempt to extract %s was successful, but no target extracted file", relPath)
+		return ""
+	} else {
+		if fileInfo.Mode() & os.ModeSymlink != 0 {
+			link := fileInfo.Name()
+			k, err := os.Readlink(dirIcon)
+
+			if err != nil {
+				return ""
+			}
+			parts := strings.Split(k, "squashfs-root/")
+			relPathSymlink := parts[len(parts) - 1]
+			logger.Debugf("%s is a symlink to %s, resolving it.", k, link)
+			return appimage.Extract(dir, relPathSymlink)
+
+		} else {
+			return dirIcon
+		}
+	}
+
+}
+
+/* ExtractDesktopFile helps to extract the thumbnails to config.icons directory
+ * with the apps' basename and png as the name */
+func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
+
+	dir, err := ioutil.TempDir("", "zap")
+	if err != nil {
+		logger.Debug("Creating temporary directory for thumbnail extraction failed")
+		return []byte{}, err
+	}
+	defer os.RemoveAll(dir)
+
+	logger.Debug("Trying to extract Desktop files")
+	cmd := exec.Command(appimage.Filepath, "--appimage-extract",  "*.desktop")
+	cmd.Dir = dir
+
+	err = cmd.Run()
+	output, _ := cmd.Output()
+	if string(output) != "" {
+		logger.Debugf("%s --appimage-extract *.desktop gave '%s'", appimage.Filepath, string(output))
+	}
+
+	if err != nil {
+		logger.Debugf("%s --appimage-extract *.Desktop failed with %s.", appimage.Filepath, err)
+		return []byte{}, err
+	}
+
+	squashfsDir, err := filepath.Abs(path.Join(dir, "squashfs-root"))
+	if err != nil {
+		logger.Debugf("Failed to get absolute path to squashfs-root, %s", err)
+		return nil, nil
+	}
+	logger.Debugf("Setting squashfs-root's abs path, %s", squashfsDir)
+
+	var desktopFiles []string
+	err = filepath.Walk(squashfsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		logger.Debugf("Checking if %s is a desktop file", path)
+		if strings.HasSuffix(path, ".desktop") {
+			logger.Debugf("Check for %s as desktop file -> passed", path)
+			desktopFiles = append(desktopFiles, path)
+		}
+		return nil
+	})
+	if err != nil {
+		logger.Warnf("Failed to walk through squashfs, %s", err)
+		return nil, nil
+	}
+
+	// couldn't find a desktop file
+	if len(desktopFiles) == 0 {
+		logger.Debug("Couldn't find a single desktop file")
+		return nil, nil
+	}
+	data, err := ioutil.ReadFile(desktopFiles[0])
+	if err != nil {
+		logger.Warnf("Reading desktop file failed %s", err)
+		return []byte{}, err
+	}
+	return data, nil
+}
+
+
+func (appimage *AppImage) ProcessDesktopFile(config ZapConfig) {
+	data, err := appimage.ExtractDesktopFile()
+	if err != nil {
+		return
+	}
+
+	logger.Debug("Parsing INI v1 desktop file")
+	desktopFile, err := ini.Load(data)
+	if err != nil {
+		logger.Debug("failed to parse desktop file with ini")
+		return
+	}
+	logger.Debug("Parse INI v1 desktop file completed with no errors ")
+
+	desktopEntry := desktopFile.Section("Desktop Entry")
+
+	// the appimage has explicitly requested not to be integrated
+	if desktopEntry.Key("X-AppImage-Integrate").String() == "true" {
+
+		return
+	}
+
+	appImageIcon := desktopEntry.Key("Icon").String()
+	desktopEntry.Key("X-Zap-Id").SetValue(appimage.Executable)
+
+	if config.customIconTheme {
+		desktopEntry.Key("Icon").SetValue(appImageIcon)
+	} else {
+		desktopEntry.Key("Icon").SetValue(fmt.Sprintf("zap-%s", appimage.Executable))
+	}
+
+	targetDesktopFile := path.Join(config.applicationsStore, fmt.Sprintf("%s.desktop", appimage.Executable))
+	logger.Debugf("Preparing %s for writing new desktop file", targetDesktopFile)
+	err = desktopFile.SaveTo(targetDesktopFile)
+	if err != nil {
+		logger.Debugf("desktop file could not be saved to %s", targetDesktopFile)
+		return
+	}
+	appimage.DesktopFile = targetDesktopFile
+
+	// and they completed, happily ever after
+	logger.Debugf("Desktop file successfully written to %s", targetDesktopFile)
+}
+
+

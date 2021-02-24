@@ -1,46 +1,21 @@
-package main
+package releases
 
 import (
 	"fmt"
 	"github.com/buger/jsonparser"
-	"io"
+	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/types"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 )
 
-func CopyFile(src, dst string) (int64, error) {
-	sourceFileStat, err := os.Stat(src)
-	if err != nil {
-		return 0, err
-	}
-
-	if !sourceFileStat.Mode().IsRegular() {
-		return 0, fmt.Errorf("%s is not a regular file", src)
-	}
-
-	source, err := os.Open(src)
-	if err != nil {
-		return 0, err
-	}
-	defer source.Close()
-
-	destination, err := os.Create(dst)
-	if err != nil {
-		return 0, err
-	}
-	defer destination.Close()
-	nBytes, err := io.Copy(destination, source)
-	return nBytes, err
-}
-
-func GetZapReleases(executable string, config ZapConfig) (*ZapReleases, error) {
+func GetZapReleases(executable string, config config.Store) (*types.ZapReleases, error) {
 	// declare the stuff which we are going to return
-	zapReleases := &ZapReleases{}
+	zapReleases := &types.ZapReleases{}
 
-	// get the target URL based on the executable name
-	targetUrl := fmt.Sprintf(config.mirror, executable)
+	// get the target URL based on the Executable name
+	targetUrl := fmt.Sprintf(config.Mirror, executable)
 	logger.Infof("Fetching %s", targetUrl)
 
 	// create http client and fetch JSON
@@ -94,7 +69,7 @@ func GetZapReleases(executable string, config ZapConfig) (*ZapReleases, error) {
 			return err
 		}
 
-		logger.Debug("Getting published_at for %s", k)
+		logger.Debugf("Getting published_at for %s", k)
 		publishedAt, err := jsonparser.GetString(value, "published_at")
 		if err != nil {
 			return err
@@ -151,3 +126,5 @@ func GetZapReleases(executable string, config ZapConfig) (*ZapReleases, error) {
 	logger.Infof("Found %d releases", len(zapReleases.Releases))
 	return zapReleases, nil
 }
+
+

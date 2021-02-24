@@ -1,4 +1,4 @@
-package main
+package zap
 
 import (
 	"errors"
