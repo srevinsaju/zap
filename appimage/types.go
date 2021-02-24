@@ -30,13 +30,15 @@ type Options struct {
 type AppImage struct {
 	Filepath   string `json:"filepath"`
 	Executable string `json:"executable"`
-	IconPath   string `json:"icon_path"`
-	DesktopFile string `json:"desktop_file"`
+	IconPath   string `json:"icon_path,omitempty"`
+	IconPathHicolor string `json:"icon_path_hicolor,omitempty"`
+	DesktopFile string `json:"desktop_file,omitempty"`
 }
 
 func (appimage AppImage) getBaseName() string {
 	return path.Base(appimage.Filepath)
 }
+
 
 /* ExtractThumbnail helps to extract the thumbnails to config.icons directory
  * with the apps' basename and png as the Name */
@@ -99,6 +101,7 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 	}
 
 	appimage.IconPath = targetIconPath
+	appimage.IconPathHicolor = targetXdgIconPath
 	logger.Debugf("Copied .DirIcon -> %s", targetIconPath)
 
 }

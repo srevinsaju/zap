@@ -338,6 +338,12 @@ func Remove(options Options, config config.Store) error {
 		os.Remove(app.IconPath)
 	}
 
+	if app.IconPathHicolor != "" {
+		logger.Debugf("Removing symlink to hicolor theme, %s", app.IconPathHicolor)
+		bar.Describe("Removing hicolor Icons")
+		os.Remove(app.IconPathHicolor)
+	}
+
 	if app.DesktopFile != "" {
 		logger.Debugf("Removing desktop file, %s", app.DesktopFile)
 		bar.Describe("Removing desktop file")
