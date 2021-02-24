@@ -1,4 +1,4 @@
-package releases
+package index
 
 import (
 	"github.com/withmandala/go-log"

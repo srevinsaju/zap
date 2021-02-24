@@ -1,8 +1,8 @@
-package main
+package tui
 
 import "github.com/fatih/color"
 
-var yellow = color.New(color.FgYellow).SprintFunc()
-var green = color.New(color.FgGreen).SprintFunc()
+var Yellow = color.New(color.FgYellow).SprintFunc()
+var Green = color.New(color.FgGreen).SprintFunc()
 
 // var red = color.New(color.FgRed).SprintFunc()

@@ -1,8 +1,7 @@
 package appimage
 
 import (
-	"github.com/withmandala/go-log"
-	"os"
+	"github.com/srevinsaju/zap/logging"
 )
 
-var logger = log.New(os.Stdout)
+var logger = logging.GetLogger()

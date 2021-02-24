@@ -2,73 +2,72 @@ package config
 
 import (
 	"github.com/adrg/xdg"
-	"github.com/srevinsaju/zap"
 	"gopkg.in/ini.v1"
 	"io/ioutil"
 	"os"
 )
 
-type ZapConfig struct {
-	version		int
-	mirror     	string
-	localStore 	string
-	iconStore	string
-	indexStore  string
-	applicationsStore	string
-	customIconTheme		bool
+type Store struct {
+	Version          int
+	Mirror           string
+	LocalStore       string
+	IconStore        string
+	IndexStore       string
+	ApplicationStore string
+	CustomIconTheme  bool
 }
 
-func (zcfg *ZapConfig) populateDefaults() {
+func (store *Store) populateDefaults() {
 	localStore, err := xdg.DataFile("zap/v2")
 	iconStore, err_ := xdg.DataFile("zap/v2/icons")
 	indexStore, err_ := xdg.DataFile("zap/v2/index")
 	applicationsStore, err__ := xdg.DataFile("applications")
 	if err != nil || err_ != nil || err__ != nil {
-		zap.logger.Fatalf("Could not find XDG path, a:%s, b:%s, c:%s", err, err_, err__)
+		logger.Fatalf("Could not find XDG path, a:%s, b:%s, c:%s", err, err_, err__)
 	}
 	_ = os.MkdirAll(iconStore, 0777)
 	_ = os.MkdirAll(indexStore, 0777)
-	zcfg.customIconTheme = false
-	zcfg.iconStore = iconStore
-	zcfg.localStore = localStore
-	zcfg.indexStore = indexStore
-	zcfg.applicationsStore = applicationsStore
-	zcfg.version = 2
-	zcfg.mirror = "https://g.srevinsaju.me/get-appimage/%s/core.json"
+	store.CustomIconTheme = false
+	store.IconStore = iconStore
+	store.LocalStore = localStore
+	store.IndexStore = indexStore
+	store.ApplicationStore = applicationsStore
+	store.Version = 2
+	store.Mirror = "https://g.srevinsaju.me/get-appimage/%s/core.json"
 }
 
-func (zcfg *ZapConfig) migrate(newZCfg ZapConfig) {
-	if newZCfg.customIconTheme {
-		zcfg.customIconTheme = newZCfg.customIconTheme
+func (store *Store) migrate(newStore Store) {
+	if newStore.CustomIconTheme {
+		store.CustomIconTheme = newStore.CustomIconTheme
 	}
-	if newZCfg.iconStore != "" {
-		zcfg.iconStore = newZCfg.iconStore
+	if newStore.IconStore != "" {
+		store.IconStore = newStore.IconStore
 	}
-	if newZCfg.localStore != "" {
-		zcfg.localStore = newZCfg.localStore
+	if newStore.LocalStore != "" {
+		store.LocalStore = newStore.LocalStore
 	}
-	if newZCfg.indexStore != "" {
-		zcfg.indexStore = newZCfg.indexStore
+	if newStore.IndexStore != "" {
+		store.IndexStore = newStore.IndexStore
 	}
-	if newZCfg.applicationsStore != "" {
-		zcfg.applicationsStore = newZCfg.applicationsStore
+	if newStore.ApplicationStore != "" {
+		store.ApplicationStore = newStore.ApplicationStore
 	}
-	if newZCfg.mirror != "" {
-		zcfg.mirror = newZCfg.mirror
+	if newStore.Mirror != "" {
+		store.Mirror = newStore.Mirror
 	}
 }
 
-func NewZapDefaultConfig() ZapConfig {
-	zapDefaultConfig := &ZapConfig{}
+func NewZapDefaultConfig() Store {
+	zapDefaultConfig := &Store{}
 	zapDefaultConfig.populateDefaults()
 	return *zapDefaultConfig
 }
 
-func NewZapConfig(configPath string) (ZapConfig, error) {
-	zapCustomConfig := &ZapConfig{}
+func NewZapConfig(configPath string) (Store, error) {
+	customStore := &Store{}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		zap.logger.Debug("No configuration found. Fall back to defaults")
+		logger.Debug("No configuration found. Fall back to defaults")
 		return NewZapDefaultConfig(), nil
 	}
 
@@ -76,23 +75,23 @@ func NewZapConfig(configPath string) (ZapConfig, error) {
 	configRaw, err := ioutil.ReadFile(configPath)
 	config, err := ini.Load(configRaw)
 	if err != nil {
-		return *zapCustomConfig, err
+		return *customStore, err
 	}
 
 	configCore := config.Section("Core")
 
-	zapCustomConfig = &ZapConfig{
-		version:           configCore.Key("Version").MustInt(),
-		mirror:            configCore.Key("Mirror").String(),
-		localStore:        configCore.Key("LocalStore").String(),
-		indexStore:        configCore.Key("IndexStore").String(),
-		iconStore:         configCore.Key("IconStore").String(),
-		applicationsStore: configCore.Key("ApplicationStore").String(),
-		customIconTheme:   configCore.Key("CustomIconTheme").MustBool(),
+	customStore = &Store{
+		Version:          configCore.Key("Version").MustInt(),
+		Mirror:           configCore.Key("Mirror").String(),
+		LocalStore:       configCore.Key("LocalStore").String(),
+		IndexStore:       configCore.Key("IndexStore").String(),
+		IconStore:        configCore.Key("IconStore").String(),
+		ApplicationStore: configCore.Key("ApplicationStore").String(),
+		CustomIconTheme:  configCore.Key("CustomIconTheme").MustBool(),
 	}
-	zapDefaultConfig := &ZapConfig{}
-	zapDefaultConfig.populateDefaults()
-	zapDefaultConfig.migrate(*zapCustomConfig)
+	defStore := &Store{}
+	defStore.populateDefaults()
+	defStore.migrate(*customStore)
 
-	return *zapDefaultConfig, nil
+	return *defStore, nil
 }

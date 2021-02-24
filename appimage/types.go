@@ -2,6 +2,8 @@ package appimage
 
 import (
 	"fmt"
+	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/internal/helpers"
 	"gopkg.in/ini.v1"
 	"io/ioutil"
 	"os"
@@ -12,12 +14,12 @@ import (
 )
 
 type Options struct {
-	name          	string
-	from          	string
-	executable    	string
-	force         	bool
-	selectDefault 	bool
-	integrate 		bool
+	Name          string
+	From          string
+	Executable    string
+	Force         bool
+	SelectDefault bool
+	Integrate     bool
 }
 
 
@@ -33,7 +35,7 @@ func (appimage AppImage) getBaseName() string {
 }
 
 /* ExtractThumbnail helps to extract the thumbnails to config.icons directory
- * with the apps' basename and png as the name */
+ * with the apps' basename and png as the Name */
 func (appimage *AppImage) ExtractThumbnail(target string) {
 
 	dir, err := ioutil.TempDir("", "zap")
@@ -51,7 +53,7 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 	}
 
 	targetIconPath := path.Join(target, fmt.Sprintf("zap-%s.png", appimage.Executable))
-	_, err = CopyFile(dirIcon, targetIconPath)
+	_, err = helpers.CopyFile(dirIcon, targetIconPath)
 	if err != nil {
 		logger.Warnf("copying thumbnail failed %s", err)
 		return
@@ -103,7 +105,7 @@ func (appimage AppImage) Extract(dir string, relPath string) string {
 }
 
 /* ExtractDesktopFile helps to extract the thumbnails to config.icons directory
- * with the apps' basename and png as the name */
+ * with the apps' basename and png as the Name */
 func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 
 	dir, err := ioutil.TempDir("", "zap")
@@ -170,7 +172,7 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 }
 
 
-func (appimage *AppImage) ProcessDesktopFile(config ZapConfig) {
+func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 	data, err := appimage.ExtractDesktopFile()
 	if err != nil {
 		return
@@ -195,13 +197,13 @@ func (appimage *AppImage) ProcessDesktopFile(config ZapConfig) {
 	appImageIcon := desktopEntry.Key("Icon").String()
 	desktopEntry.Key("X-Zap-Id").SetValue(appimage.Executable)
 
-	if config.customIconTheme {
+	if config.CustomIconTheme {
 		desktopEntry.Key("Icon").SetValue(appImageIcon)
 	} else {
 		desktopEntry.Key("Icon").SetValue(fmt.Sprintf("zap-%s", appimage.Executable))
 	}
 
-	targetDesktopFile := path.Join(config.applicationsStore, fmt.Sprintf("%s.desktop", appimage.Executable))
+	targetDesktopFile := path.Join(config.ApplicationStore, fmt.Sprintf("%s.desktop", appimage.Executable))
 	logger.Debugf("Preparing %s for writing new desktop file", targetDesktopFile)
 	err = desktopFile.SaveTo(targetDesktopFile)
 	if err != nil {

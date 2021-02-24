@@ -2,21 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/adrg/xdg"
-	"github.com/srevinsaju/zap"
+	"github.com/srevinsaju/zap/logging"
 	"github.com/urfave/cli/v2"
-	"github.com/withmandala/go-log"
 	"os"
 )
 
-var logger = log.New(os.Stderr).WithColor()
+
+var logger = logging.GetLogger()
 
 func main() {
-
-	// check if need to add Debug
-	if os.Getenv("ZAP_DEBUG") == "1" {
-		logger = logger.WithDebug()
-	}
 
 	// initialize the command line interface
 	app := &cli.App{
@@ -66,64 +60,4 @@ func main() {
 		}
 		logger.Fatal(err)
 	}
-}
-
-func installAppImageCliContextWrapper(context *cli.Context) error {
-	appName := context.Args().First()
-	if appName == "" {
-		fmt.Printf("%s missing", zap.green(appName))
-		return nil
-	}
-
-
-	installAppImageOptionsInstance, err := zap.InstallAppImageOptionsFromCLIContext(context)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	// get configuration path
-	logger.Debug("Get configuration path")
-	zapXdgCompliantConfigPath, err := xdg.ConfigFile("zap/v2/config.ini")
-	zapConfigPath := os.Getenv("ZAP_CONFIG")
-	if zapConfigPath == "" {
-		logger.Debug("Didn't find $ZAP_CONFIG. Fallback to XDG")
-		zapConfigPath = zapXdgCompliantConfigPath
-	}
-
-	zapConfig, err := zap.NewZapConfig(zapConfigPath)
-
-	err = zap.InstallAppImage(installAppImageOptionsInstance, zapConfig)
-	return err
-}
-
-func updateAppImageCliContextWrapper(context *cli.Context) error {
-	appName := context.Args().First()
-	if appName == "" {
-		fmt.Printf("%s missing", zap.green(appName))
-		return nil
-	}
-
-
-	updateAppImageOptionsInstance, err := zap.UpdateAppImageOptionsFromCLIContext(context)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	// get configuration path
-	logger.Debug("Get configuration path")
-	zapXdgCompliantConfigPath, err := xdg.ConfigFile("zap/v2/config.ini")
-	zapConfigPath := os.Getenv("ZAP_CONFIG")
-	if zapConfigPath == "" {
-		logger.Debug("Didn't find $ZAP_CONFIG. Fallback to XDG")
-		zapConfigPath = zapXdgCompliantConfigPath
-	}
-
-	zapConfig, err := zap.NewZapConfig(zapConfigPath)
-
-	err = zap.UpdateAppImage(updateAppImageOptionsInstance, zapConfig)
-	return err
-}
-
-func removeAppImageCliContextWrapper(context *cli.Context) error {
-	return nil
 }

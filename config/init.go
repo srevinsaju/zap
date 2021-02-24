@@ -1,8 +1,5 @@
 package config
 
-import (
-	"github.com/withmandala/go-log"
-	"os"
-)
+import "github.com/srevinsaju/zap/logging"
 
-var logger = log.New(os.Stdout)
+var logger = logging.GetLogger()

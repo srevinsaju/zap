@@ -1,4 +1,4 @@
-package releases
+package index
 
 import (
 	"fmt"
@@ -40,12 +40,12 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 	// get source
 	sourceType, err := jsonparser.GetString(body, "source", "type")
 	sourceUrl, err := jsonparser.GetString(body, "source", "url")
-	zapReleases.Source = ZapSource{
+	zapReleases.Source = types.ZapSource{
 		Type: sourceType,
 		Url:  sourceUrl,
 	}
 
-	zapReleases.Releases = make(map[int]ZapRelease)
+	zapReleases.Releases = make(map[int]types.ZapRelease)
 
 	// iterate through each release
 	err = jsonparser.ObjectEach(body, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
@@ -76,7 +76,7 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 		}
 
 		// iterate through all assets and generate mapping
-		zapDlAssetsMap := map[string]ZapDlAsset{}
+		zapDlAssetsMap := map[string]types.ZapDlAsset{}
 		err = jsonparser.ObjectEach(value, func(key_ []byte, value_ []byte, dataType jsonparser.ValueType, offset int) error {
 			k_ := string(key_)
 
@@ -99,7 +99,7 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 			}
 
 			logger.Debugf("Creating Asset %s with [%s, %s]", k_, zapDlAssetName, zapDlAssetSize)
-			zapDlAssetsMap[k_] = ZapDlAsset{
+			zapDlAssetsMap[k_] = types.ZapDlAsset{
 				Name:     zapDlAssetName,
 				Download: zapDlAssetDownloadUrl,
 				Size:     zapDlAssetSize,
@@ -110,7 +110,7 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 			return err
 		}
 
-		zapReleases.Releases[i] = ZapRelease{
+		zapReleases.Releases[i] = types.ZapRelease{
 			PreRelease:  isPreRelease,
 			Assets:      zapDlAssetsMap,
 			Tag:         tag,
