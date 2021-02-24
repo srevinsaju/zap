@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/adrg/xdg"
-	"github.com/schollz/progressbar/v3"
+	au "github.com/srevinsaju/appimage-update"
 	"github.com/srevinsaju/zap/config"
 	"github.com/srevinsaju/zap/index"
 	"github.com/srevinsaju/zap/internal/helpers"
 	"github.com/srevinsaju/zap/tui"
-	au "github.com/srevinsaju/appimage-update"
 	"github.com/srevinsaju/zap/types"
 	"io"
 	"io/ioutil"
@@ -113,19 +112,10 @@ func Install(options Options, config config.Store) error {
 	f, _ := os.OpenFile(targetAppImagePath, os.O_CREATE | os.O_WRONLY, 0755)
 
 	logger.Debug("Setting up progressbar")
-	bar := progressbar.NewOptions(int(resp.ContentLength),
-		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionShowBytes(true),
-		progressbar.OptionSetWidth(20),
-		progressbar.OptionSetDescription(
-			fmt.Sprintf("[cyan][1/3][reset] Downloading %s : ", options.Name)),
-		progressbar.OptionSetTheme(progressbar.Theme{
-			Saucer:        "[green]=[reset]",
-			SaucerHead:    "[green]>[reset]",
-			SaucerPadding: " ",
-			BarStart:      "[",
-			BarEnd:        "]",
-		}))
+	bar := tui.NewProgressBar(
+		int(resp.ContentLength),
+		"install",
+		fmt.Sprintf("Downloading %s", options.Executable))
 
 	_, err = io.Copy(io.MultiWriter(f, bar), resp.Body)
 	if err != nil {
@@ -186,7 +176,7 @@ func Install(options Options, config config.Store) error {
 
 func Update(options Options, config config.Store) error {
 
-	logger.Debugf("Fetching releases from api for %s", options.Name)
+	logger.Debugf("Bootstrapping updater", options.Name)
 	app := &AppImage{}
 
 	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
@@ -253,4 +243,56 @@ func Update(options Options, config config.Store) error {
 
 	fmt.Println("🚀 Done.")
 	return nil
+}
+
+
+func Remove(options Options, config config.Store) error {
+	app := &AppImage{}
+
+	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
+	logger.Debugf("Checking if %s exists", indexFile)
+	if ! helpers.CheckIfFileExists(indexFile) {
+		fmt.Printf("%s is not installed \n", tui.Yellow(options.Executable))
+		return nil
+	}
+
+	bar := tui.NewProgressBar(-1, "remove", "Removing")
+
+	logger.Debugf("Unmarshalling JSON from %s", indexFile)
+	indexBytes, err := ioutil.ReadFile(indexFile)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(indexBytes, app)
+	if err != nil {
+		return err
+	}
+
+	logger.Debugf("Removing appimage, %s", app.Filepath)
+	bar.Describe("Removing AppImage")
+	os.Remove(app.Filepath)
+
+	if app.IconPath != "" {
+		logger.Debugf("Removing thumbnail, %s", app.IconPath)
+		bar.Describe("Removing Icons")
+		os.Remove(app.IconPath)
+	}
+
+	if app.DesktopFile != "" {
+		logger.Debugf("Removing desktop file, %s", app.DesktopFile)
+		bar.Describe("Removing desktop file")
+		os.Remove(app.DesktopFile)
+	}
+
+	logger.Debugf("Removing index file, %s", indexFile)
+	os.Remove(indexFile)
+
+	bar.Finish()
+	fmt.Printf("\n")
+	fmt.Printf("✅ %s removed successfully\n", app.Executable)
+	logger.Debugf("Removing all files completed successfully")
+
+
+	return bar.Finish()
 }

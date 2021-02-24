@@ -36,3 +36,16 @@ func UpdateAppImageOptionsFromCLIContext(context *cli.Context) (appimage.Options
 	}, nil
 
 }
+
+func RemoveAppImageOptionsFromCLIContext(context *cli.Context) (appimage.Options, error) {
+	executable := context.String("Executable")
+	if context.String("Executable") == "" {
+		executable = context.Args().First()
+	}
+	return appimage.Options{
+		Name:       context.Args().First(),
+		From:       context.String("from"),
+		Executable: executable,
+	}, nil
+
+}
