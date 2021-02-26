@@ -31,8 +31,8 @@ $ zap --help
 
 For local installtion, (requires `~/.local/bin` to be on `$PATH`)
 ```bash
-$ sudo wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap -O ~/.local/bin/zap
-$ sudo chmod +x ~/.local/bin/zap
+$ wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap -O ~/.local/bin/zap
+$ chmod +x ~/.local/bin/zap
 $ zap --help
 ```
 
