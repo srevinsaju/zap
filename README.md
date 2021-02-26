@@ -22,7 +22,20 @@ The status of development is still in Alpha. Please help me fix bugs by opening 
 
 ## Getting Started
 
-> Well, too early to get started. Look here after some time.
+For system-wide installation (needs `sudo`)
+```bash
+$ sudo wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap -O /usr/local/bin/zap
+$ sudo chmod +x /usr/local/bin/zap
+$ zap --help
+```
+
+For local installtion, (requires `~/.local/bin` to be on `$PATH`)
+```bash
+$ sudo wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap -O ~/.local/bin/zap
+$ sudo chmod +x ~/.local/bin/zap
+$ zap --help
+```
+
 
 <br>
 
