@@ -25,10 +25,13 @@ func main() {
 			Action: installAppImageCliContextWrapper,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name: "Executable",
+					Name: "executable",
 				},
 				&cli.StringFlag{
 					Name: "from",
+				},
+				&cli.BoolFlag{
+					Name: "github",
 				},
 			},
 		},

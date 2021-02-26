@@ -14,14 +14,15 @@ func installAppImageCliContextWrapper(context *cli.Context) error {
 
 
 	// do not continue if we couldn't find the appname
-	if appName == "" {
+	if appName == "" && ! context.Bool("github"){
 		fmt.Printf("%s is not provided\n", tui.Yellow("appname"))
 		return nil
 	}
 
-
 	installAppImageOptionsInstance, err := InstallAppImageOptionsFromCLIContext(context)
-	if err != nil {
+	if err != nil && err.Error() == "github-from-flag-missing" {
+		return nil
+	} else if err != nil {
 		logger.Fatal(err)
 	}
 

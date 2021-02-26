@@ -1,12 +1,17 @@
 package index
 
 import (
+	"errors"
 	"fmt"
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/buger/jsonparser"
 	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/internal/helpers"
+	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 	"strconv"
 )
 
@@ -128,3 +133,90 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 }
 
 
+func ZapSurveyUserReleases(options types.Options, config config.Store) (types.ZapDlAsset, error) {
+
+	asset := types.ZapDlAsset{}
+
+	logger.Debugf("Fetching releases from api for %s", options.Name)
+	releases, err := GetZapReleases(options.Name, config)
+	if err != nil {
+		return types.ZapDlAsset{}, err
+	}
+
+	// sort.Slice(releases.Releases, releases.SortByReleaseDate)
+
+	// let the user decide which version to install
+	releaseUserResponse := ""
+
+	if len(releases.Releases) == 0 {
+		// there are no items in release
+		logger.Fatalf("%s has no valid releases", options.Name)
+		return types.ZapDlAsset{}, errors.New("release_arr_empty")
+
+	} else if len(releases.Releases) > 1 {
+		// there are a lot of items in the release, hmm...
+		logger.Debug("Preparing survey for release selection")
+		releasePrompt := &survey.Select{
+			Message: "Choose a Release",
+			Options: releases.GetReleasesArray(),
+			Default: releases.GetLatestRelease(),
+		}
+		err = survey.AskOne(releasePrompt, &releaseUserResponse)
+		if err != nil {
+			return types.ZapDlAsset{}, err
+		}
+	} else {
+		// only one release, so select the first one.
+		logger.Debugf("Only one release found, selecting default.")
+		releaseUserResponse = releases.Releases[0].Tag
+	}
+
+
+	// get selected version
+	logger.Debugf("Downloading %s \n", tui.Yellow(releaseUserResponse))
+
+	assets, err := releases.GetAssetsFromTag(releaseUserResponse)
+	if err != nil {
+		return types.ZapDlAsset{}, err
+	}
+
+
+
+	logger.Debugf("Running on GOARCH: %s", runtime.GOARCH)
+
+
+	var filteredAssets map[string]types.ZapDlAsset
+	if options.DoNotFilter == true {
+		logger.Debug("Explicitly not filtering")
+		filteredAssets = assets
+	} else {
+		logger.Debugf("Filtering assets based on ARCH")
+		filteredAssets = helpers.GetFilteredAssets(assets)
+	}
+
+	assetsUserResponse := ""
+	if len(filteredAssets) == 0 {
+		logger.Fatal("⚠️ Sorry, this release has no valid downloadable AppImage asset.")
+		return types.ZapDlAsset{}, errors.New("assets_err_empty")
+	} else if len(filteredAssets) == 1 {
+		asset = helpers.GetFirst(filteredAssets)
+	} else {
+		assetsPrompt := &survey.Select{
+			Message: "Choose an asset",
+			Options: helpers.ZapAssetNameArray(filteredAssets),
+		}
+		err = survey.AskOne(assetsPrompt, &assetsUserResponse)
+		if err != nil {
+			return types.ZapDlAsset{}, err
+		}
+
+		// get the asset from the map, based on the filename
+		asset, err = helpers.GetAssetFromName(filteredAssets, assetsUserResponse)
+		if err != nil {
+			return types.ZapDlAsset{}, err
+		}
+	}
+
+	logger.Debug(asset)
+	return asset, nil
+}

@@ -21,3 +21,27 @@ func GetAssetFromName(assets map[string]types.ZapDlAsset, assetName string) (typ
 	}
 	return types.ZapDlAsset{}, errors.New("could not find asset with name")
 }
+
+
+
+func GetFilteredAssets(assets map[string]types.ZapDlAsset) map[string]types.ZapDlAsset {
+	filteredAssets := map[string]types.ZapDlAsset{}
+
+	for k, v := range assets {
+		if HasArch(v.Name) {
+			filteredAssets[k] = v
+		}
+	}
+	logger.Debug("Filtered list received", filteredAssets)
+
+	// if the filtration returned an empty asset list
+	// the filtration went unsuccessful
+	// so we need to return back the entire list
+	// and let the user choose by themselves
+	if len(filteredAssets) == 0 {
+		logger.Debug("no releases were found in the filtered list")
+		return assets
+	}
+
+	return filteredAssets
+}
