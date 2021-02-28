@@ -20,6 +20,8 @@
 
 The status of development is still in Alpha. Please help me fix bugs by opening an issue.
 
+> Looking for a stabler, Zap v1 (Python)? Head over to [master](https://github.com/srevinsaju/zap/tree/master) branch
+
 ## Getting Started
 
 For system-wide installation (needs `sudo`)
