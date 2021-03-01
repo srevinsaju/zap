@@ -10,7 +10,7 @@ Usage:
    %s {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
    {{if len .Authors}}
 Author:
-   {{range .Authors}}{{ . }}{{end}}
+   {{range .Authors}}{{ . }}, {{end}}
    {{end}}{{if .Commands}}
 Commands:
 {{range .Commands}}{{if not .HideHelp}}   %s{{ "\t"}}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{end}}{{if .VisibleFlags}}

@@ -10,12 +10,38 @@ import (
 
 var logger = logging.GetLogger()
 
+// https://polyverse.com/blog/how-to-embed-versioning-information-in-go-applications-f76e2579b572/
+var (
+	BuildVersion string = ""
+	BuildTime    string = ""
+)
+
+
+func getVersion() string {
+	if BuildVersion != "" || BuildTime != "" {
+		return fmt.Sprintf("%s Build:%s", BuildVersion, BuildTime)
+	}
+	return fmt.Sprintf("(local dev build)")
+}
+
+
 func main() {
 
 	// initialize the command line interface
 	app := &cli.App{
-		Name:  "Zap",
-		Usage: "⚡️ A command line interface to install appimages.",
+		Name:    "Zap",
+		Usage:   "⚡️ A command line interface to install AppImages.",
+		Version: getVersion(),
+		Authors: []*cli.Author{
+			{
+				Name:  "Srevin Saju",
+				Email: "srevinsaju@sugarlabs.org",
+			},
+			{
+				Name: "Other open source contributors",
+			},
+		},
+		Copyright: "MIT License 2020-2021",
 	}
 	app.EnableBashCompletion = true
 	// EXAMPLE: Override a template

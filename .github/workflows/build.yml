@@ -20,7 +20,7 @@ jobs:
 
     - name: Build
       run: |
-        go build -ldflags "-s -w" .
+        go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always --match 'v*') -X main.BuildTime=$(date +%s)" .
 
     - name: Release Continuous
       uses: marvinpinto/action-automatic-releases@latest
