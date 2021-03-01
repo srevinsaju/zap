@@ -39,8 +39,15 @@ func CopyFile(src, dst string) (int64, error) {
 // Returns true if it does, false otherwise.
 func CheckIfFileExists(filepath string) bool {
 	info, err := os.Stat(filepath)
+	if err == nil {
+		return true
+	}
 	if os.IsNotExist(err) || info.IsDir() {
 		return false
 	}
+	// anything else is not good
+	// https://stackoverflow.com/q/12518876
+	// Schrodinger: file may or may not exist. See err for details.
 	return true
+
 }

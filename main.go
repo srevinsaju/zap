@@ -53,6 +53,19 @@ func main() {
 			Usage:  "Removes an AppImage",
 			Action: removeAppImageCliContextWrapper,
 		},
+		{
+			Name:   "list",
+			Usage:  "List the installed AppImages",
+			Action: listAppImageCliContextWrapper,
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name: "no-color",
+				},
+				&cli.BoolFlag{
+					Name: "index",
+				},
+			},
+		},
 	}
 
 	// initialize the app
