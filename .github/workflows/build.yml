@@ -48,5 +48,8 @@ jobs:
         automatic_release_tag: v2-continuous
         title: v2 (continuous)
         files: |
-          ./zap*
+          zap-amd64
+          zap-386
+          zap-arm
+          zap-arm64
         repo_token: ${{ secrets.GITHUB_TOKEN }}
