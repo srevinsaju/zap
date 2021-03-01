@@ -39,6 +39,9 @@ jobs:
     - name: download actions
       uses: actions/download-artifact@v2
       
+    - name: Show releases
+      run: ls -al
+      
     - name: Release Continuous
       uses: marvinpinto/action-automatic-releases@latest
       if: github.ref == 'refs/heads/v2'
