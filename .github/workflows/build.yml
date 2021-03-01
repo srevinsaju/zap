@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ARCH: ['386', 'amd64', 'arm', 'arm64']
     steps:
       - uses: actions/checkout@v2
 
@@ -19,8 +22,19 @@ jobs:
 
       - name: Build
         run: |
-          go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always --match 'v*') -X main.BuildTime=$(date +%s)" .
+          GOOS=linux GOARCH=${{ matrix.ARCH }} go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always --match 'v*') -X main.BuildTime=$(date +%s)" -o zap-${{ matrix.ARCH }} .
 
+      - name: Upload Asset
+        uses: actions/upload-artifact@v2
+        with:
+          path: zap-${{ matrix.ARCH }}
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download assets
+        uses: actions/upload-artifact@v2
+        
       - name: Release Continuous
         uses: marvinpinto/action-automatic-releases@latest
         if: github.ref == 'refs/heads/v2'
@@ -30,5 +44,5 @@ jobs:
           automatic_release_tag: v2-continuous
           title: v2 (continuous)
           files: |
-            zap
+            **/zap-*
           repo_token: ${{ secrets.GITHUB_TOKEN }}
