@@ -6,7 +6,7 @@ import (
 	"github.com/srevinsaju/zap/config"
 	"github.com/srevinsaju/zap/tui"
 	"github.com/urfave/cli/v2"
-	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -87,7 +87,7 @@ func listAppImageCliContextWrapper(context *cli.Context) error {
 		return err
 	}
 
-	err = filepath.Walk(zapConfig.IndexStore, func(path string, info fs.FileInfo, err error) error {
+	err = filepath.Walk(zapConfig.IndexStore, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return err
 		}
