@@ -11,13 +11,11 @@ import (
 	"strings"
 )
 
-
 func installAppImageCliContextWrapper(context *cli.Context) error {
 	appName := context.Args().First()
 
-
 	// do not continue if we couldn't find the appname
-	if appName == "" && ! context.Bool("github"){
+	if appName == "" && !context.Bool("github") {
 		fmt.Printf("%s is not provided\n", tui.Yellow("appname"))
 		return nil
 	}
@@ -43,7 +41,6 @@ func updateAppImageCliContextWrapper(context *cli.Context) error {
 		fmt.Printf("%s missing", tui.Green("appname"))
 		return nil
 	}
-
 
 	updateAppImageOptionsInstance, err := UpdateAppImageOptionsFromCLIContext(context)
 	if err != nil {
@@ -82,7 +79,6 @@ func listAppImageCliContextWrapper(context *cli.Context) error {
 	if context.Bool("no-color") {
 		formatter = "%s\n"
 	}
-
 
 	zapConfigPath := config.GetPath()
 

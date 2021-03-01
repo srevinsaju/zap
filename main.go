@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/srevinsaju/zap/logging"
+	"github.com/srevinsaju/zap/tui"
 	"github.com/urfave/cli/v2"
 	"os"
 )
-
 
 var logger = logging.GetLogger()
 
@@ -17,12 +17,15 @@ func main() {
 		Name:  "Zap",
 		Usage: "⚡️ A command line interface to install appimages.",
 	}
+	app.EnableBashCompletion = true
+	// EXAMPLE: Override a template
+	cli.AppHelpTemplate = tui.AppHelpTemplate()
 	app.Commands = []*cli.Command{
 		{
-			Name:   "install",
-			Usage:  "Installs an AppImage",
+			Name:    "install",
+			Usage:   "Installs an AppImage",
 			Aliases: []string{"i"},
-			Action: installAppImageCliContextWrapper,
+			Action:  installAppImageCliContextWrapper,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name: "executable",

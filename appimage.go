@@ -9,11 +9,9 @@ import (
 	"strings"
 )
 
-
 func InstallAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
 	executable := context.String("executable")
 	appName := context.Args().First()
-
 
 	from := context.String("from")
 	if context.Bool("github") && from == "" {
@@ -24,15 +22,13 @@ func InstallAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, 
 	// use the repo name as appName
 	if context.Bool("github") && appName == "" {
 		fromSplit := strings.Split(from, "/")
-		appName = fromSplit[len(fromSplit) - 1]
+		appName = fromSplit[len(fromSplit)-1]
 	}
-
 
 	if context.String("executable") == "" {
 		logger.Debugf("Fallback executable name to appName, %s", context.Args().First())
 		executable = appName
 	}
-
 
 	app := types.Options{
 		Name:       appName,
