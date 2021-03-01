@@ -112,4 +112,5 @@ func listAppImageCliContextWrapper(context *cli.Context) error {
 		return err
 	}
 	return err
+
 }
