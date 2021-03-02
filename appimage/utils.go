@@ -21,6 +21,30 @@ import (
 	"strings"
 )
 
+
+func List(zapConfig config.Store, index bool) ([]string, error) {
+	var apps []string
+	err := filepath.Walk(zapConfig.IndexStore, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return err
+		}
+
+		appName := ""
+		if index {
+			appName = path
+		} else {
+			appName = filepath.Base(path)
+			if strings.HasSuffix(appName, ".json") {
+				appName = appName[:len(appName)-len(".json")]
+			}
+		}
+		apps = append(apps, appName)
+		return err
+	})
+	return apps, err
+}
+
+
 func Install(options types.Options, config config.Store) error {
 	var asset types.ZapDlAsset
 	var err error
@@ -160,7 +184,60 @@ func Install(options types.Options, config config.Store) error {
 }
 
 
+func Upgrade(config config.Store) ([]string, error) {
+	apps, err := List(config, false)
+	var updatedApps []string
+	if err != nil {
+		return updatedApps, err
+	}
+	for i := range apps {
+		appsFormatted := fmt.Sprintf("[%s]", apps[i])
+		fmt.Printf("%s%s Checking for updates\n", tui.Blue("[update]"), tui.Yellow(appsFormatted))
+		options := types.Options{
+			Name:          apps[i],
+			Executable:    apps[i],
+		}
+		_, err := update(options, config)
+
+
+		if err != nil {
+			if err.Error() == "up-to-date" {
+				fmt.Printf("%s%s AppImage is up to date.\n", tui.Blue("[update]"), tui.Green(appsFormatted))
+			} else {
+				fmt.Printf("%s%s failed to update, %s\n", tui.Blue("[update]"),
+					tui.Red(appsFormatted), tui.Yellow(err))
+			}
+		} else {
+			fmt.Printf("%s%s Updated.\n", tui.Blue("[update]"), tui.Green(appsFormatted))
+			updatedApps = append(updatedApps, apps[i])
+		}
+
+
+	}
+
+	fmt.Println("🚀 Done.")
+	return updatedApps, nil
+}
+
+
 func Update(options types.Options, config config.Store) error {
+	app, err := update(options, config)
+	if err != nil {
+		if err.Error() == "up-to-date" {
+			fmt.Printf("%s already up to date.\n", tui.Blue("[update]"))
+			return nil
+		} else {
+			return err
+		}
+	}
+
+	fmt.Printf("⚡️ AppImage saved as %s \n", tui.Green(app.Filepath))
+
+	fmt.Println("🚀 Done.")
+	return nil
+}
+
+func update(options types.Options, config config.Store) (*AppImage, error) {
 
 	logger.Debugf("Bootstrapping updater", options.Name)
 	app := &AppImage{}
@@ -169,35 +246,34 @@ func Update(options types.Options, config config.Store) error {
 	logger.Debugf("Checking if %s exists", indexFile)
 	if ! helpers.CheckIfFileExists(indexFile) {
 		fmt.Printf("%s is not installed \n", tui.Yellow(options.Executable))
-		return nil
+		return app, nil
 	}
 
 	logger.Debugf("Unmarshalling JSON from %s", indexFile)
 	indexBytes, err := ioutil.ReadFile(indexFile)
 	if err != nil {
-		return err
+		return app, err
 	}
 
 	err = json.Unmarshal(indexBytes, app)
 	if err != nil {
-		return err
+		return app, err
 	}
 
 	logger.Debugf("Creating new updater instance from %s", app.Filepath)
 	updater, err := au.NewUpdaterFor(app.Filepath)
 	if err != nil {
-		return err
+		return app, err
 	}
 
 	logger.Debugf("Checking for updates")
 	hasUpdates, err := updater.Lookup()
 	if err != nil {
-		return err
+		return app, err
 	}
 
 	if !hasUpdates {
-		fmt.Printf("%s is already up to date.\n", tui.Yellow(app.Executable))
-		return nil
+		return app, errors.New("up-to-date")
 	}
 
 	logger.Debugf("Downloading updates for %s", app.Executable)
@@ -211,24 +287,22 @@ func Update(options types.Options, config config.Store) error {
 	app.ProcessDesktopFile(config)
 
 	if err != nil {
-		return err
+		return app, err
 	}
-	fmt.Printf("⚡️ AppImage saved as %s \n", tui.Green(newFileName))
 
 	logger.Debug("Saving new index as JSON")
 	newIdxBytes, err := json.Marshal(*app)
 	if err != nil {
-		return err
+		return app, err
 	}
 
 	logger.Debugf("Writing to %s", indexFile)
 	err = ioutil.WriteFile(indexFile, newIdxBytes, 0644)
 	if err != nil {
-		return err
+		return app, err
 	}
 
-	fmt.Println("🚀 Done.")
-	return nil
+	return app, nil
 }
 
 

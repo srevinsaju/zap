@@ -9,7 +9,8 @@ import (
 	"strings"
 )
 
-func InstallAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
+
+func installAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
 	executable := context.String("executable")
 	appName := context.Args().First()
 
@@ -41,7 +42,7 @@ func InstallAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, 
 
 }
 
-func UpdateAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
+func updateAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
 	executable := context.String("Executable")
 	if context.String("Executable") == "" {
 		executable = context.Args().First()
@@ -54,7 +55,7 @@ func UpdateAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, e
 
 }
 
-func RemoveAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
+func removeAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
 	executable := context.String("Executable")
 	if context.String("Executable") == "" {
 		executable = context.Args().First()

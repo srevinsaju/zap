@@ -20,7 +20,7 @@ func installAppImageCliContextWrapper(context *cli.Context) error {
 		return nil
 	}
 
-	installAppImageOptionsInstance, err := InstallAppImageOptionsFromCLIContext(context)
+	installAppImageOptionsInstance, err := installAppImageOptionsFromCLIContext(context)
 	if err != nil && err.Error() == "github-from-flag-missing" {
 		return nil
 	} else if err != nil {
@@ -42,7 +42,7 @@ func updateAppImageCliContextWrapper(context *cli.Context) error {
 		return nil
 	}
 
-	updateAppImageOptionsInstance, err := UpdateAppImageOptionsFromCLIContext(context)
+	updateAppImageOptionsInstance, err := updateAppImageOptionsFromCLIContext(context)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func removeAppImageCliContextWrapper(context *cli.Context) error {
 		return nil
 	}
 
-	removeAppImageOptionsInstance, err := RemoveAppImageOptionsFromCLIContext(context)
+	removeAppImageOptionsInstance, err := removeAppImageOptionsFromCLIContext(context)
 	if err != nil {
 		logger.Fatal(err)
 	}

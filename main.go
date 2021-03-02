@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/srevinsaju/zap/logging"
 	"github.com/srevinsaju/zap/tui"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 var logger = logging.GetLogger()
@@ -16,14 +17,12 @@ var (
 	BuildTime    string = ""
 )
 
-
 func getVersion() string {
 	if BuildVersion != "" || BuildTime != "" {
 		return fmt.Sprintf("%s Build:%s", BuildVersion, BuildTime)
 	}
 	return fmt.Sprintf("(local dev build)")
 }
-
 
 func main() {
 
@@ -76,6 +75,11 @@ func main() {
 					Name: "with-au",
 				},
 			},
+		},
+		{
+			Name:   "upgrade",
+			Usage:  "Updates all AppImages",
+			Action: upgradeAppImageCliContextWrapper,
 		},
 		{
 			Name:   "remove",
