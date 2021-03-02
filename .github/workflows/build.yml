@@ -2,47 +2,58 @@ name: Go
 
 on:
   push:
-    branches: [v2]
+    branches: [ v2 ]
   pull_request:
-    branches: [v2]
+    branches: [ v2 ]
 
 jobs:
+
   build:
+  
     runs-on: ubuntu-latest
     strategy:
       matrix:
         ARCH: ['386', 'amd64', 'arm', 'arm64']
+        
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.15
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
 
-      - name: Build
-        run: |
-          GOOS=linux GOARCH=${{ matrix.ARCH }} go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always --match 'v*') -X main.BuildTime=$(date +%s)" -o zap-${{ matrix.ARCH }} .
-
-      - name: Upload Asset
-        uses: actions/upload-artifact@v2
-        with:
-          path: zap-${{ matrix.ARCH }}
-
+    - name: Build
+      run: |
+        GOOS=linux GOARCH=${{ matrix.ARCH }} go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always --match 'v*') -X main.BuildTime=$(date +%s)" -o zap-${{ matrix.ARCH }} .
+        
+    - name: Upload Asset
+      uses: actions/upload-artifact@v2
+      with:
+        path: zap-${{ matrix.ARCH }} 
+        name: zap-${{matrix.ARCH }}
+        
   release:
     runs-on: ubuntu-latest
+    needs: [build]
     steps:
-      - name: Download assets
-        uses: actions/download-artifact@v2
-        
-      - name: Release Continuous
-        uses: marvinpinto/action-automatic-releases@latest
-        if: github.ref == 'refs/heads/v2'
-        with:
-          prerelease: true
-          draft: false
-          automatic_release_tag: v2-continuous
-          title: v2 (continuous)
-          files: |
-            **/zap-*
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: download actions
+      uses: actions/download-artifact@v2
+      
+    - name: Show releases
+      run: ls -al
+      
+    - name: Release Continuous
+      uses: marvinpinto/action-automatic-releases@latest
+      if: github.ref == 'refs/heads/v2'
+      with:
+        prerelease: true
+        draft: false
+        automatic_release_tag: v2-continuous
+        title: v2 (continuous)
+        files: |
+          zap-amd64
+          zap-386
+          zap-arm
+          zap-arm64
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
