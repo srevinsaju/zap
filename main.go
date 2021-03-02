@@ -99,6 +99,17 @@ func main() {
 				},
 			},
 		},
+		{
+			Name:    "daemon",
+			Usage:   "Runs a daemon which periodically checks for updates for installed appimages",
+			Action:  daemonCliContextWrapper,
+			Aliases: []string{"d"},
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name: "install",
+				},
+			},
+		},
 	}
 
 	// initialize the app

@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/srevinsaju/zap/appimage"
 	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/daemon"
 	"github.com/srevinsaju/zap/tui"
 	"github.com/urfave/cli/v2"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 func installAppImageCliContextWrapper(context *cli.Context) error {
@@ -87,30 +86,52 @@ func listAppImageCliContextWrapper(context *cli.Context) error {
 		return err
 	}
 
-	err = filepath.Walk(zapConfig.IndexStore, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return err
-		}
-
-		appName := ""
-		if context.Bool("index") {
-			appName = path
-		} else {
-			appName = filepath.Base(path)
-			if strings.HasSuffix(appName, ".json") {
-				appName = appName[:len(appName)-len(".json")]
-			}
-		}
-		if context.Bool("no-color") {
-			fmt.Printf(formatter, appName)
-			return err
-		}
-		fmt.Printf(formatter, tui.Yellow(appName))
-		return err
-	})
+	apps, err := appimage.List(zapConfig, context.Bool("index"))
 	if err != nil {
 		return err
 	}
+	for appIdx := range apps {
+		if context.Bool("no-color") {
+			fmt.Printf(formatter, apps[appIdx])
+			continue
+		}
+		fmt.Printf(formatter, tui.Yellow(apps[appIdx]))
+	}
+	return err
+
+}
+
+func upgradeAppImageCliContextWrapper(context *cli.Context) error {
+
+	zapConfigPath := config.GetPath()
+
+	zapConfig, err := config.NewZapConfig(zapConfigPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = appimage.Upgrade(zapConfig)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func daemonCliContextWrapper(context *cli.Context) error {
+
+	if context.Bool("install") {
+		err := daemon.SetupToRunThroughSystemd()
+		return err
+	}
+	zapConfigPath := config.GetPath()
+
+	zapConfig, err := config.NewZapConfig(zapConfigPath)
+	if err != nil {
+		return err
+	}
+
+	daemon.Sync(zapConfig)
 	return err
 
 }
