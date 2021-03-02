@@ -7,7 +7,7 @@ require (
 	github.com/adrg/xdg v0.3.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/fatih/color v1.10.0
-	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28 // indirect
+	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
 	github.com/google/go-github/v31 v31.0.0
 	github.com/schollz/progressbar/v3 v3.7.3
 	github.com/smartystreets/goconvey v1.6.4 // indirect
