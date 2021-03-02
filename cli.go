@@ -29,8 +29,11 @@ func installAppImageCliContextWrapper(context *cli.Context) error {
 	zapConfigPath := config.GetPath()
 
 	zapConfig, err := config.NewZapConfig(zapConfigPath)
+	if err != nil {
+		return err
+	}
 
-	err = appimage.Install(installAppImageOptionsInstance, zapConfig)
+	err = appimage.Install(installAppImageOptionsInstance, *zapConfig)
 	return err
 }
 
@@ -49,8 +52,11 @@ func updateAppImageCliContextWrapper(context *cli.Context) error {
 	zapConfigPath := config.GetPath()
 
 	zapConfig, err := config.NewZapConfig(zapConfigPath)
+	if err != nil {
+		return err
+	}
 
-	err = appimage.Update(updateAppImageOptionsInstance, zapConfig)
+	err = appimage.Update(updateAppImageOptionsInstance, *zapConfig)
 	return err
 }
 
@@ -69,7 +75,11 @@ func removeAppImageCliContextWrapper(context *cli.Context) error {
 	zapConfigPath := config.GetPath()
 
 	zapConfig, err := config.NewZapConfig(zapConfigPath)
-	err = appimage.Remove(removeAppImageOptionsInstance, zapConfig)
+	if err != nil {
+		return err
+	}
+
+	err = appimage.Remove(removeAppImageOptionsInstance, *zapConfig)
 	return err
 }
 
@@ -86,7 +96,7 @@ func listAppImageCliContextWrapper(context *cli.Context) error {
 		return err
 	}
 
-	apps, err := appimage.List(zapConfig, context.Bool("index"))
+	apps, err := appimage.List(*zapConfig, context.Bool("index"))
 	if err != nil {
 		return err
 	}
@@ -101,7 +111,7 @@ func listAppImageCliContextWrapper(context *cli.Context) error {
 
 }
 
-func upgradeAppImageCliContextWrapper(context *cli.Context) error {
+func upgradeAppImageCliContextWrapper(_ *cli.Context) error {
 
 	zapConfigPath := config.GetPath()
 
@@ -110,7 +120,18 @@ func upgradeAppImageCliContextWrapper(context *cli.Context) error {
 		return err
 	}
 
-	_, err = appimage.Upgrade(zapConfig)
+	_, err = appimage.Upgrade(*zapConfig)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+
+func configCliContextWrapper(_ *cli.Context) error {
+	zapConfigPath := config.GetPath()
+	_, err := config.NewZapConfigInteractive(zapConfigPath)
 	if err != nil {
 		return err
 	}
@@ -131,7 +152,7 @@ func daemonCliContextWrapper(context *cli.Context) error {
 		return err
 	}
 
-	daemon.Sync(zapConfig)
+	daemon.Sync(*zapConfig)
 	return err
 
 }

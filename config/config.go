@@ -1,10 +1,16 @@
 package config
 
 import (
-	"github.com/adrg/xdg"
-	"gopkg.in/ini.v1"
+	"errors"
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/srevinsaju/zap/internal/helpers"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strconv"
+
+	"github.com/adrg/xdg"
+	"gopkg.in/ini.v1"
 )
 
 type Store struct {
@@ -57,13 +63,46 @@ func (store *Store) migrate(newStore Store) {
 	}
 }
 
-func NewZapDefaultConfig() Store {
-	zapDefaultConfig := &Store{}
-	zapDefaultConfig.populateDefaults()
-	return *zapDefaultConfig
+func (store *Store) write(configPath string) error {
+	baseConfig := ini.Empty()
+	zap := baseConfig.Section("Zap")
+	zap.Key("Version").SetValue(strconv.Itoa(store.Version))
+	zap.Key("Mirror").SetValue(store.Mirror)
+	zap.Key("ApplicationStore").SetValue(store.ApplicationStore)
+	zap.Key("IconStore").SetValue(store.IconStore)
+	zap.Key("LocalStore").SetValue(store.LocalStore)
+	zap.Key("CustomIconTheme").SetValue(strconv.FormatBool(store.CustomIconTheme))
+
+	logger.Debugf("Attempting to write INI v2 configuration into %s", configPath)
+	configFile, err := os.Create(configPath)
+	if err != nil {
+		return err
+	}
+
+	logger.Debugf("Marshalling into configuration file")
+	_, err = baseConfig.WriteTo(configFile)
+	if err != nil {
+		return err
+	}
+	err = configFile.Close()
+	if err != nil {
+		return err
+	}
+
+	logger.Debugf("Configuration file written into '%s' successfully", configPath)
+	return nil
 }
 
-func NewZapConfig(configPath string) (Store, error) {
+/* NewZapDefaultConfig creates a fresh configuration for zap from the pre-specified defaults */
+func NewZapDefaultConfig() *Store {
+	zapDefaultConfig := &Store{}
+	zapDefaultConfig.populateDefaults()
+	return zapDefaultConfig
+}
+
+/* NewZapConfig creates a new configuration from the configuration file if it exists, else
+   return the defaults */
+func NewZapConfig(configPath string) (*Store, error) {
 	customStore := &Store{}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -73,12 +112,15 @@ func NewZapConfig(configPath string) (Store, error) {
 
 	// Init new YAML decode
 	configRaw, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
 	config, err := ini.Load(configRaw)
 	if err != nil {
-		return *customStore, err
+		return customStore, err
 	}
 
-	configCore := config.Section("Core")
+	configCore := config.Section("Zap")
 
 	customStore = &Store{
 		Version:          configCore.Key("Version").MustInt(),
@@ -93,5 +135,51 @@ func NewZapConfig(configPath string) (Store, error) {
 	defStore.populateDefaults()
 	defStore.migrate(*customStore)
 
-	return *defStore, nil
+	return defStore, nil
+}
+
+
+
+func NewZapConfigInteractive(configPath string) (*Store, error) {
+	var err error
+
+	logger.Debug("Initializing survey for new zap config")
+	cfg, err := NewZapConfig(configPath)
+
+	customIconThemesEnabled := false
+	customIconThemePrompt := &survey.Confirm{
+		Message: "Do you use custom icon themes?",
+		Help:    "Custom Icon Themes provide uniform icon themes for AppImages",
+	}
+	err = survey.AskOne(customIconThemePrompt, &customIconThemesEnabled)
+	if err != nil {
+		return nil, err
+	}
+	cfg.CustomIconTheme = customIconThemesEnabled
+
+	whereToSave := ""
+	whereToSavePrompt := &survey.Input{
+		Message: "Path to store AppImage",
+		Help:    "The place to store AppImages, zap will download the AppImages and store the index here",
+		Default: cfg.LocalStore,
+	}
+
+	err = survey.AskOne(whereToSavePrompt, &whereToSave, survey.WithValidator(func(ans interface{}) error {
+		if helpers.CheckIfDirectoryExists(ans.(string)) {
+			return nil
+		}
+		return errors.New("directory does not exist, or no sufficient permission to open directory")
+	}))
+
+	cfg.LocalStore = whereToSave
+
+	cfg.IndexStore = filepath.Join(whereToSave, "index")
+	cfg.IconStore = filepath.Join(whereToSave, "icons")
+
+	logger.Debug(cfg)
+	err = cfg.write(configPath)
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
 }

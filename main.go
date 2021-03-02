@@ -100,6 +100,11 @@ func main() {
 			},
 		},
 		{
+			Name:   "init",
+			Usage:  "Configure zap interactively",
+			Action: configCliContextWrapper,
+		},
+		{
 			Name:    "daemon",
 			Usage:   "Runs a daemon which periodically checks for updates for installed appimages",
 			Action:  daemonCliContextWrapper,

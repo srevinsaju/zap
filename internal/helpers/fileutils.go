@@ -51,3 +51,17 @@ func CheckIfFileExists(filepath string) bool {
 	return true
 
 }
+
+// CheckIfDirectoryExists checks if a file exists and is not a directory before we
+// try using it to prevent further errors.
+// Returns true if it does, false otherwise.
+func CheckIfDirectoryExists(filepath string) bool {
+	info, err := os.Stat(filepath)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir()
+}
