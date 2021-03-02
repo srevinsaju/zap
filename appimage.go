@@ -9,7 +9,6 @@ import (
 	"strings"
 )
 
-
 func installAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
 	executable := context.String("executable")
 	appName := context.Args().First()
