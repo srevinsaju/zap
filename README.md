@@ -22,7 +22,7 @@ The status of development is still in Beta. Please help me find bugs by opening 
 
 > Looking for a stabler, Zap v1 (Python)? Head over to [master](https://github.com/srevinsaju/zap/tree/master) branch
 
-## Getting Started 👶
+## Getting Started ✨
 
 For system-wide installation (needs `sudo`)
 ```bash
