@@ -14,15 +14,15 @@
 [![Mentioned in Awesome AppImage](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/AppImage/awesome-appimage)
 
 [![GitHub followers](https://img.shields.io/github/followers/srevinsaju?label=Follow%20me&style=social)](https://github.com/srevinsaju) [![GitHub stars](https://img.shields.io/github/stars/srevinsaju/zap?style=social)](https://github.com/srevinsaju/zap/stargazers)
+
+<img src="assets/zap-firefox-install.gif" alt="Zap Installing Firefox"></img>
 </div>
 
-
-
-The status of development is still in Alpha. Please help me fix bugs by opening an issue.
+The status of development is still in Beta. Please help me find bugs by opening an issue.
 
 > Looking for a stabler, Zap v1 (Python)? Head over to [master](https://github.com/srevinsaju/zap/tree/master) branch
 
-## Getting Started
+## Getting Started 👶
 
 For system-wide installation (needs `sudo`)
 ```bash
@@ -38,11 +38,81 @@ $ chmod +x ~/.local/bin/zap
 $ zap --help
 ```
 
+#### Installing AppImages ⚡️
+All AppImages from the [AppImage Catalog](https://appimage.github.io) and [AppImage catalog v2](https://g.srevinsaju.me/get-appimage) can be installed using zap with their registered name.
+
+```bash
+zap install element
+```
+will ask you the version of element you would like to install + download them and do all the hard work of integrating into your system, 
+i.e creating desktop files, etc.
+
+You can also install appimages from GitHub releases
+
+```bash
+zap install --github --from vscodium/vscodium
+```
+
+will put some options which will let you choose the best version for your system.
+
+It is also possible to install AppImage from URLs
+
+```bash
+zap install --from https://f.sed.lol/wow.AppImage
+```
+ 
+#### Updating AppImages 🔄
+AppImages can be optionally, [automatically updated using the `zapd`](#Daemon), but to achieve this manually, you need to 
+```bash
+zap update firefox
+```
+This will make use of the update information embedded within the appimage, which if exists, will be used to 'delta-update' the latest
+version, by downloading "only" the parts which have changed.
+
+For those AppImages not supporting delta updates, you can still do 
+```bash
+zap install zoom
+```
+to install the latest version of Zoom.
+
+
+##### Upgrade 🚀
+`zap` also supports updating all the apps together using `appimage-update`. 
+
+```bash
+zap upgrade
+```
+
+
+#### Configuration ⚙️
+It is possible to interactively configure `zap`. All you need to do is 
+```bash
+zap init
+```
+And answer all the questions that would follow.
+
+
+#### Daemon 🏃
+
+`zapd` is a Zap AppImage daemon which periodically checks for updates.
+
+```bash
+zap daemon --install
+```
+
+This will install a `systemd` service in the local (user) level, which will spawn `zap daemon` which auto-updates 
+the AppImages. 
+
+To run the daemon (sync), do 
+```bash
+zap daemon
+```
+
 
 <br>
 
 
-## Support
+## Support 💸
 
 All Pull Requests are welcome.
 
@@ -50,15 +120,12 @@ If you are a non-coder or was inspired by this small project, I would be glad if
 
 
 
-## Credits
+## Credits 🙏
 
 This project has been possible with the help and support provided by the AppImage community. Thanks to the detailed responses I received from mentors at AppImage's freenode channel.
 
-Many parts of this documentation have been adapted (~~plagiarized~~) from [The OhMyZsh Project](https://github.com/ohmyzsh/ohmyzsh), you may find the documentation structure is almost similar. And also the installation script.
 
-
-
-## License
+## License ⚖️
 
 ```
 MIT License
@@ -84,13 +151,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Copyright
+## Copyright ©️
 (C) Srevin Saju 2020
-
-
-
-
-
-
-
 
