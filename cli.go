@@ -152,7 +152,9 @@ func daemonCliContextWrapper(context *cli.Context) error {
 		return err
 	}
 
-	daemon.Sync(*zapConfig)
+	daemon.Sync(func() ([]string, error) {
+		return appimage.Upgrade(*zapConfig)
+	})
 	return err
 
 }

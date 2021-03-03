@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/srevinsaju/zap/daemon"
 	"github.com/srevinsaju/zap/internal/helpers"
 	"io/ioutil"
 	"os"
@@ -145,6 +146,31 @@ func NewZapConfigInteractive(configPath string) (*Store, error) {
 
 	logger.Debug("Initializing survey for new zap config")
 	cfg, err := NewZapConfig(configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err = os.Stat("/etc/systemd/user/zapd.service"); os.IsNotExist(err) {
+		autoUpdateEnabled := false
+		autoUpdateEnabledPrompt := &survey.Confirm{
+			Message: "Do you want to enable auto-update?",
+			Help:    "Auto update will install a systemd service which will periodically check for updates and install the latest version.",
+		}
+		err = survey.AskOne(autoUpdateEnabledPrompt, &autoUpdateEnabled)
+		if err != nil {
+			return nil, err
+		}
+		if autoUpdateEnabled {
+			err = daemon.SetupToRunThroughSystemd()
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+
+
+
 
 	customIconThemesEnabled := false
 	customIconThemePrompt := &survey.Confirm{

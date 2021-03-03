@@ -3,10 +3,8 @@ package daemon
 import (
 	"fmt"
 	"github.com/gen2brain/beeep"
-	"github.com/srevinsaju/zap/appimage"
-	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/internal/helpers"
 	"github.com/srevinsaju/zap/logging"
-	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -16,12 +14,15 @@ import (
 
 var logger = logging.GetLogger()
 
-func upgrade(c chan int, s chan os.Signal, config config.Store) {
+type UpdateFunction func() ([]string, error)
+
+
+func upgrade(c chan int, s chan os.Signal, updater UpdateFunction) {
 
 	for {
 		select {
 		case <- c:
-			apps, _ := appimage.Upgrade(config)
+			apps, _ := updater()
 			if len(apps) > 0 {
 				logger.Infof("Apps have been updated, %s", apps)
 				err := beeep.Notify("Zap ⚡️",
@@ -41,7 +42,7 @@ func upgrade(c chan int, s chan os.Signal, config config.Store) {
 	}
 }
 
-func Sync(config config.Store) {
+func Sync(updater UpdateFunction) {
 
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, os.Interrupt)
@@ -62,12 +63,12 @@ func Sync(config config.Store) {
 
 
 	}()
-	upgrade(c, s, config)
+	upgrade(c, s, updater)
 }
 
 func waitUntilOnline() {
 	// wait for internet connection
-	isOnline := checkIfOnline()
+	isOnline := helpers.CheckIfOnline()
 	heartbeat := 1
 	for isOnline == false {
 		time.Sleep(time.Second * time.Duration(heartbeat))
@@ -75,21 +76,7 @@ func waitUntilOnline() {
 			heartbeat = heartbeat * 2
 		}
 		logger.Infof("Not connected to internet, retrying in %d seconds", heartbeat)
-		isOnline = checkIfOnline()
+		isOnline = helpers.CheckIfOnline()
 	}
 }
 
-func checkIfOnline() bool {
-	// https://dev.to/obnoxiousnerd/check-if-user-is-connected-to-the-internet-in-go-1hk6
-
-	//Make a request to icanhazip.com
-	//We need the error only, nothing else :)
-	_, err := http.Get("https://icanhazip.com/")
-	//err = nil means online
-	if err == nil {
-		return true
-	}
-	//if the "return statement" in the if didn't executed,
-	//this one will execute surely
-	return false
-}
