@@ -83,6 +83,9 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 	}
 
 	targetXdgIconPath := filepath.Join(xdgIconPath, baseIconName)
+	logger.Debugf("Attempting to create directory to %s", targetXdgIconPath)
+	os.MkdirAll(targetXdgIconPath, 0777)
+
 	logger.Debugf("Attempting to create symlink to %s", targetXdgIconPath)
 	err = os.Symlink(targetIconPath, targetXdgIconPath)
 	if err != nil {

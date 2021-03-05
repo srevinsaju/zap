@@ -4,6 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/adrg/xdg"
 	au "github.com/srevinsaju/appimage-update"
@@ -12,15 +20,7 @@ import (
 	"github.com/srevinsaju/zap/internal/helpers"
 	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path"
-	"path/filepath"
-	"strings"
 )
-
 
 func List(zapConfig config.Store, index bool) ([]string, error) {
 	var apps []string
@@ -43,7 +43,6 @@ func List(zapConfig config.Store, index bool) ([]string, error) {
 	})
 	return apps, err
 }
-
 
 func Install(options types.Options, config config.Store) error {
 	var asset types.ZapDlAsset
@@ -83,7 +82,6 @@ func Install(options types.Options, config config.Store) error {
 
 	logger.Debugf("Connecting to %s", asset.Download)
 
-
 	targetAppImagePath := path.Join(config.LocalStore, asset.GetBaseName())
 	targetAppImagePath, _ = filepath.Abs(targetAppImagePath)
 	logger.Debugf("Target file path %s", targetAppImagePath)
@@ -114,7 +112,7 @@ func Install(options types.Options, config config.Store) error {
 
 		defer resp.Body.Close()
 
-		f, _ := os.OpenFile(targetAppImagePath, os.O_CREATE | os.O_WRONLY, 0755)
+		f, _ := os.OpenFile(targetAppImagePath, os.O_CREATE|os.O_WRONLY, 0755)
 
 		logger.Debug("Setting up progressbar")
 		bar := tui.NewProgressBar(
@@ -135,8 +133,6 @@ func Install(options types.Options, config config.Store) error {
 		fmt.Print("\n")
 	}
 
-
-
 	app := &AppImage{Filepath: targetAppImagePath, Executable: options.Executable}
 	if options.Executable == "" {
 		app.Executable = options.Executable
@@ -144,7 +140,6 @@ func Install(options types.Options, config config.Store) error {
 
 	app.ExtractThumbnail(config.IconStore)
 	app.ProcessDesktopFile(config)
-
 
 	indexBytes, err := json.Marshal(*app)
 	if err != nil {
@@ -157,8 +152,8 @@ func Install(options types.Options, config config.Store) error {
 		return err
 	}
 
-
-	binFile := path.Join(xdg.Home, ".local", "bin", options.Executable)
+	binDir := path.Join(xdg.Home, ".local", "bin")
+	binFile := path.Join(binDir, options.Executable)
 
 	// make sure we remove the file first to prevent conflicts
 	if helpers.CheckIfFileExists(binFile) {
@@ -169,6 +164,10 @@ func Install(options types.Options, config config.Store) error {
 		}
 	}
 
+	if !strings.Contains(os.Getenv("PATH"), binDir) {
+		logger.Warnf("The app %s are installed in '%s' which is not on PATH.", options.Executable, binDir)
+		logger.Warnf("Consider adding this directory to PATH. See https://linuxize.com/post/how-to-add-directory-to-path-in-linux/")
+	}
 
 	logger.Debugf("Creating symlink to %s", binFile)
 	err = os.Symlink(targetAppImagePath, binFile)
@@ -183,7 +182,6 @@ func Install(options types.Options, config config.Store) error {
 	return nil
 }
 
-
 func Upgrade(config config.Store) ([]string, error) {
 	apps, err := List(config, false)
 	var updatedApps []string
@@ -194,11 +192,10 @@ func Upgrade(config config.Store) ([]string, error) {
 		appsFormatted := fmt.Sprintf("[%s]", apps[i])
 		fmt.Printf("%s%s Checking for updates\n", tui.Blue("[update]"), tui.Yellow(appsFormatted))
 		options := types.Options{
-			Name:          apps[i],
-			Executable:    apps[i],
+			Name:       apps[i],
+			Executable: apps[i],
 		}
 		_, err := update(options, config)
-
 
 		if err != nil {
 			if err.Error() == "up-to-date" {
@@ -212,13 +209,11 @@ func Upgrade(config config.Store) ([]string, error) {
 			updatedApps = append(updatedApps, apps[i])
 		}
 
-
 	}
 
 	fmt.Println("🚀 Done.")
 	return updatedApps, nil
 }
-
 
 func Update(options types.Options, config config.Store) error {
 	app, err := update(options, config)
@@ -244,7 +239,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 
 	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
 	logger.Debugf("Checking if %s exists", indexFile)
-	if ! helpers.CheckIfFileExists(indexFile) {
+	if !helpers.CheckIfFileExists(indexFile) {
 		fmt.Printf("%s is not installed \n", tui.Yellow(options.Executable))
 		return app, nil
 	}
@@ -305,13 +300,12 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 	return app, nil
 }
 
-
 func Remove(options types.Options, config config.Store) error {
 	app := &AppImage{}
 
 	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
 	logger.Debugf("Checking if %s exists", indexFile)
-	if ! helpers.CheckIfFileExists(indexFile) {
+	if !helpers.CheckIfFileExists(indexFile) {
 		fmt.Printf("%s is not installed \n", tui.Yellow(options.Executable))
 		return nil
 	}
@@ -358,7 +352,6 @@ func Remove(options types.Options, config config.Store) error {
 	fmt.Printf("\n")
 	fmt.Printf("✅ %s removed successfully\n", app.Executable)
 	logger.Debugf("Removing all files completed successfully")
-
 
 	return bar.Finish()
 }
