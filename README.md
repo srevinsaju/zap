@@ -26,17 +26,19 @@ The status of development is still in Beta. Please help me find bugs by opening 
 
 For system-wide installation (needs `sudo`)
 ```bash
-$ sudo wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap -O /usr/local/bin/zap
+$ sudo wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap-amd64 -O /usr/local/bin/zap
 $ sudo chmod +x /usr/local/bin/zap
 $ zap --help
 ```
 
 For local installtion, (requires `~/.local/bin` to be on `$PATH`)
 ```bash
-$ wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap -O ~/.local/bin/zap
+$ wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap-amd64 -O ~/.local/bin/zap
 $ chmod +x ~/.local/bin/zap
 $ zap --help
 ```
+
+> NOTE: Replace `amd64` with your machine architecture. Supported architectures are listed in the [release](https://github.com/srevinsaju/zap/releases/tag/v2-continuous) page 
 
 #### Installing AppImages ⚡️
 All AppImages from the [AppImage Catalog](https://appimage.github.io) and [AppImage catalog v2](https://g.srevinsaju.me/get-appimage) can be installed using zap with their registered name.
