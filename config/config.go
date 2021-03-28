@@ -40,7 +40,7 @@ func (store *Store) populateDefaults() {
 	store.IndexStore = indexStore
 	store.ApplicationStore = applicationsStore
 	store.Version = 2
-	store.Mirror = "https://g.srevinsaju.me/get-appimage/%s/core.json"
+	store.Mirror = "https://g.srev.in/get-appimage/%s/core.json"
 }
 
 func (store *Store) migrate(newStore Store) {

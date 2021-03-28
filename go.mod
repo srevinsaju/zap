@@ -13,6 +13,7 @@ require (
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/srevinsaju/appimage-update v0.1.5-ss2
 	github.com/urfave/cli/v2 v2.3.0
+	github.com/webview/webview v0.0.0-20210216142346-e0bfdf0e5d90 // indirect
 	github.com/withmandala/go-log v0.1.0
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/ini.v1 v1.62.0
