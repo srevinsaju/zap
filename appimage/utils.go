@@ -156,13 +156,7 @@ func Install(options types.Options, config config.Store) error {
 	binFile := path.Join(binDir, options.Executable)
 
 	// make sure we remove the file first to prevent conflicts
-	if helpers.CheckIfFileExists(binFile) {
-		logger.Debugf("Removing old symlink, %s", binFile)
-		err := os.Remove(binFile)
-		if err != nil {
-			return err
-		}
-	}
+    os.Remove(binFile)
 
 	if !strings.Contains(os.Getenv("PATH"), binDir) {
 		logger.Warnf("The app %s are installed in '%s' which is not on PATH.", options.Executable, binDir)
@@ -323,10 +317,6 @@ func Remove(options types.Options, config config.Store) error {
 		return err
 	}
 
-	logger.Debugf("Removing appimage, %s", app.Filepath)
-	bar.Describe("Removing AppImage")
-	os.Remove(app.Filepath)
-
 	if app.IconPath != "" {
 		logger.Debugf("Removing thumbnail, %s", app.IconPath)
 		bar.Describe("Removing Icons")
@@ -344,6 +334,18 @@ func Remove(options types.Options, config config.Store) error {
 		bar.Describe("Removing desktop file")
 		os.Remove(app.DesktopFile)
 	}
+
+    binDir := path.Join(xdg.Home, ".local", "bin")
+	binFile := path.Join(binDir, options.Executable)
+
+	// make sure we remove the file first to prevent conflicts
+    os.Remove(binFile)
+
+
+    logger.Debugf("Removing appimage, %s", app.Filepath)
+	bar.Describe("Removing AppImage")
+	os.Remove(app.Filepath)
+
 
 	logger.Debugf("Removing index file, %s", indexFile)
 	os.Remove(indexFile)

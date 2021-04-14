@@ -128,7 +128,6 @@ func upgradeAppImageCliContextWrapper(_ *cli.Context) error {
 
 }
 
-
 func configCliContextWrapper(_ *cli.Context) error {
 	zapConfigPath := config.GetPath()
 	_, err := config.NewZapConfigInteractive(zapConfigPath)
