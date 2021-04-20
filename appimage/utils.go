@@ -1,6 +1,7 @@
 package appimage
 
 import (
+	"bytes"
 	"debug/elf"
 	"encoding/json"
 	"errors"
@@ -306,10 +307,16 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 			}
 
 		} else {
-			logger.Warn("%s has no update information. " +
-				"Please ask the AppImage author to include updateinformation for the best experience. " +
-				"Skipping.")
-			return nil, nil
+			if options.Silent {
+				logger.Warn("%s has no update information. " +
+					"Please ask the AppImage author to include updateinformation for the best experience. " +
+					"Skipping.")
+				return nil, nil
+			} else {
+				return nil, errors.New("appimage has no update information")
+			}
+
+
 		}
 	}
 
@@ -358,13 +365,23 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 	return app, nil
 }
 
+
+// checkIfUpdateInformationExists checks if the appimage contains Update Information
+// adapted directly from https://github.com/AppImageCrafters/appimage-update
 func checkIfUpdateInformationExists(f string) bool {
 	elfFile, err := elf.Open(f)
 	if err != nil {
 		panic("Unable to open target: \"" + f + "\"." + err.Error())
 	}
 	updInfo := elfFile.Section(".upd_info")
-	return updInfo != nil
+
+	sectionData, err := updInfo.Data()
+	if err != nil {
+		return false
+	}
+
+	strEnd := bytes.Index(sectionData, []byte("\000"))
+	return updInfo != nil && strEnd != -1 && strEnd != 0
 }
 
 func Remove(options types.RemoveOptions, config config.Store) error {
