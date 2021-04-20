@@ -58,11 +58,11 @@ func main() {
 						"of the appimage on your system",
 				},
 				&cli.StringFlag{
-					Name: "from",
+					Name:  "from",
 					Usage: "Provide a repository slug, or a direct URL to an appimage.",
 				},
 				&cli.BoolFlag{
-					Name: "github",
+					Name:  "github",
 					Usage: "tells zap if the AppImage has its source from GitHub. (requires, --from flag too)",
 				},
 			},
@@ -78,9 +78,9 @@ func main() {
 						"of the appimage on your system",
 				},
 				&cli.BoolFlag{
-					Name: "with-au",
+					Name:    "with-au",
 					Aliases: []string{"with-appimageupdate", "appimageupdate", "au"},
-					Usage: "Use AppImageUpdate to delta update your appimage using zsync.",
+					Usage:   "Use AppImageUpdate to delta update your appimage using zsync.",
 				},
 			},
 		},
@@ -100,7 +100,7 @@ func main() {
 			Action: listAppImageCliContextWrapper,
 			Flags: []cli.Flag{
 				&cli.BoolFlag{
-					Name: "no-color",
+					Name:  "no-color",
 					Usage: "Do not show AppImage executable names in color",
 				},
 				&cli.BoolFlag{
