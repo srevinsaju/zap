@@ -6,6 +6,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/google/go-github/v31/github"
 	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/exceptions"
 	"github.com/srevinsaju/zap/types"
 	"strconv"
 	"strings"
@@ -31,7 +32,7 @@ func getAsset(assets []*github.ReleaseAsset, name string) *github.ReleaseAsset {
 }
 
 
-func GitHubSurveyUserReleases(options types.Options, config config.Store) (types.ZapDlAsset, error) {
+func GitHubSurveyUserReleases(options types.InstallOptions, config config.Store) (types.ZapDlAsset, error) {
 	var asset types.ZapDlAsset
 
 	logger.Debugf("Creating github client")
