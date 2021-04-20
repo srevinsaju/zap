@@ -158,6 +158,9 @@ func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (t
 		logger.Debugf("Only one release found, selecting default.")
 		releaseUserResponse = releases.Releases[0].Tag
 
+	} else if options.Silent {
+		// do not show the options when the user are requested silence
+		return types.ZapDlAsset{}, exceptions.SilenceRequestedError
 
 	} else  {
 		// there are a lot of items in the release, hmm...
@@ -200,6 +203,8 @@ func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (t
 		return types.ZapDlAsset{}, exceptions.NoReleaseFoundError
 	} else if len(filteredAssets) == 1 {
 		asset = helpers.GetFirst(filteredAssets)
+	} else if options.Silent {
+		return types.ZapDlAsset{}, exceptions.SilenceRequestedError
 	} else {
 		assetsPrompt := &survey.Select{
 			Message: "Choose an asset",
