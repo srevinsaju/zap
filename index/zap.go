@@ -1,11 +1,11 @@
 package index
 
 import (
-	"errors"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/buger/jsonparser"
 	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/exceptions"
 	"github.com/srevinsaju/zap/internal/helpers"
 	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
@@ -151,7 +151,7 @@ func ZapSurveyUserReleases(options types.Options, config config.Store) (types.Za
 	if len(releases.Releases) == 0 {
 		// there are no items in release
 		logger.Fatalf("%s has no valid releases", options.Name)
-		return types.ZapDlAsset{}, errors.New("release_arr_empty")
+		return types.ZapDlAsset{}, exceptions.NoReleaseFoundError
 
 	} else if len(releases.Releases) > 1 {
 		// there are a lot of items in the release, hmm...
@@ -171,7 +171,6 @@ func ZapSurveyUserReleases(options types.Options, config config.Store) (types.Za
 		releaseUserResponse = releases.Releases[0].Tag
 	}
 
-
 	// get selected version
 	logger.Debugf("Downloading %s \n", tui.Yellow(releaseUserResponse))
 
@@ -179,7 +178,6 @@ func ZapSurveyUserReleases(options types.Options, config config.Store) (types.Za
 	if err != nil {
 		return types.ZapDlAsset{}, err
 	}
-
 
 
 	logger.Debugf("Running on GOARCH: %s", runtime.GOARCH)
@@ -197,7 +195,7 @@ func ZapSurveyUserReleases(options types.Options, config config.Store) (types.Za
 	assetsUserResponse := ""
 	if len(filteredAssets) == 0 {
 		logger.Fatal("⚠️ Sorry, this release has no valid downloadable AppImage asset.")
-		return types.ZapDlAsset{}, errors.New("assets_err_empty")
+		return types.ZapDlAsset{}, exceptions.NoReleaseFoundError
 	} else if len(filteredAssets) == 1 {
 		asset = helpers.GetFirst(filteredAssets)
 	} else {
