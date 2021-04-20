@@ -52,6 +52,15 @@ func Install(options types.InstallOptions, config config.Store) error {
 	sourceIdentifier := ""
 	sourceSlug := ""
 
+	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
+	logger.Debugf("Checking if %s exists", indexFile)
+	if helpers.CheckIfFileExists(indexFile) {
+		// check if the app is already installed
+		// if it is, do not continue
+		fmt.Printf("%s is already installed \n", tui.Yellow(options.Executable))
+		return nil
+	}
+
 	if options.RemovePreviousVersions {
 		err := Remove(options.ToRemoveOptions(), config)
 		if err != nil {
@@ -171,7 +180,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 	if err != nil {
 		return err
 	}
-	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
+	indexFile = fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
 	logger.Debugf("Writing JSON index to %s", indexFile)
 	err = ioutil.WriteFile(indexFile, indexBytes, 0644)
 	if err != nil {
