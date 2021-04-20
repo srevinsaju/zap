@@ -133,7 +133,7 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 }
 
 
-func ZapSurveyUserReleases(options types.Options, config config.Store) (types.ZapDlAsset, error) {
+func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (types.ZapDlAsset, error) {
 
 	asset := types.ZapDlAsset{}
 
@@ -153,7 +153,13 @@ func ZapSurveyUserReleases(options types.Options, config config.Store) (types.Za
 		logger.Fatalf("%s has no valid releases", options.Name)
 		return types.ZapDlAsset{}, exceptions.NoReleaseFoundError
 
-	} else if len(releases.Releases) > 1 {
+	} else if len(releases.Releases) == 1 {
+		// only one release, so select the first one.
+		logger.Debugf("Only one release found, selecting default.")
+		releaseUserResponse = releases.Releases[0].Tag
+
+
+	} else  {
 		// there are a lot of items in the release, hmm...
 		logger.Debug("Preparing survey for release selection")
 		releasePrompt := &survey.Select{
@@ -165,10 +171,6 @@ func ZapSurveyUserReleases(options types.Options, config config.Store) (types.Za
 		if err != nil {
 			return types.ZapDlAsset{}, err
 		}
-	} else {
-		// only one release, so select the first one.
-		logger.Debugf("Only one release found, selecting default.")
-		releaseUserResponse = releases.Releases[0].Tag
 	}
 
 	// get selected version
