@@ -54,12 +54,16 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name: "executable",
+					Usage: "Name of the executable which would be used as the unique identifier " +
+						"of the appimage on your system",
 				},
 				&cli.StringFlag{
 					Name: "from",
+					Usage: "Provide a repository slug, or a direct URL to an appimage.",
 				},
 				&cli.BoolFlag{
 					Name: "github",
+					Usage: "tells zap if the AppImage has its source from GitHub. (requires, --from flag too)",
 				},
 			},
 		},
@@ -70,9 +74,13 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name: "executable",
+					Usage: "Name of the executable which would be used as the unique identifier " +
+						"of the appimage on your system",
 				},
 				&cli.BoolFlag{
 					Name: "with-au",
+					Aliases: []string{"with-appimageupdate", "appimageupdate", "au"},
+					Usage: "Use AppImageUpdate to delta update your appimage using zsync.",
 				},
 			},
 		},
@@ -93,6 +101,7 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.BoolFlag{
 					Name: "no-color",
+					Usage: "Do not show AppImage executable names in color",
 				},
 				&cli.BoolFlag{
 					Name: "index",
