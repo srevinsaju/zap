@@ -53,7 +53,7 @@ func main() {
 			Action:  installAppImageCliContextWrapper,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name: "executable",
+					Name:  "executable",
 					Usage: "Name of the executable",
 				},
 				&cli.StringFlag{
