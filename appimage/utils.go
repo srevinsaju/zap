@@ -1,6 +1,7 @@
 package appimage
 
 import (
+	"debug/elf"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/adrg/xdg"
@@ -44,22 +46,36 @@ func List(zapConfig config.Store, index bool) ([]string, error) {
 	return apps, err
 }
 
-func Install(options types.Options, config config.Store) error {
+func Install(options types.InstallOptions, config config.Store) error {
 	var asset types.ZapDlAsset
 	var err error
+	sourceIdentifier := ""
+	sourceSlug := ""
+
+	if options.RemovePreviousVersions {
+		err := Remove(options.ToRemoveOptions(), config)
+		if err != nil {
+			return err
+		}
+	}
 
 	if options.FromGithub {
 		asset, err = index.GitHubSurveyUserReleases(options, config)
+		sourceSlug = options.From
+		sourceIdentifier = SourceGitHub
 		if err != nil {
 			return err
 		}
 	} else if options.From == "" {
+		sourceIdentifier = SourceZapIndex
+		sourceSlug = options.Name
 		asset, err = index.ZapSurveyUserReleases(options, config)
 		if err != nil {
 			return err
 		}
-
 	} else {
+		sourceIdentifier = SourceDirectURL
+		sourceSlug = options.From
 		asset = types.ZapDlAsset{
 			Name:     options.Executable,
 			Download: options.From,
@@ -67,17 +83,19 @@ func Install(options types.Options, config config.Store) error {
 		}
 	}
 
-	// let the user know what is going to happen next
-	fmt.Printf("Downloading %s of size %s. \n", tui.Green(asset.Name), tui.Yellow(asset.Size))
-	confirmDownload := false
-	confirmDownloadPrompt := &survey.Confirm{
-		Message: "Proceed?",
-	}
-	err = survey.AskOne(confirmDownloadPrompt, &confirmDownload)
-	if err != nil {
-		return err
-	} else if !confirmDownload {
-		return errors.New("aborting on user request")
+	if ! options.Silent {
+		// let the user know what is going to happen next
+		fmt.Printf("Downloading %s of size %s. \n", tui.Green(asset.Name), tui.Yellow(asset.Size))
+		confirmDownload := false
+		confirmDownloadPrompt := &survey.Confirm{
+			Message: "Proceed?",
+		}
+		err = survey.AskOne(confirmDownloadPrompt, &confirmDownload)
+		if err != nil {
+			return err
+		} else if !confirmDownload {
+			return errors.New("aborting on user request")
+		}
 	}
 
 	logger.Debugf("Connecting to %s", asset.Download)
@@ -138,6 +156,14 @@ func Install(options types.Options, config config.Store) error {
 		app.Executable = options.Executable
 	}
 
+	app.Source = Source{
+		Identifier: sourceIdentifier,
+		Meta:       SourceMetadata{
+			Slug:      sourceSlug,
+			CrawledOn: time.Now().String(),
+		},
+	}
+
 	app.ExtractThumbnail(config.IconStore)
 	app.ProcessDesktopFile(config)
 
@@ -176,7 +202,7 @@ func Install(options types.Options, config config.Store) error {
 	return nil
 }
 
-func Upgrade(config config.Store) ([]string, error) {
+func Upgrade(config config.Store, silent bool) ([]string, error) {
 	apps, err := List(config, false)
 	var updatedApps []string
 	if err != nil {
@@ -188,6 +214,7 @@ func Upgrade(config config.Store) ([]string, error) {
 		options := types.Options{
 			Name:       apps[i],
 			Executable: apps[i],
+			Silent: silent,
 		}
 		_, err := update(options, config)
 
