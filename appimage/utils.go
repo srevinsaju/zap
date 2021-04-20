@@ -249,6 +249,34 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 		return app, err
 	}
 
+	if ! checkIfUpdateInformationExists(app.Filepath) {
+
+		logger.Debug("This app has no update information embedded")
+
+		// the appimage does nofalset contain update information
+		// we need to fetch the metadata from the index
+		if app.Source.Identifier == SourceGitHub {
+			logger.Debug("Fallback to GitHub API call from installation method")
+			installOptions := types.InstallOptions{
+				Name:       app.Executable,
+				From:       app.Source.Meta.Slug,
+				Executable: strings.Trim(app.Executable, " "),
+				FromGithub: true,
+				Silent: options.Silent,
+			}
+			err := Install(installOptions, config)
+			if err != nil {
+				return nil, err
+			}
+
+		} else {
+			logger.Warn("%s has no update information. " +
+				"Please ask the AppImage author to include updateinformation for the best experience. " +
+				"Skipping.")
+			return nil, nil
+		}
+	}
+
 	logger.Debugf("Creating new updater instance from %s", app.Filepath)
 	updater, err := au.NewUpdaterFor(app.Filepath)
 	if err != nil {
