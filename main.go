@@ -54,8 +54,7 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name: "executable",
-					Usage: "Name of the executable which would be used as the unique identifier " +
-						"of the appimage on your system",
+					Usage: "Name of the executable",
 				},
 				&cli.StringFlag{
 					Name:  "from",
@@ -63,7 +62,7 @@ func main() {
 				},
 				&cli.BoolFlag{
 					Name:  "github",
-					Usage: "tells zap if the AppImage has its source from GitHub. (requires, --from flag too)",
+					Usage: "Use --from as repository slug to fetch from GitHub",
 				},
 			},
 		},
