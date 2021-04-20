@@ -294,7 +294,16 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 	return app, nil
 }
 
-func Remove(options types.Options, config config.Store) error {
+func checkIfUpdateInformationExists(f string) bool {
+	elfFile, err := elf.Open(f)
+	if err != nil {
+		panic("Unable to open target: \"" + f + "\"." + err.Error())
+	}
+	updInfo := elfFile.Section(".upd_info")
+	return updInfo != nil
+}
+
+func Remove(options types.RemoveOptions, config config.Store) error {
 	app := &AppImage{}
 
 	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
