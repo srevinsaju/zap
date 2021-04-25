@@ -384,6 +384,8 @@ func checkIfUpdateInformationExists(f string) bool {
 	return updInfo != nil && strEnd != -1 && strEnd != 0
 }
 
+// Remove function helps to remove an appimage, given its executable name
+// with which it was registered
 func Remove(options types.RemoveOptions, config config.Store) error {
 	app := &AppImage{}
 
