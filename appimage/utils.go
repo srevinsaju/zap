@@ -434,11 +434,11 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 
     logger.Debugf("Removing appimage, %s", app.Filepath)
 	bar.Describe("Removing AppImage")
-	os.Remove(app.Filepath)
+	_ = os.Remove(app.Filepath)
 
 
 	logger.Debugf("Removing index file, %s", indexFile)
-	os.Remove(indexFile)
+	_ = os.Remove(indexFile)
 
 	bar.Finish()
 	fmt.Printf("\n")
