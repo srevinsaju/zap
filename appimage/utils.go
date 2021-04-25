@@ -191,8 +191,30 @@ func Install(options types.InstallOptions, config config.Store) error {
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
 
-	// make sure we remove the file first to prevent conflicts
-    os.Remove(binFile)
+	if helpers.CheckIfFileExists(binFile) {
+		binAbsPath, err := filepath.EvalSymlinks(binFile)
+		if err == nil && strings.HasPrefix(binAbsPath, config.LocalStore) {
+			// this link points to config.LocalStore, where all AppImages are stored
+			// I guess we need to remove them, no asking and all
+			// make sure we remove the file first to prevent conflicts in future
+			_ = os.Remove(binFile)
+		} else if err == nil {
+			// this is some serious app which shares the same name
+			// as that of the target appimage
+			// we dont want users to be confused tbh
+			// so we need to ask them which of them, they would like to keep
+
+			if options.Silent {
+				logger.Fatalf("%s already exists. ")
+			}
+		} else {
+			// the file is probably a symlink, but just doesnt resolve properly
+			// we can safely remove it
+
+			// make sure we remove the file first to prevent conflicts
+			os.Remove(binFile)
+		}
+	}
 
 	if !strings.Contains(os.Getenv("PATH"), binDir) {
 		logger.Warnf("The app %s are installed in '%s' which is not on PATH.", options.Executable, binDir)
@@ -267,8 +289,37 @@ func Update(options types.Options, config config.Store) error {
 	return nil
 }
 
-func update(options types.Options, config config.Store) (*AppImage, error) {
+// RemoveAndInstall helps to remove the AppImage first and then reinstall the appimage.
+// this is particularly used in updating the AppImages from GitHub and Zap Index when
+// the update information is missing
+func RemoveAndInstall(options types.InstallOptions, config config.Store, app *AppImage) (*AppImage, error) {
+	// for github releases, we have to force the removal of the old
+	// appimage before continuing, because there is no verification
+	// of the method which can be used to check if the appimage is up to date
+	// or not.
+	err := Remove(types.RemoveOptions{Executable: app.Executable}, config)
+	if err != nil {
+		return nil, err
+	}
+	err = Install(options, config)
+	if err != nil {
+		return nil, err
+	}
 
+	// after installing, we need to resolve the name of the new app
+	binDir := path.Join(xdg.Home, ".local", "bin")
+	binFile := path.Join(binDir, app.Executable)
+	app.Filepath, err = filepath.EvalSymlinks(binFile)
+	if err != nil {
+		logger.Fatalf("Failed to resolve symlink to %s. E: %s", binDir, err)
+		return nil, err
+	}
+	return app, err
+}
+
+
+
+func update(options types.Options, config config.Store) (*AppImage, error) {
 	logger.Debugf("Bootstrapping updater", options.Name)
 	app := &AppImage{}
 
@@ -303,12 +354,20 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 				From:       app.Source.Meta.Slug,
 				Executable: strings.Trim(app.Executable, " "),
 				FromGithub: true,
-				Silent: options.Silent,
+				Silent:     options.Silent,
 			}
-			err := Install(installOptions, config)
-			if err != nil {
-				return nil, err
+			return RemoveAndInstall(installOptions, config, app)
+
+		} else if app.Source.Identifier == SourceZapIndex {
+			logger.Debug("Fallback to zap index from appimage.github.io")
+			installOptions := types.InstallOptions{
+				Name:       app.Executable,
+				From:       "",
+				Executable: strings.Trim(app.Executable, " "),
+				FromGithub: false,
+				Silent:     options.Silent,
 			}
+			return RemoveAndInstall(installOptions, config, app)
 
 		} else {
 			if options.Silent {
@@ -434,9 +493,15 @@ func Remove(options types.RemoveOptions, config config.Store) error {
     binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
 
-	// make sure we remove the file first to prevent conflicts
-    os.Remove(binFile)
-
+	if helpers.CheckIfFileExists(binFile) {
+		binAbsPath, err := filepath.EvalSymlinks(binFile)
+		if err == nil && strings.HasPrefix(binAbsPath, config.LocalStore) {
+			// this link points to config.LocalStore, where all AppImages are stored
+			// I guess we need to remove them, no asking and all
+			// make sure we remove the file first to prevent conflicts in future
+			_ = os.Remove(binFile)
+		}
+	}
 
     logger.Debugf("Removing appimage, %s", app.Filepath)
 	bar.Describe("Removing AppImage")
