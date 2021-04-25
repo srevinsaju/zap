@@ -212,6 +212,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 	return nil
 }
 
+// Upgrade method helps to update multiple apps without asking users for manual input
 func Upgrade(config config.Store, silent bool) ([]string, error) {
 	apps, err := List(config, false)
 	var updatedApps []string
@@ -246,6 +247,9 @@ func Upgrade(config config.Store, silent bool) ([]string, error) {
 	return updatedApps, nil
 }
 
+
+// Update method is a safe wrapper script which exposes update to the Command Line interface
+// also handles those appimages which are up to date
 func Update(options types.Options, config config.Store) error {
 	app, err := update(options, config)
 	if err != nil {
