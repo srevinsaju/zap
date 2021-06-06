@@ -30,13 +30,13 @@ from colorama import Fore
 
 MIRRORS = {
     "0": [
-        "https://srevinsaju.me/get-appimage/{}/core.json",
+        "https://g.srev.in/get-appimage/{}/core.json",
         "Stable AppImage Database. Updated hourly"],
     "1": [
         "http://zapacman.pythonanywhere.com/core/{}",
         "Live AppImage Database. Update on request (beta)"]}
 
-URL_SHOWCASE = "https://srevinsaju.me/get-appimage/{}/"
+URL_SHOWCASE = "https://g.srev.in/get-appimage/{}/"
 YES_RESPONSES = ("yes", "y", "yea", "yup", "ye")
 
 ZAP_PATH_RC_PATCH = \
