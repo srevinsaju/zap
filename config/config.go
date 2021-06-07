@@ -23,7 +23,15 @@ type Store struct {
 	IndexStore       string
 	ApplicationStore string
 	CustomIconTheme  bool
+	Integrate        string
 }
+
+const (
+	IntegrateAlways = "yes"
+	IntegrateNever = "no"
+	IntegrateAsk = "ask"
+)
+
 
 func (store *Store) populateDefaults() {
 	localStore, err := xdg.DataFile("zap/v2")
@@ -41,6 +49,7 @@ func (store *Store) populateDefaults() {
 	store.IndexStore = indexStore
 	store.ApplicationStore = applicationsStore
 	store.Version = 2
+	store.Integrate = IntegrateAsk
 	store.Mirror = "https://g.srev.in/get-appimage/%s/core.json"
 	store.MirrorRoot = "https://g.srev.in/get-appimage"
 }
@@ -79,6 +88,7 @@ func (store *Store) write(configPath string) error {
 	zap.Key("IconStore").SetValue(store.IconStore)
 	zap.Key("LocalStore").SetValue(store.LocalStore)
 	zap.Key("CustomIconTheme").SetValue(strconv.FormatBool(store.CustomIconTheme))
+	zap.Key("Integrate").SetValue(store.Integrate)
 
 	logger.Debugf("Attempting to write INI v2 configuration into %s", configPath)
 	configFile, err := os.Create(configPath)
@@ -137,6 +147,7 @@ func NewZapConfig(configPath string) (*Store, error) {
 		IconStore:        configCore.Key("IconStore").String(),
 		ApplicationStore: configCore.Key("ApplicationStore").String(),
 		CustomIconTheme:  configCore.Key("CustomIconTheme").MustBool(),
+		Integrate:        configCore.Key("Integrate").String(),
 	}
 	defStore := &Store{}
 	defStore.populateDefaults()
@@ -199,11 +210,25 @@ func NewZapConfigInteractive(configPath string) (*Store, error) {
 		}
 		return errors.New("directory does not exist, or no sufficient permission to open directory")
 	}))
+	if err != nil {
+		return nil, err
+	}
 
 	cfg.LocalStore = whereToSave
 
 	cfg.IndexStore = filepath.Join(whereToSave, "index")
 	cfg.IconStore = filepath.Join(whereToSave, "icons")
+
+	integrate := ""
+	err = survey.AskOne(&survey.Select{
+		Message: "Do you want to integrate AppImages by default?",
+		Options: []string{IntegrateAlways, IntegrateNever, IntegrateAsk},
+	}, &integrate)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg.Integrate = integrate
 
 	logger.Debug(cfg)
 	err = cfg.write(configPath)

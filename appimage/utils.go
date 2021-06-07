@@ -1,6 +1,8 @@
 package appimage
 
 import (
+	"bytes"
+	"debug/elf"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +13,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/adrg/xdg"
@@ -44,22 +47,45 @@ func List(zapConfig config.Store, index bool) ([]string, error) {
 	return apps, err
 }
 
-func Install(options types.Options, config config.Store) error {
+func Install(options types.InstallOptions, config config.Store) error {
 	var asset types.ZapDlAsset
 	var err error
+	sourceIdentifier := ""
+	sourceSlug := ""
+
+	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
+	logger.Debugf("Checking if %s exists", indexFile)
+	if helpers.CheckIfFileExists(indexFile) {
+		// check if the app is already installed
+		// if it is, do not continue
+		fmt.Printf("%s is already installed \n", tui.Yellow(options.Executable))
+		return nil
+	}
+
+	if options.RemovePreviousVersions {
+		err := Remove(options.ToRemoveOptions(), config)
+		if err != nil {
+			return err
+		}
+	}
 
 	if options.FromGithub {
 		asset, err = index.GitHubSurveyUserReleases(options, config)
+		sourceSlug = options.From
+		sourceIdentifier = SourceGitHub
 		if err != nil {
 			return err
 		}
 	} else if options.From == "" {
+		sourceIdentifier = SourceZapIndex
+		sourceSlug = options.Name
 		asset, err = index.ZapSurveyUserReleases(options, config)
 		if err != nil {
 			return err
 		}
-
 	} else {
+		sourceIdentifier = SourceDirectURL
+		sourceSlug = options.From
 		asset = types.ZapDlAsset{
 			Name:     options.Executable,
 			Download: options.From,
@@ -67,17 +93,19 @@ func Install(options types.Options, config config.Store) error {
 		}
 	}
 
-	// let the user know what is going to happen next
-	fmt.Printf("Downloading %s of size %s. \n", tui.Green(asset.Name), tui.Yellow(asset.Size))
-	confirmDownload := false
-	confirmDownloadPrompt := &survey.Confirm{
-		Message: "Proceed?",
-	}
-	err = survey.AskOne(confirmDownloadPrompt, &confirmDownload)
-	if err != nil {
-		return err
-	} else if !confirmDownload {
-		return errors.New("aborting on user request")
+	if ! options.Silent {
+		// let the user know what is going to happen next
+		fmt.Printf("Downloading %s of size %s. \n", tui.Green(asset.Name), tui.Yellow(asset.Size))
+		confirmDownload := false
+		confirmDownloadPrompt := &survey.Confirm{
+			Message: "Proceed?",
+		}
+		err = survey.AskOne(confirmDownloadPrompt, &confirmDownload)
+		if err != nil {
+			return err
+		} else if !confirmDownload {
+			return errors.New("aborting on user request")
+		}
 	}
 
 	logger.Debugf("Connecting to %s", asset.Download)
@@ -138,6 +166,14 @@ func Install(options types.Options, config config.Store) error {
 		app.Executable = options.Executable
 	}
 
+	app.Source = Source{
+		Identifier: sourceIdentifier,
+		Meta:       SourceMetadata{
+			Slug:      sourceSlug,
+			CrawledOn: time.Now().String(),
+		},
+	}
+
 	app.ExtractThumbnail(config.IconStore)
 	app.ProcessDesktopFile(config)
 
@@ -145,7 +181,7 @@ func Install(options types.Options, config config.Store) error {
 	if err != nil {
 		return err
 	}
-	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
+	indexFile = fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
 	logger.Debugf("Writing JSON index to %s", indexFile)
 	err = ioutil.WriteFile(indexFile, indexBytes, 0644)
 	if err != nil {
@@ -155,8 +191,30 @@ func Install(options types.Options, config config.Store) error {
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
 
-	// make sure we remove the file first to prevent conflicts
-    os.Remove(binFile)
+	if helpers.CheckIfFileExists(binFile) {
+		binAbsPath, err := filepath.EvalSymlinks(binFile)
+		if err == nil && strings.HasPrefix(binAbsPath, config.LocalStore) {
+			// this link points to config.LocalStore, where all AppImages are stored
+			// I guess we need to remove them, no asking and all
+			// make sure we remove the file first to prevent conflicts in future
+			_ = os.Remove(binFile)
+		} else if err == nil {
+			// this is some serious app which shares the same name
+			// as that of the target appimage
+			// we dont want users to be confused tbh
+			// so we need to ask them which of them, they would like to keep
+
+			if options.Silent {
+				logger.Fatalf("%s already exists. ")
+			}
+		} else {
+			// the file is probably a symlink, but just doesnt resolve properly
+			// we can safely remove it
+
+			// make sure we remove the file first to prevent conflicts
+			os.Remove(binFile)
+		}
+	}
 
 	if !strings.Contains(os.Getenv("PATH"), binDir) {
 		logger.Warnf("The app %s are installed in '%s' which is not on PATH.", options.Executable, binDir)
@@ -177,7 +235,8 @@ func Install(options types.Options, config config.Store) error {
 	return nil
 }
 
-func Upgrade(config config.Store) ([]string, error) {
+// Upgrade method helps to update multiple apps without asking users for manual input
+func Upgrade(config config.Store, silent bool) ([]string, error) {
 	apps, err := List(config, false)
 	var updatedApps []string
 	if err != nil {
@@ -189,6 +248,7 @@ func Upgrade(config config.Store) ([]string, error) {
 		options := types.Options{
 			Name:       apps[i],
 			Executable: apps[i],
+			Silent: silent,
 		}
 		_, err := update(options, config)
 
@@ -210,6 +270,9 @@ func Upgrade(config config.Store) ([]string, error) {
 	return updatedApps, nil
 }
 
+
+// Update method is a safe wrapper script which exposes update to the Command Line interface
+// also handles those appimages which are up to date
 func Update(options types.Options, config config.Store) error {
 	app, err := update(options, config)
 	if err != nil {
@@ -227,8 +290,37 @@ func Update(options types.Options, config config.Store) error {
 	return nil
 }
 
-func update(options types.Options, config config.Store) (*AppImage, error) {
+// RemoveAndInstall helps to remove the AppImage first and then reinstall the appimage.
+// this is particularly used in updating the AppImages from GitHub and Zap Index when
+// the update information is missing
+func RemoveAndInstall(options types.InstallOptions, config config.Store, app *AppImage) (*AppImage, error) {
+	// for github releases, we have to force the removal of the old
+	// appimage before continuing, because there is no verification
+	// of the method which can be used to check if the appimage is up to date
+	// or not.
+	err := Remove(types.RemoveOptions{Executable: app.Executable}, config)
+	if err != nil {
+		return nil, err
+	}
+	err = Install(options, config)
+	if err != nil {
+		return nil, err
+	}
 
+	// after installing, we need to resolve the name of the new app
+	binDir := path.Join(xdg.Home, ".local", "bin")
+	binFile := path.Join(binDir, app.Executable)
+	app.Filepath, err = filepath.EvalSymlinks(binFile)
+	if err != nil {
+		logger.Fatalf("Failed to resolve symlink to %s. E: %s", binDir, err)
+		return nil, err
+	}
+	return app, err
+}
+
+
+
+func update(options types.Options, config config.Store) (*AppImage, error) {
 	logger.Debugf("Bootstrapping updater", options.Name)
 	app := &AppImage{}
 
@@ -248,6 +340,48 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 	err = json.Unmarshal(indexBytes, app)
 	if err != nil {
 		return app, err
+	}
+
+	if ! checkIfUpdateInformationExists(app.Filepath) {
+
+		logger.Debug("This app has no update information embedded")
+
+		// the appimage does nofalset contain update information
+		// we need to fetch the metadata from the index
+		if app.Source.Identifier == SourceGitHub {
+			logger.Debug("Fallback to GitHub API call from installation method")
+			installOptions := types.InstallOptions{
+				Name:       app.Executable,
+				From:       app.Source.Meta.Slug,
+				Executable: strings.Trim(app.Executable, " "),
+				FromGithub: true,
+				Silent:     options.Silent,
+			}
+			return RemoveAndInstall(installOptions, config, app)
+
+		} else if app.Source.Identifier == SourceZapIndex {
+			logger.Debug("Fallback to zap index from appimage.github.io")
+			installOptions := types.InstallOptions{
+				Name:       app.Executable,
+				From:       "",
+				Executable: strings.Trim(app.Executable, " "),
+				FromGithub: false,
+				Silent:     options.Silent,
+			}
+			return RemoveAndInstall(installOptions, config, app)
+
+		} else {
+			if options.Silent {
+				logger.Warn("%s has no update information. " +
+					"Please ask the AppImage author to include updateinformation for the best experience. " +
+					"Skipping.")
+				return nil, nil
+			} else {
+				return nil, errors.New("appimage has no update information")
+			}
+
+
+		}
 	}
 
 	logger.Debugf("Creating new updater instance from %s", app.Filepath)
@@ -295,7 +429,28 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 	return app, nil
 }
 
-func Remove(options types.Options, config config.Store) error {
+
+// checkIfUpdateInformationExists checks if the appimage contains Update Information
+// adapted directly from https://github.com/AppImageCrafters/appimage-update
+func checkIfUpdateInformationExists(f string) bool {
+	elfFile, err := elf.Open(f)
+	if err != nil {
+		panic("Unable to open target: \"" + f + "\"." + err.Error())
+	}
+	updInfo := elfFile.Section(".upd_info")
+
+	sectionData, err := updInfo.Data()
+	if err != nil {
+		return false
+	}
+
+	strEnd := bytes.Index(sectionData, []byte("\000"))
+	return updInfo != nil && strEnd != -1 && strEnd != 0
+}
+
+// Remove function helps to remove an appimage, given its executable name
+// with which it was registered
+func Remove(options types.RemoveOptions, config config.Store) error {
 	app := &AppImage{}
 
 	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
@@ -339,17 +494,23 @@ func Remove(options types.Options, config config.Store) error {
     binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
 
-	// make sure we remove the file first to prevent conflicts
-    os.Remove(binFile)
-
+	if helpers.CheckIfFileExists(binFile) {
+		binAbsPath, err := filepath.EvalSymlinks(binFile)
+		if err == nil && strings.HasPrefix(binAbsPath, config.LocalStore) {
+			// this link points to config.LocalStore, where all AppImages are stored
+			// I guess we need to remove them, no asking and all
+			// make sure we remove the file first to prevent conflicts in future
+			_ = os.Remove(binFile)
+		}
+	}
 
     logger.Debugf("Removing appimage, %s", app.Filepath)
 	bar.Describe("Removing AppImage")
-	os.Remove(app.Filepath)
+	_ = os.Remove(app.Filepath)
 
 
 	logger.Debugf("Removing index file, %s", indexFile)
-	os.Remove(indexFile)
+	_ = os.Remove(indexFile)
 
 	bar.Finish()
 	fmt.Printf("\n")
