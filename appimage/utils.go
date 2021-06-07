@@ -160,7 +160,8 @@ func Install(options types.Options, config config.Store) error {
 
 	if !strings.Contains(os.Getenv("PATH"), binDir) {
 		logger.Warnf("The app %s are installed in '%s' which is not on PATH.", options.Executable, binDir)
-		logger.Warnf("Consider adding this directory to PATH. See https://linuxize.com/post/how-to-add-directory-to-path-in-linux/")
+		logger.Warnf("Consider adding this directory to PATH. " +
+			"See https://linuxize.com/post/how-to-add-directory-to-path-in-linux/")
 	}
 
 	logger.Debugf("Creating symlink to %s", binFile)

@@ -13,15 +13,12 @@ var logger = logging.GetLogger()
 
 // https://polyverse.com/blog/how-to-embed-versioning-information-in-go-applications-f76e2579b572/
 var (
-	BuildVersion string = ""
+	BuildVersion string = "(local dev build)"
 	BuildTime    string = ""
 )
 
 func getVersion() string {
-	if BuildVersion != "" || BuildTime != "" {
-		return fmt.Sprintf("%s Build:%s", BuildVersion, BuildTime)
-	}
-	return fmt.Sprintf("(local dev build)")
+	return fmt.Sprintf("Build:%s %s", BuildVersion, BuildTime)
 }
 
 func main() {
