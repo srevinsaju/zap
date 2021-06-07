@@ -132,7 +132,6 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 	return zapReleases, nil
 }
 
-
 func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (types.ZapDlAsset, error) {
 
 	asset := types.ZapDlAsset{}
@@ -162,7 +161,7 @@ func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (t
 		// do not show the options when the user are requested silence
 		return types.ZapDlAsset{}, exceptions.SilenceRequestedError
 
-	} else  {
+	} else {
 		// there are a lot of items in the release, hmm...
 		logger.Debug("Preparing survey for release selection")
 		releasePrompt := &survey.Select{
@@ -184,9 +183,7 @@ func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (t
 		return types.ZapDlAsset{}, err
 	}
 
-
 	logger.Debugf("Running on GOARCH: %s", runtime.GOARCH)
-
 
 	var filteredAssets map[string]types.ZapDlAsset
 	if options.DoNotFilter == true {

@@ -16,12 +16,11 @@ var logger = logging.GetLogger()
 
 type UpdateFunction func() ([]string, error)
 
-
 func upgrade(c chan int, s chan os.Signal, updater UpdateFunction) {
 
 	for {
 		select {
-		case <- c:
+		case <-c:
 			apps, _ := updater()
 			if len(apps) > 0 {
 				logger.Infof("Apps have been updated, %s", apps)
@@ -33,7 +32,6 @@ func upgrade(c chan int, s chan os.Signal, updater UpdateFunction) {
 			} else {
 				logger.Infof("All apps up-to-date")
 			}
-
 
 		case <-s:
 			fmt.Println("quit")
@@ -61,7 +59,6 @@ func Sync(updater UpdateFunction) {
 			time.Sleep(time.Hour)
 		}
 
-
 	}()
 	upgrade(c, s, updater)
 }
@@ -79,4 +76,3 @@ func waitUntilOnline() {
 		isOnline = helpers.CheckIfOnline()
 	}
 }
-

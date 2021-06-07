@@ -25,8 +25,6 @@ func CheckIfRunningSystemd() bool {
 	return false
 }
 
-
-
 // CheckIfInvokedBySystemd returns true if this process has been invoked
 // by systemd directly or indirectly, false in case it hasn't, the system is not
 // using systemd, or we are not sure

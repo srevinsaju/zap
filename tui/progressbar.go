@@ -6,7 +6,7 @@ import (
 )
 
 func NewProgressBar(length int, category string, description string) *progressbar.ProgressBar {
-	 return progressbar.NewOptions(length,
+	return progressbar.NewOptions(length,
 		progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionShowBytes(true),
 		progressbar.OptionSetWidth(20),

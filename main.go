@@ -13,15 +13,12 @@ var logger = logging.GetLogger()
 
 // https://polyverse.com/blog/how-to-embed-versioning-information-in-go-applications-f76e2579b572/
 var (
-	BuildVersion string = ""
+	BuildVersion string = "(local dev build)"
 	BuildTime    string = ""
 )
 
 func getVersion() string {
-	if BuildVersion != "" || BuildTime != "" {
-		return fmt.Sprintf("%s Build:%s", BuildVersion, BuildTime)
-	}
-	return fmt.Sprintf("(local dev build)")
+	return fmt.Sprintf("Build:%s %s", BuildVersion, BuildTime)
 }
 
 func main() {
@@ -43,7 +40,6 @@ func main() {
 		Copyright: "MIT License 2020-2021",
 	}
 	app.EnableBashCompletion = true
-	// EXAMPLE: Override a template
 	cli.AppHelpTemplate = tui.AppHelpTemplate()
 	app.Commands = []*cli.Command{
 		{
@@ -82,6 +78,11 @@ func main() {
 					Usage:   "Use AppImageUpdate to delta update your appimage using zsync.",
 				},
 			},
+		},
+		{
+			Name:   "search",
+			Usage:  "Search the zap index",
+			Action: searchAppImagesCliContextWrapper,
 		},
 		{
 			Name:   "upgrade",

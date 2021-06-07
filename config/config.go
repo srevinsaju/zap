@@ -17,6 +17,7 @@ import (
 type Store struct {
 	Version          int
 	Mirror           string
+	MirrorRoot       string
 	LocalStore       string
 	IconStore        string
 	IndexStore       string
@@ -27,10 +28,9 @@ type Store struct {
 
 const (
 	IntegrateAlways = "yes"
-	IntegrateNever = "no"
-	IntegrateAsk = "ask"
+	IntegrateNever  = "no"
+	IntegrateAsk    = "ask"
 )
-
 
 func (store *Store) populateDefaults() {
 	localStore, err := xdg.DataFile("zap/v2")
@@ -50,6 +50,7 @@ func (store *Store) populateDefaults() {
 	store.Version = 2
 	store.Integrate = IntegrateAsk
 	store.Mirror = "https://g.srev.in/get-appimage/%s/core.json"
+	store.MirrorRoot = "https://g.srev.in/get-appimage"
 }
 
 func (store *Store) migrate(newStore Store) {
@@ -71,6 +72,9 @@ func (store *Store) migrate(newStore Store) {
 	if newStore.Mirror != "" {
 		store.Mirror = newStore.Mirror
 	}
+	if newStore.MirrorRoot != "" {
+		store.MirrorRoot = newStore.MirrorRoot
+	}
 }
 
 func (store *Store) write(configPath string) error {
@@ -78,6 +82,7 @@ func (store *Store) write(configPath string) error {
 	zap := baseConfig.Section("Zap")
 	zap.Key("Version").SetValue(strconv.Itoa(store.Version))
 	zap.Key("Mirror").SetValue(store.Mirror)
+	zap.Key("MirrorRoot").SetValue(store.MirrorRoot)
 	zap.Key("ApplicationStore").SetValue(store.ApplicationStore)
 	zap.Key("IconStore").SetValue(store.IconStore)
 	zap.Key("LocalStore").SetValue(store.LocalStore)
@@ -150,8 +155,8 @@ func NewZapConfig(configPath string) (*Store, error) {
 	return defStore, nil
 }
 
-
-
+// NewZapConfigInteractive helps to create an interactive command line
+// interface.
 func NewZapConfigInteractive(configPath string) (*Store, error) {
 	var err error
 
@@ -178,7 +183,6 @@ func NewZapConfigInteractive(configPath string) (*Store, error) {
 			}
 		}
 	}
-
 
 	customIconThemesEnabled := false
 	customIconThemePrompt := &survey.Confirm{

@@ -93,7 +93,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 		}
 	}
 
-	if ! options.Silent {
+	if !options.Silent {
 		// let the user know what is going to happen next
 		fmt.Printf("Downloading %s of size %s. \n", tui.Green(asset.Name), tui.Yellow(asset.Size))
 		confirmDownload := false
@@ -168,7 +168,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	app.Source = Source{
 		Identifier: sourceIdentifier,
-		Meta:       SourceMetadata{
+		Meta: SourceMetadata{
 			Slug:      sourceSlug,
 			CrawledOn: time.Now().String(),
 		},
@@ -218,7 +218,8 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	if !strings.Contains(os.Getenv("PATH"), binDir) {
 		logger.Warnf("The app %s are installed in '%s' which is not on PATH.", options.Executable, binDir)
-		logger.Warnf("Consider adding this directory to PATH. See https://linuxize.com/post/how-to-add-directory-to-path-in-linux/")
+		logger.Warnf("Consider adding this directory to PATH. " +
+			"See https://linuxize.com/post/how-to-add-directory-to-path-in-linux/")
 	}
 
 	logger.Debugf("Creating symlink to %s", binFile)
@@ -247,7 +248,7 @@ func Upgrade(config config.Store, silent bool) ([]string, error) {
 		options := types.Options{
 			Name:       apps[i],
 			Executable: apps[i],
-			Silent: silent,
+			Silent:     silent,
 		}
 		_, err := update(options, config)
 
@@ -268,7 +269,6 @@ func Upgrade(config config.Store, silent bool) ([]string, error) {
 	fmt.Println("🚀 Done.")
 	return updatedApps, nil
 }
-
 
 // Update method is a safe wrapper script which exposes update to the Command Line interface
 // also handles those appimages which are up to date
@@ -317,8 +317,6 @@ func RemoveAndInstall(options types.InstallOptions, config config.Store, app *Ap
 	return app, err
 }
 
-
-
 func update(options types.Options, config config.Store) (*AppImage, error) {
 	logger.Debugf("Bootstrapping updater", options.Name)
 	app := &AppImage{}
@@ -341,7 +339,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 		return app, err
 	}
 
-	if ! checkIfUpdateInformationExists(app.Filepath) {
+	if !checkIfUpdateInformationExists(app.Filepath) {
 
 		logger.Debug("This app has no update information embedded")
 
@@ -378,7 +376,6 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 			} else {
 				return nil, errors.New("appimage has no update information")
 			}
-
 
 		}
 	}
@@ -427,7 +424,6 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 
 	return app, nil
 }
-
 
 // checkIfUpdateInformationExists checks if the appimage contains Update Information
 // adapted directly from https://github.com/AppImageCrafters/appimage-update
@@ -490,7 +486,7 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 		os.Remove(app.DesktopFile)
 	}
 
-    binDir := path.Join(xdg.Home, ".local", "bin")
+	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
 
 	if helpers.CheckIfFileExists(binFile) {
@@ -503,10 +499,9 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 		}
 	}
 
-    logger.Debugf("Removing appimage, %s", app.Filepath)
+	logger.Debugf("Removing appimage, %s", app.Filepath)
 	bar.Describe("Removing AppImage")
 	_ = os.Remove(app.Filepath)
-
 
 	logger.Debugf("Removing index file, %s", indexFile)
 	_ = os.Remove(indexFile)
