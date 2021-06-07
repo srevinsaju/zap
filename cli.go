@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/srevinsaju/zap/search"
 
 	"github.com/srevinsaju/zap/appimage"
 	"github.com/srevinsaju/zap/config"
@@ -111,10 +112,21 @@ func listAppImageCliContextWrapper(context *cli.Context) error {
 
 }
 
+func searchAppImagesCliContextWrapper(c *cli.Context) error {
+	zapConfigPath := config.GetPath()
+	zapConfig, err := config.NewZapConfig(zapConfigPath)
+	if err != nil {
+		return err
+	}
+
+	mirror := zapConfig.MirrorRoot
+	err = search.WithCli(mirror)
+	return err
+}
+
 func upgradeAppImageCliContextWrapper(_ *cli.Context) error {
 
 	zapConfigPath := config.GetPath()
-
 	zapConfig, err := config.NewZapConfig(zapConfigPath)
 	if err != nil {
 		return err

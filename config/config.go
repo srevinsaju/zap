@@ -17,6 +17,7 @@ import (
 type Store struct {
 	Version          int
 	Mirror           string
+	MirrorRoot       string
 	LocalStore       string
 	IconStore        string
 	IndexStore       string
@@ -41,6 +42,7 @@ func (store *Store) populateDefaults() {
 	store.ApplicationStore = applicationsStore
 	store.Version = 2
 	store.Mirror = "https://g.srev.in/get-appimage/%s/core.json"
+	store.MirrorRoot = "https://g.srev.in/get-appimage"
 }
 
 func (store *Store) migrate(newStore Store) {
@@ -62,6 +64,9 @@ func (store *Store) migrate(newStore Store) {
 	if newStore.Mirror != "" {
 		store.Mirror = newStore.Mirror
 	}
+	if newStore.MirrorRoot != "" {
+		store.MirrorRoot = newStore.MirrorRoot
+	}
 }
 
 func (store *Store) write(configPath string) error {
@@ -69,6 +74,7 @@ func (store *Store) write(configPath string) error {
 	zap := baseConfig.Section("Zap")
 	zap.Key("Version").SetValue(strconv.Itoa(store.Version))
 	zap.Key("Mirror").SetValue(store.Mirror)
+	zap.Key("MirrorRoot").SetValue(store.MirrorRoot)
 	zap.Key("ApplicationStore").SetValue(store.ApplicationStore)
 	zap.Key("IconStore").SetValue(store.IconStore)
 	zap.Key("LocalStore").SetValue(store.LocalStore)
@@ -94,15 +100,15 @@ func (store *Store) write(configPath string) error {
 	return nil
 }
 
-/* NewZapDefaultConfig creates a fresh configuration for zap from the pre-specified defaults */
+// NewZapDefaultConfig creates a fresh configuration for zap from the pre-specified defaults
 func NewZapDefaultConfig() *Store {
 	zapDefaultConfig := &Store{}
 	zapDefaultConfig.populateDefaults()
 	return zapDefaultConfig
 }
 
-/* NewZapConfig creates a new configuration from the configuration file if it exists, else
-   return the defaults */
+// NewZapConfig creates a new configuration from the configuration file if it exists, else
+// return the defaults
 func NewZapConfig(configPath string) (*Store, error) {
 	customStore := &Store{}
 
@@ -140,7 +146,8 @@ func NewZapConfig(configPath string) (*Store, error) {
 }
 
 
-
+// NewZapConfigInteractive helps to create an interactive command line
+// interface.
 func NewZapConfigInteractive(configPath string) (*Store, error) {
 	var err error
 
@@ -167,10 +174,6 @@ func NewZapConfigInteractive(configPath string) (*Store, error) {
 			}
 		}
 	}
-
-
-
-
 
 	customIconThemesEnabled := false
 	customIconThemePrompt := &survey.Confirm{

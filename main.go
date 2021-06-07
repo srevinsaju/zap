@@ -40,7 +40,6 @@ func main() {
 		Copyright: "MIT License 2020-2021",
 	}
 	app.EnableBashCompletion = true
-	// EXAMPLE: Override a template
 	cli.AppHelpTemplate = tui.AppHelpTemplate()
 	app.Commands = []*cli.Command{
 		{
@@ -72,6 +71,11 @@ func main() {
 					Name: "with-au",
 				},
 			},
+		},
+		{
+			Name:   "search",
+			Usage:  "Search the zap index",
+			Action: searchAppImagesCliContextWrapper,
 		},
 		{
 			Name:   "upgrade",
