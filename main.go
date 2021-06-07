@@ -53,13 +53,16 @@ func main() {
 			Action:  installAppImageCliContextWrapper,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name: "executable",
+					Name:  "executable",
+					Usage: "Name of the executable",
 				},
 				&cli.StringFlag{
-					Name: "from",
+					Name:  "from",
+					Usage: "Provide a repository slug, or a direct URL to an appimage.",
 				},
 				&cli.BoolFlag{
-					Name: "github",
+					Name:  "github",
+					Usage: "Use --from as repository slug to fetch from GitHub",
 				},
 			},
 		},
@@ -70,9 +73,13 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name: "executable",
+					Usage: "Name of the executable which would be used as the unique identifier " +
+						"of the appimage on your system",
 				},
 				&cli.BoolFlag{
-					Name: "with-au",
+					Name:    "with-au",
+					Aliases: []string{"with-appimageupdate", "appimageupdate", "au"},
+					Usage:   "Use AppImageUpdate to delta update your appimage using zsync.",
 				},
 			},
 		},
@@ -92,7 +99,8 @@ func main() {
 			Action: listAppImageCliContextWrapper,
 			Flags: []cli.Flag{
 				&cli.BoolFlag{
-					Name: "no-color",
+					Name:  "no-color",
+					Usage: "Do not show AppImage executable names in color",
 				},
 				&cli.BoolFlag{
 					Name: "index",

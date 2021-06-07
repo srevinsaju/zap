@@ -6,6 +6,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/google/go-github/v31/github"
 	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/exceptions"
 	"github.com/srevinsaju/zap/types"
 	"strconv"
 	"strings"
@@ -31,7 +32,7 @@ func getAsset(assets []*github.ReleaseAsset, name string) *github.ReleaseAsset {
 }
 
 
-func GitHubSurveyUserReleases(options types.Options, config config.Store) (types.ZapDlAsset, error) {
+func GitHubSurveyUserReleases(options types.InstallOptions, config config.Store) (types.ZapDlAsset, error) {
 	var asset types.ZapDlAsset
 
 	logger.Debugf("Creating github client")
@@ -56,6 +57,19 @@ func GitHubSurveyUserReleases(options types.Options, config config.Store) (types
 	}
 
 	releaseUserResponse := ""
+
+	if len(tags) == 0 {
+		logger.Debug("Couldn't find any releases while using GitHub API")
+		return types.ZapDlAsset{}, exceptions.NoReleaseFoundError
+	} else if len(tags) == 1 {
+		// directly select that release coz. there is only one release
+		logger.Debug("Found one release. Selecting that as default")
+		releaseUserResponse = tags[0]
+	} else if options.Silent {
+		// user has requested silence
+		// we should not prompt the user and ask for selecting an option from this
+		return types.ZapDlAsset{}, exceptions.SilenceRequestedError
+	}
 	// there are a lot of items in the release, hmm...
 	logger.Debug("Preparing survey for release selection")
 	releasePrompt := &survey.Select{

@@ -6,9 +6,9 @@ import (
 	"github.com/srevinsaju/zap/config"
 	"github.com/srevinsaju/zap/internal/helpers"
 	"gopkg.in/ini.v1"
-	"io/ioutil"
 	"image"
 	_ "image/png"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -17,12 +17,30 @@ import (
 )
 
 
+const (
+	SourceGitHub = "git.github"
+	SourceDirectURL = "raw.url"
+	SourceZapIndex = "idx.zap"
+)
+
+type SourceMetadata struct {
+	Slug      string `json:"slug,omitempty"`
+	URL       string `json:"url,omitempty"`
+	CrawledOn string `json:"crawled_on,omitempty"`
+}
+
+type Source struct {
+	Identifier string `json:"identifier,omitempty"`
+	Meta SourceMetadata `json:"meta,omitempty"`
+}
+
 type AppImage struct {
 	Filepath   string `json:"filepath"`
 	Executable string `json:"executable"`
 	IconPath   string `json:"icon_path,omitempty"`
 	IconPathHicolor string `json:"icon_path_hicolor,omitempty"`
 	DesktopFile string `json:"desktop_file,omitempty"`
+	Source Source `json:"source"`
 }
 
 func (appimage AppImage) getBaseName() string {

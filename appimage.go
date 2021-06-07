@@ -9,14 +9,14 @@ import (
 	"strings"
 )
 
-func installAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
+func installAppImageOptionsFromCLIContext(context *cli.Context) (types.InstallOptions, error) {
 	executable := context.String("executable")
 	appName := context.Args().First()
 
 	from := context.String("from")
 	if context.Bool("github") && from == "" {
 		fmt.Printf("Installing from github requires the %s flag.\n", tui.Yellow("--from"))
-		return types.Options{}, errors.New("github-from-flag-missing")
+		return types.InstallOptions{}, errors.New("github-from-flag-missing")
 	}
 
 	// use the repo name as appName
@@ -30,11 +30,12 @@ func installAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, 
 		executable = appName
 	}
 
-	app := types.Options{
-		Name:       appName,
-		From:       context.String("from"),
-		Executable: strings.Trim(executable, " "),
-		FromGithub: context.Bool("github"),
+	app := types.InstallOptions{
+		Name:                   appName,
+		From:                   context.String("from"),
+		Executable:             strings.Trim(executable, " "),
+		FromGithub:             context.Bool("github"),
+		RemovePreviousVersions: false,
 	}
 	logger.Debug(app)
 	return app, nil
@@ -54,14 +55,12 @@ func updateAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, e
 
 }
 
-func removeAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
+func removeAppImageOptionsFromCLIContext(context *cli.Context) (types.RemoveOptions, error) {
 	executable := context.String("Executable")
 	if context.String("Executable") == "" {
 		executable = context.Args().First()
 	}
-	return types.Options{
-		Name:       context.Args().First(),
-		From:       context.String("from"),
+	return types.RemoveOptions{
 		Executable: executable,
 	}, nil
 

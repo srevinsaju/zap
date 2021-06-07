@@ -120,7 +120,7 @@ func upgradeAppImageCliContextWrapper(_ *cli.Context) error {
 		return err
 	}
 
-	_, err = appimage.Upgrade(*zapConfig)
+	_, err = appimage.Upgrade(*zapConfig, false)
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func daemonCliContextWrapper(context *cli.Context) error {
 	}
 
 	daemon.Sync(func() ([]string, error) {
-		return appimage.Upgrade(*zapConfig)
+		return appimage.Upgrade(*zapConfig, true)
 	})
 	return err
 
