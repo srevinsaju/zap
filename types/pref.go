@@ -13,15 +13,14 @@ type Options struct {
 }
 
 type InstallOptions struct {
-	Name string
-	Executable string
-	From string
-	FromGithub bool
+	Name                   string
+	Executable             string
+	From                   string
+	FromGithub             bool
 	RemovePreviousVersions bool
-	DoNotFilter   bool
-	Silent bool
+	DoNotFilter            bool
+	Silent                 bool
 }
-
 
 func (options InstallOptions) ToRemoveOptions() RemoveOptions {
 	return RemoveOptions{Executable: options.Executable}

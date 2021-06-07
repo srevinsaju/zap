@@ -16,11 +16,10 @@ import (
 	"strings"
 )
 
-
 const (
-	SourceGitHub = "git.github"
+	SourceGitHub    = "git.github"
 	SourceDirectURL = "raw.url"
-	SourceZapIndex = "idx.zap"
+	SourceZapIndex  = "idx.zap"
 )
 
 type SourceMetadata struct {
@@ -30,23 +29,22 @@ type SourceMetadata struct {
 }
 
 type Source struct {
-	Identifier string `json:"identifier,omitempty"`
-	Meta SourceMetadata `json:"meta,omitempty"`
+	Identifier string         `json:"identifier,omitempty"`
+	Meta       SourceMetadata `json:"meta,omitempty"`
 }
 
 type AppImage struct {
-	Filepath   string `json:"filepath"`
-	Executable string `json:"executable"`
-	IconPath   string `json:"icon_path,omitempty"`
+	Filepath        string `json:"filepath"`
+	Executable      string `json:"executable"`
+	IconPath        string `json:"icon_path,omitempty"`
 	IconPathHicolor string `json:"icon_path_hicolor,omitempty"`
-	DesktopFile string `json:"desktop_file,omitempty"`
-	Source Source `json:"source"`
+	DesktopFile     string `json:"desktop_file,omitempty"`
+	Source          Source `json:"source"`
 }
 
 func (appimage AppImage) getBaseName() string {
 	return path.Base(appimage.Filepath)
 }
-
 
 /* ExtractThumbnail helps to extract the thumbnails to config.icons directory
  * with the apps' basename and png as the Name */
@@ -139,7 +137,7 @@ func (appimage AppImage) Extract(dir string, relPath string) string {
 		logger.Debugf("Attempt to extract %s was successful, but no target extracted file", relPath)
 		return ""
 	} else {
-		if fileInfo.Mode() & os.ModeSymlink != 0 {
+		if fileInfo.Mode()&os.ModeSymlink != 0 {
 			link := fileInfo.Name()
 			k, err := os.Readlink(dirIcon)
 
@@ -147,7 +145,7 @@ func (appimage AppImage) Extract(dir string, relPath string) string {
 				return ""
 			}
 			parts := strings.Split(k, "squashfs-root/")
-			relPathSymlink := parts[len(parts) - 1]
+			relPathSymlink := parts[len(parts)-1]
 			logger.Debugf("%s is a symlink to %s, resolving it.", k, link)
 			return appimage.Extract(dir, relPathSymlink)
 
@@ -155,8 +153,6 @@ func (appimage AppImage) Extract(dir string, relPath string) string {
 			return dirIcon
 		}
 	}
-
-
 
 }
 
@@ -172,7 +168,7 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 	defer os.RemoveAll(dir)
 
 	logger.Debug("Trying to extract Desktop files")
-	cmd := exec.Command(appimage.Filepath, "--appimage-extract",  "*.desktop")
+	cmd := exec.Command(appimage.Filepath, "--appimage-extract", "*.desktop")
 	cmd.Dir = dir
 
 	err = cmd.Run()
@@ -227,7 +223,6 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 	return data, nil
 }
 
-
 func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 	ini.PrettyFormat = false
 
@@ -270,9 +265,8 @@ func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 	targetDesktopFile := path.Join(config.ApplicationStore, fmt.Sprintf("%s.desktop", appimage.Executable))
 	logger.Debugf("Preparing %s for writing new desktop file", targetDesktopFile)
 
-
 	// add Exec
-	desktopEntry.Key("Exec").SetValue(fmt.Sprintf("%s %%U", appimage.Executable ))
+	desktopEntry.Key("Exec").SetValue(fmt.Sprintf("%s %%U", appimage.Executable))
 
 	err = desktopFile.SaveTo(targetDesktopFile)
 	if err != nil {
@@ -284,5 +278,3 @@ func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 	// and they completed, happily ever after
 	logger.Debugf("Desktop file successfully written to %s", targetDesktopFile)
 }
-
-

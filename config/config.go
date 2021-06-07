@@ -28,10 +28,9 @@ type Store struct {
 
 const (
 	IntegrateAlways = "yes"
-	IntegrateNever = "no"
-	IntegrateAsk = "ask"
+	IntegrateNever  = "no"
+	IntegrateAsk    = "ask"
 )
-
 
 func (store *Store) populateDefaults() {
 	localStore, err := xdg.DataFile("zap/v2")
@@ -155,7 +154,6 @@ func NewZapConfig(configPath string) (*Store, error) {
 
 	return defStore, nil
 }
-
 
 // NewZapConfigInteractive helps to create an interactive command line
 // interface.

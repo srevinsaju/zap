@@ -50,7 +50,7 @@ Description=Zap Updater daemon
 After=syslog.target network.target
 [Service]
 Type=simple
-ExecStart=` +  self + ` daemon
+ExecStart=` + self + ` daemon
 LimitNOFILE=65536
 RestartSec=3
 Restart=always
@@ -60,7 +60,6 @@ SyslogIdentifier=zapd
 Environment=LAUNCHED_BY_SYSTEMD=1
 [Install]
 WantedBy=default.target`)
-
 
 	logger.Debugf("Writing zapd.service to %s", pathToServiceDir)
 	err = ioutil.WriteFile(path.Join(pathToServiceDir, "zapd.service"), systemdService, 0644)
@@ -77,8 +76,6 @@ WantedBy=default.target`)
 	}
 	return nil
 }
-
-
 
 // SetupToRunThroughSystemd checks if this process has been launched through
 // systemd on a systemd system and takes appropriate measures if it has not,
@@ -156,4 +153,3 @@ func SetupToRunThroughSystemd() error {
 	return nil
 
 }
-

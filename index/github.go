@@ -12,7 +12,6 @@ import (
 	"strings"
 )
 
-
 func getRelease(releases []*github.RepositoryRelease, tag string) *github.RepositoryRelease {
 	for i := range releases {
 		if *releases[i].TagName == tag {
@@ -31,7 +30,6 @@ func getAsset(assets []*github.ReleaseAsset, name string) *github.ReleaseAsset {
 	return nil
 }
 
-
 func GitHubSurveyUserReleases(options types.InstallOptions, config config.Store) (types.ZapDlAsset, error) {
 	var asset types.ZapDlAsset
 
@@ -40,7 +38,7 @@ func GitHubSurveyUserReleases(options types.InstallOptions, config config.Store)
 
 	slugProcessed := strings.Split(options.From, "/")
 
-	owner, repo := slugProcessed[len(slugProcessed) - 2], slugProcessed[len(slugProcessed) - 1]
+	owner, repo := slugProcessed[len(slugProcessed)-2], slugProcessed[len(slugProcessed)-1]
 	logger.Debugf("Fetching releases from %s/%s", owner, repo)
 
 	releases, _, err := client.Repositories.ListReleases(context.Background(), owner, repo, &github.ListOptions{})
@@ -113,7 +111,7 @@ func GitHubSurveyUserReleases(options types.InstallOptions, config config.Store)
 	return types.ZapDlAsset{
 		Name:     *assetGitHub.Name,
 		Download: *assetGitHub.BrowserDownloadURL,
-		Size:     strconv.Itoa(*assetGitHub.Size / 1_000_000) + " MB",
+		Size:     strconv.Itoa(*assetGitHub.Size/1_000_000) + " MB",
 	}, err
 
 }

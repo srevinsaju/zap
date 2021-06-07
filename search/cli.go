@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-
 func splitByWidth(str string, size int) []string {
 	strLength := len(str)
 	var splitted []string
@@ -47,7 +46,6 @@ func WithCli(mirror string) error {
 		return err
 	}
 
-
 	idx, err := fuzzyfinder.Find(
 		apps,
 		func(i int) string {
@@ -59,7 +57,7 @@ func WithCli(mirror string) error {
 			}
 			app := apps[i]
 
-			summaryFormattedArray := splitByWidth(app.Summary, w / 2 - 4)
+			summaryFormattedArray := splitByWidth(app.Summary, w/2-4)
 			summaryFormatted := strings.Join(summaryFormattedArray, "\n")
 
 			return fmt.Sprintf("%s \nsubmitted by %s\n%s",
