@@ -169,3 +169,8 @@ func daemonCliContextWrapper(context *cli.Context) error {
 	return err
 
 }
+
+func selfUpdateCliContextWrapper(c *cli.Context) error {
+
+	return nil
+}
