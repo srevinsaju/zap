@@ -1,6 +1,7 @@
 package index
 
 import (
+	"errors"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/buger/jsonparser"
@@ -38,7 +39,7 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 	// get owner
 	owner, err := jsonparser.GetString(body, "owner")
 	if err != nil {
-		return nil, err
+		return nil, errors.New("this app does not provide any candidate for installation")
 	}
 	zapReleases.Author = owner
 
