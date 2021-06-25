@@ -52,6 +52,34 @@ func CheckIfFileExists(filepath string) bool {
 
 }
 
+
+// CheckIfSymlinkExists checks if a file exists and is not a directory before we
+// try using it to prevent further errors.
+// Returns true if it does, false otherwise.
+func CheckIfSymlinkExists(filepath string) bool {
+	info, err := os.Lstat(filepath)
+	if info == nil {
+		return true
+	}
+	if info.IsDir() {
+		return false
+	}
+	if info.Mode() & os.ModeSymlink != 0 {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	// anything else is not good
+	// https://stackoverflow.com/q/12518876
+	// Schrodinger: file may or may not exist. See err for details.
+	return true
+
+}
+
+
+
+
 // CheckIfDirectoryExists checks if a file exists and is not a directory before we
 // try using it to prevent further errors.
 // Returns true if it does, false otherwise.

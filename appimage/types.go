@@ -103,6 +103,13 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 	os.MkdirAll(targetXdgIconPath, 0777)
 
 	logger.Debugf("Attempting to create symlink to %s", targetXdgIconPath)
+	if helpers.CheckIfSymlinkExists(targetXdgIconPath) {
+		logger.Debugf("%s is an existing symlink. Attempting to remove it", targetXdgIconPath)
+		err := os.Remove(targetXdgIconPath)
+		if err != nil {
+			logger.Warn(err)
+		}
+	}
 	err = os.Symlink(targetIconPath, targetXdgIconPath)
 	if err != nil {
 		logger.Warn(err)
