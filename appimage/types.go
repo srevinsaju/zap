@@ -100,7 +100,12 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 
 	targetXdgIconPath := filepath.Join(xdgIconPath, baseIconName)
 	logger.Debugf("Attempting to create directory to %s", targetXdgIconPath)
-	os.MkdirAll(targetXdgIconPath, 0777)
+	err = os.MkdirAll(filepath.Dir(targetXdgIconPath), 0777)
+	if err != nil {
+		logger.Warn("Couldn't create target directory", filepath.Dir(targetXdgIconPath), err)
+		logger.Warn("Not copying the icon.")
+		return
+	}
 
 	logger.Debugf("Attempting to create symlink to %s", targetXdgIconPath)
 	if helpers.CheckIfSymlinkExists(targetXdgIconPath) {
@@ -163,8 +168,8 @@ func (appimage AppImage) Extract(dir string, relPath string) string {
 
 }
 
-/* ExtractDesktopFile helps to extract the thumbnails to config.icons directory
- * with the apps' basename and png as the Name */
+// ExtractDesktopFile helps to extract the thumbnails to config.icons directory
+// with the apps' basename and png as the Name */
 func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 
 	dir, err := ioutil.TempDir("", "zap")
