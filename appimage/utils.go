@@ -227,7 +227,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 			logger.Debugf("Attempting to remove the symlink regardless")
 			err := os.Remove(binFile)
 			if err != nil {
-				logger.Warnf("Failed to remove symlink: %s", err)
+				logger.Debugf("Failed to remove symlink: %s", err)
 			}
 		}
 	}

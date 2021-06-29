@@ -112,7 +112,7 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 		logger.Debugf("%s is an existing symlink. Attempting to remove it", targetXdgIconPath)
 		err := os.Remove(targetXdgIconPath)
 		if err != nil {
-			logger.Warn(err)
+			logger.Debug("Failed to remove the existing thumbnail, ignoring.", err)
 		}
 	}
 	err = os.Symlink(targetIconPath, targetXdgIconPath)
