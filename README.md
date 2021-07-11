@@ -62,6 +62,14 @@ It is also possible to install AppImage from URLs
 ```bash
 zap install --from https://f.sed.lol/wow.AppImage
 ```
+
+To integrate a pre-downloaded AppImage using zap, you will have to use the `file://` protocol
+```bash
+zap install --from file:///home/username/Downloads/My_Super_Cool-x86_64.AppImage name_of_the_app_here
+```
+here, `name_of_the_app_here` specifies the name of the application. This name will be used 
+as a unique identification of the AppImage, by zap, in its internal database.
+
  
 #### Updating AppImages 🔄
 AppImages can be optionally, [automatically updated using the `zapd`](#Daemon), but to achieve this manually, you need to 
