@@ -40,7 +40,7 @@ $ zap --help
 
 > NOTE: Replace `amd64` with your machine architecture. Supported architectures are listed in the [release](https://github.com/srevinsaju/zap/releases/tag/v2-continuous) page 
 
-#### Installing AppImages sre
+#### Installing AppImages
 All AppImages from the [AppImage Catalog](https://appimage.github.io) and [AppImage catalog v2](https://g.srev.in/get-appimage) can be installed using zap with their registered name.
 
 ```bash
