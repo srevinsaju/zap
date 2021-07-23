@@ -22,8 +22,6 @@ func GetAssetFromName(assets map[string]types.ZapDlAsset, assetName string) (typ
 	return types.ZapDlAsset{}, errors.New("could not find asset with name")
 }
 
-
-
 func GetFilteredAssets(assets map[string]types.ZapDlAsset) map[string]types.ZapDlAsset {
 	filteredAssets := map[string]types.ZapDlAsset{}
 

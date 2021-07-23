@@ -48,9 +48,10 @@ func updateAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, e
 		executable = context.Args().First()
 	}
 	return types.Options{
-		Name:       context.Args().First(),
-		From:       context.String("from"),
-		Executable: executable,
+		Name:              context.Args().First(),
+		From:              context.String("from"),
+		Executable:        executable,
+		UseAppImageUpdate: context.Bool("with-au"),
 	}, nil
 
 }

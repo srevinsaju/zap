@@ -5,13 +5,12 @@ import (
 	"strings"
 )
 
-var ARCH = map[string] []string{
+var ARCH = map[string][]string{
 	"amd64": {"x86_64", "amd64"},
-	"386": {"i386", "i686"},
-	"arm": {"arm"},
+	"386":   {"i386", "i686"},
+	"arm":   {"arm"},
 	"arm64": {"armhf", "aarch64"},
 }
-
 
 func HasArch(name string) bool {
 	arch := ARCH[runtime.GOARCH]
