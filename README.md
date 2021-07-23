@@ -1,12 +1,20 @@
-<h1 align="center">
-	<img src="./assets/logo.svg" alt="Zap Logo" height=200 width=200 align="middle">
-	:zap: Zap 
-</h1>
+<p align="center">
+    <img src="https://github.com/srevinsaju/zap/raw/v2/assets/logo.svg" alt="zap Zap" width=128 height=128>
 
-<h3 align="center">
-	The delightful package manager for AppImages :package:
-</h3>
+<h2 align="center">⚡️ Zap</h2>
+
+  <p align="center">
+    The delightful package manager for AppImages package
+    <br>
+    <a href="https://github.com/srevinsaju/zap/issues/new">Report bug</a>
+    ·
+    <a href="https://github.com/srevinsaju/zap/issues/new">Request feature</a>
+  </p>
+</p>
+
 <div align="center">
+
+
 
 [![forthebadge made-with-go](http://ForTheBadge.com/images/badges/made-with-go.svg)](https://golang.org/)<br/><br/>
 
