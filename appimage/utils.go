@@ -355,7 +355,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 		return app, err
 	}
 
-	if !checkIfUpdateInformationExists(app.Filepath) {
+	if !options.UseAppImageUpdate || !checkIfUpdateInformationExists(app.Filepath) {
 
 		logger.Debug("This app has no update information embedded")
 

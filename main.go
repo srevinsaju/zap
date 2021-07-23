@@ -80,11 +80,10 @@ func main() {
 			},
 		},
 		{
-			Name: "self-update",
-			Usage: "Check for updates and update zap",
+			Name:   "self-update",
+			Usage:  "Check for updates and update zap",
 			Action: selfUpdateCliContextWrapper,
 			Hidden: true,
-
 		},
 		{
 			Name:   "search",

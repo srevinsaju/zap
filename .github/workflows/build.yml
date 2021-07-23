@@ -44,18 +44,10 @@ jobs:
       
     - name: Show releases
       run: ls -al
-      
-    - name: Release Continuous
-      uses: marvinpinto/action-automatic-releases@latest
-      if: github.ref == 'refs/heads/v2'
-      with:
-        prerelease: true
-        draft: false
-        automatic_release_tag: v2-continuous
-        title: v2 (continuous)
-        files: |
-          zap-amd64
-          zap-386
-          zap-arm
-          zap-arm64
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create release and upload artifacts
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        wget https://github.com/TheAssassin/pyuploadtool/releases/download/continuous/pyuploadtool-x86_64.AppImage
+        chmod +x pyuploadtool-x86_64.AppImage
+        ./pyuploadtool-x86_64.AppImage zap-*

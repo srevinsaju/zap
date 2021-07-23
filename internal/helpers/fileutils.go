@@ -31,7 +31,6 @@ func CopyFile(src, dst string) (int64, error) {
 	return nBytes, err
 }
 
-
 // https://github.com/probonopd/go-appimage/blob/23ad67c727fb762867fe96db06d600a7cdaf297d/internal/helpers/helpers.go#L150
 
 // CheckIfFileExists checks if a file exists and is not a directory before we
@@ -52,7 +51,6 @@ func CheckIfFileExists(filepath string) bool {
 
 }
 
-
 // CheckIfSymlinkExists checks if a file exists and is not a directory before we
 // try using it to prevent further errors.
 // Returns true if it does, false otherwise.
@@ -64,7 +62,7 @@ func CheckIfSymlinkExists(filepath string) bool {
 	if info.IsDir() {
 		return false
 	}
-	if info.Mode() & os.ModeSymlink != 0 {
+	if info.Mode()&os.ModeSymlink != 0 {
 		return true
 	}
 	if os.IsNotExist(err) {
@@ -76,9 +74,6 @@ func CheckIfSymlinkExists(filepath string) bool {
 	return true
 
 }
-
-
-
 
 // CheckIfDirectoryExists checks if a file exists and is not a directory before we
 // try using it to prevent further errors.
