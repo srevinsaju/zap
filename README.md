@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/srevinsaju/zap/raw/v2/assets/logo.svg" alt="zap Zap" width=128 height=128>
+    <img src="https://github.com/srevinsaju/zap/raw/main/assets/logo.svg" alt="zap Zap" width=128 height=128>
 
 <h2 align="center">⚡️ Zap</h2>
 
@@ -14,10 +14,7 @@
 
 <div align="center">
 
-
-
 [![forthebadge made-with-go](http://ForTheBadge.com/images/badges/made-with-go.svg)](https://golang.org/)<br/><br/>
-
 
 [![Mentioned in Awesome AppImage](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/AppImage/awesome-appimage)
 
@@ -26,9 +23,7 @@
 <img src="assets/zap-firefox-install.gif" alt="Zap Installing Firefox"></img>
 </div>
 
-The status of development is still in Beta. Please help me find bugs by opening an issue.
-
-> Looking for a stabler, Zap v1 (Python)? Head over to [master](https://github.com/srevinsaju/zap/tree/master) branch
+> Looking for the older Zap v1 (Python) implementation? Head over to [v1 branch](https://github.com/srevinsaju/zap/tree/v1).
 
 ## Getting Started ✨
 
@@ -126,10 +121,7 @@ To run the daemon (sync), do
 ```bash
 zap daemon
 ```
-
-
 <br>
-
 
 ## Support 💸
 
@@ -137,12 +129,9 @@ All Pull Requests are welcome.
 
 If you are a non-coder or was inspired by this small project, I would be glad if you would :star2: this repository, and spread the word with your friends and foes :smile:
 
-
-
 ## Credits 🙏
 
 This project has been possible with the help and support provided by the AppImage community. Thanks to the detailed responses I received from mentors at AppImage's freenode channel.
-
 
 ## License ⚖️
 
@@ -172,4 +161,3 @@ SOFTWARE.
 
 ## Copyright ©️
 (C) Srevin Saju 2020
-
