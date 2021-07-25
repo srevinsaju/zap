@@ -34,7 +34,7 @@ sudo chmod +x /usr/local/bin/zap
 zap --help
 ```
 
-For local installtion, (requires `~/.local/bin` to be on `$PATH`)
+For local installation, (requires `~/.local/bin` to be on `$PATH`)
 ```bash
 mkdir -p ~/.local/bin
 wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap-amd64 -O ~/.local/bin/zap
