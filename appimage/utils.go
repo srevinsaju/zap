@@ -37,9 +37,7 @@ func List(zapConfig config.Store, index bool) ([]string, error) {
 			appName = path
 		} else {
 			appName = filepath.Base(path)
-			if strings.HasSuffix(appName, ".json") {
-				appName = appName[:len(appName)-len(".json")]
-			}
+			appName = strings.TrimSuffix(appName, ".json")
 		}
 		apps = append(apps, appName)
 		return err
