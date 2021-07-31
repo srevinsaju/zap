@@ -3,17 +3,16 @@ package index
 import (
 	"errors"
 	"fmt"
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/buger/jsonparser"
-	"github.com/srevinsaju/zap/config"
-	"github.com/srevinsaju/zap/exceptions"
-	"github.com/srevinsaju/zap/internal/helpers"
-	"github.com/srevinsaju/zap/tui"
-	"github.com/srevinsaju/zap/types"
 	"io/ioutil"
 	"net/http"
 	"runtime"
 	"strconv"
+
+	"github.com/buger/jsonparser"
+	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/internal/helpers"
+	"github.com/srevinsaju/zap/tui"
+	"github.com/srevinsaju/zap/types"
 )
 
 func GetZapReleases(executable string, config config.Store) (*types.ZapReleases, error) {
@@ -45,7 +44,13 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 
 	// get source
 	sourceType, err := jsonparser.GetString(body, "source", "type")
+	if err != nil {
+		return nil, errors.New("this app has no source type attribute. Report it here: https://github.com/AppImage/appimage.github.io")
+	}
 	sourceUrl, err := jsonparser.GetString(body, "source", "url")
+	if err != nil {
+		return nil, errors.New("this app has no source type attribute. Report it here: https://github.com/AppImage/appimage.github.io")
+	}
 	zapReleases.Source = types.ZapSource{
 		Type: sourceType,
 		Url:  sourceUrl,
@@ -146,34 +151,14 @@ func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (t
 	// sort.Slice(releases.Releases, releases.SortByReleaseDate)
 
 	// let the user decide which version to install
-	releaseUserResponse := ""
-
-	if len(releases.Releases) == 0 {
-		// there are no items in release
-		logger.Fatalf("%s has no valid releases", options.Name)
-		return types.ZapDlAsset{}, exceptions.NoReleaseFoundError
-
-	} else if len(releases.Releases) == 1 {
-		// only one release, so select the first one.
-		logger.Debugf("Only one release found, selecting default.")
-		releaseUserResponse = releases.Releases[0].Tag
-
-	} else if options.Silent {
-		// do not show the options when the user are requested silence
-		return types.ZapDlAsset{}, exceptions.SilenceRequestedError
-
-	} else {
-		// there are a lot of items in the release, hmm...
-		logger.Debug("Preparing survey for release selection")
-		releasePrompt := &survey.Select{
-			Message: "Choose a Release",
-			Options: releases.GetReleasesArray(),
-			Default: releases.GetLatestRelease(),
-		}
-		err = survey.AskOne(releasePrompt, &releaseUserResponse)
-		if err != nil {
-			return types.ZapDlAsset{}, err
-		}
+	releaseUserResponse, err := helpers.InteractiveSurvey(helpers.InteractiveSurveyOptions{
+		Classifier: "release",
+		Array:      releases.GetReleasesArray(),
+		Default:    releases.GetLatestRelease(),
+		Options:    options,
+	})
+	if err != nil {
+		return types.ZapDlAsset{}, err
 	}
 
 	// get selected version
@@ -187,7 +172,7 @@ func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (t
 	logger.Debugf("Running on GOARCH: %s", runtime.GOARCH)
 
 	var filteredAssets map[string]types.ZapDlAsset
-	if options.DoNotFilter == true {
+	if options.DoNotFilter {
 		logger.Debug("Explicitly not filtering")
 		filteredAssets = assets
 	} else {
@@ -195,29 +180,20 @@ func ZapSurveyUserReleases(options types.InstallOptions, config config.Store) (t
 		filteredAssets = helpers.GetFilteredAssets(assets)
 	}
 
-	assetsUserResponse := ""
-	if len(filteredAssets) == 0 {
-		logger.Fatal("⚠️ Sorry, this release has no valid downloadable AppImage asset.")
-		return types.ZapDlAsset{}, exceptions.NoReleaseFoundError
-	} else if len(filteredAssets) == 1 {
-		asset = helpers.GetFirst(filteredAssets)
-	} else if options.Silent {
-		return types.ZapDlAsset{}, exceptions.SilenceRequestedError
-	} else {
-		assetsPrompt := &survey.Select{
-			Message: "Choose an asset",
-			Options: helpers.ZapAssetNameArray(filteredAssets),
-		}
-		err = survey.AskOne(assetsPrompt, &assetsUserResponse)
-		if err != nil {
-			return types.ZapDlAsset{}, err
-		}
+	assetsUserResponse, err := helpers.InteractiveSurvey(helpers.InteractiveSurveyOptions{
+		Classifier: "asset",
+		Array:      helpers.ZapAssetNameArray(filteredAssets),
+		Default:    "",
+		Options:    options,
+	})
+	if err != nil {
+		return types.ZapDlAsset{}, err
+	}
 
-		// get the asset from the map, based on the filename
-		asset, err = helpers.GetAssetFromName(filteredAssets, assetsUserResponse)
-		if err != nil {
-			return types.ZapDlAsset{}, err
-		}
+	// get the asset from the map, based on the filename
+	asset, err = helpers.GetAssetFromName(filteredAssets, assetsUserResponse)
+	if err != nil {
+		return types.ZapDlAsset{}, err
 	}
 
 	logger.Debug(asset)

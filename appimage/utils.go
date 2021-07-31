@@ -116,7 +116,10 @@ func Install(options types.InstallOptions, config config.Store) error {
 	logger.Debugf("Connecting to %s", asset.Download)
 
 	targetAppImagePath := path.Join(config.LocalStore, asset.GetBaseName())
-	targetAppImagePath, _ = filepath.Abs(targetAppImagePath)
+	targetAppImagePath, err = filepath.Abs(targetAppImagePath)
+	if err != nil {
+		return err
+	}
 	logger.Debugf("Target file path %s", targetAppImagePath)
 
 	if strings.HasPrefix(asset.Download, "file://") {
@@ -147,11 +150,12 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 		f, _ := os.OpenFile(targetAppImagePath, os.O_CREATE|os.O_WRONLY, 0755)
 
+		fmt.Printf("Downloading %s\n", options.Executable)
 		logger.Debug("Setting up progressbar")
 		bar := tui.NewProgressBar(
 			int(resp.ContentLength),
-			"install",
-			fmt.Sprintf("Downloading %s", options.Executable))
+			"i",
+		)
 
 		_, err = io.Copy(io.MultiWriter(f, bar), resp.Body)
 		if err != nil {
@@ -471,13 +475,14 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 		return nil
 	}
 
-	bar := tui.NewProgressBar(-1, "remove", "Removing")
+	bar := tui.NewProgressBar(7, "r")
 
 	logger.Debugf("Unmarshalling JSON from %s", indexFile)
 	indexBytes, err := ioutil.ReadFile(indexFile)
 	if err != nil {
 		return err
 	}
+	bar.Add(1)
 
 	err = json.Unmarshal(indexBytes, app)
 	if err != nil {
@@ -486,21 +491,21 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 
 	if app.IconPath != "" {
 		logger.Debugf("Removing thumbnail, %s", app.IconPath)
-		bar.Describe("Removing Icons")
 		os.Remove(app.IconPath)
 	}
+	bar.Add(1)
 
 	if app.IconPathHicolor != "" {
 		logger.Debugf("Removing symlink to hicolor theme, %s", app.IconPathHicolor)
-		bar.Describe("Removing hicolor Icons")
 		os.Remove(app.IconPathHicolor)
 	}
+	bar.Add(1)
 
 	if app.DesktopFile != "" {
 		logger.Debugf("Removing desktop file, %s", app.DesktopFile)
-		bar.Describe("Removing desktop file")
 		os.Remove(app.DesktopFile)
 	}
+	bar.Add(1)
 
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
@@ -514,13 +519,15 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 			_ = os.Remove(binFile)
 		}
 	}
+	bar.Add(1)
 
 	logger.Debugf("Removing appimage, %s", app.Filepath)
-	bar.Describe("Removing AppImage")
 	_ = os.Remove(app.Filepath)
+	bar.Add(1)
 
 	logger.Debugf("Removing index file, %s", indexFile)
 	_ = os.Remove(indexFile)
+	bar.Add(1)
 
 	bar.Finish()
 	fmt.Printf("\n")

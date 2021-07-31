@@ -3,10 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
 	"github.com/urfave/cli/v2"
-	"strings"
 )
 
 func installAppImageOptionsFromCLIContext(context *cli.Context) (types.InstallOptions, error) {
@@ -37,6 +38,8 @@ func installAppImageOptionsFromCLIContext(context *cli.Context) (types.InstallOp
 		FromGithub:             context.Bool("github"),
 		RemovePreviousVersions: false,
 		UpdateInplace:          context.Bool("update"),
+		DoNotFilter:            context.Bool("no-filter"),
+		Silent:                 context.Bool("silent"),
 	}
 	logger.Debug(app)
 	return app, nil

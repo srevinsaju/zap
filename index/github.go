@@ -3,13 +3,13 @@ package index
 import (
 	"context"
 	"errors"
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/google/go-github/v31/github"
-	"github.com/srevinsaju/zap/config"
-	"github.com/srevinsaju/zap/exceptions"
-	"github.com/srevinsaju/zap/types"
 	"strconv"
 	"strings"
+
+	"github.com/google/go-github/v31/github"
+	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/internal/helpers"
+	"github.com/srevinsaju/zap/types"
 )
 
 func getRelease(releases []*github.RepositoryRelease, tag string) *github.RepositoryRelease {
@@ -54,28 +54,12 @@ func GitHubSurveyUserReleases(options types.InstallOptions, config config.Store)
 		return types.ZapDlAsset{}, errors.New("no-release")
 	}
 
-	releaseUserResponse := ""
-
-	if len(tags) == 0 {
-		logger.Debug("Couldn't find any releases while using GitHub API")
-		return types.ZapDlAsset{}, exceptions.NoReleaseFoundError
-	} else if len(tags) == 1 {
-		// directly select that release coz. there is only one release
-		logger.Debug("Found one release. Selecting that as default")
-		releaseUserResponse = tags[0]
-	} else if options.Silent {
-		// user has requested silence
-		// we should not prompt the user and ask for selecting an option from this
-		return types.ZapDlAsset{}, exceptions.SilenceRequestedError
-	}
-	// there are a lot of items in the release, hmm...
-	logger.Debug("Preparing survey for release selection")
-	releasePrompt := &survey.Select{
-		Message: "Choose a Release",
-		Options: tags,
-		Default: tags[0],
-	}
-	err = survey.AskOne(releasePrompt, &releaseUserResponse)
+	releaseUserResponse, err := helpers.InteractiveSurvey(helpers.InteractiveSurveyOptions{
+		Classifier: "release",
+		Array:      tags,
+		Default:    tags[0],
+		Options:    options,
+	})
 	if err != nil {
 		return types.ZapDlAsset{}, err
 	}
@@ -92,12 +76,12 @@ func GitHubSurveyUserReleases(options types.InstallOptions, config config.Store)
 		}
 	}
 
-	assetsUserResponse := ""
-	assetsPrompt := &survey.Select{
-		Message: "Choose an asset",
-		Options: assets,
-	}
-	err = survey.AskOne(assetsPrompt, &assetsUserResponse)
+	assetsUserResponse, err := helpers.InteractiveSurvey(helpers.InteractiveSurveyOptions{
+		Classifier: "asset",
+		Array:      assets,
+		Default:    assets[0],
+		Options:    options,
+	})
 	if err != nil {
 		return types.ZapDlAsset{}, err
 	}

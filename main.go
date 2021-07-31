@@ -26,12 +26,12 @@ func main() {
 	// initialize the command line interface
 	app := &cli.App{
 		Name:    "Zap",
-		Usage:   "⚡️ A command line interface to install AppImages.",
+		Usage:   "⚡️ A command line interface to install AppImages",
 		Version: getVersion(),
 		Authors: []*cli.Author{
 			{
 				Name:  "Srevin Saju",
-				Email: "srevinsaju@sugarlabs.org",
+				Email: "zap@srev.in",
 			},
 			{
 				Name: "Other open source contributors",
@@ -64,6 +64,15 @@ func main() {
 					Name:    "update",
 					Aliases: []string{"u"},
 					Usage:   "Update installed apps while updating metadata.",
+				},
+				&cli.BoolFlag{
+					Name:    "silent",
+					Aliases: []string{"q", "no-interactive"},
+					Usage:   "Do not ask interactive questions, and produce less logging",
+				},
+				&cli.BoolFlag{
+					Name:  "no-filter",
+					Usage: "Show all appimages regardless of architecture",
 				},
 			},
 		},
