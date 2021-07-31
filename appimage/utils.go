@@ -200,6 +200,12 @@ func Install(options types.InstallOptions, config config.Store) error {
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
 
+	if !helpers.CheckIfDirectoryExists(binDir) {
+		err = os.MkdirAll(binDir, 0o755)
+		if err != nil {
+			return err
+		}
+	}
 	if helpers.CheckIfSymlinkExists(binFile) {
 		logger.Debugf("%s file exists. Attempting to find path", binFile)
 		binAbsPath, err := filepath.EvalSymlinks(binFile)

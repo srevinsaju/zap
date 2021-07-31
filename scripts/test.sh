@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set +euxo pipefail
+set -euxo pipefail
 
 "$ZAP_BIN" --help
 "$ZAP_BIN" install --help
@@ -10,7 +10,7 @@ set +euxo pipefail
 "$ZAP_BIN" init --help
 
 
-"$ZAP_BIN" i --github --from=TheAssassin/pyuploadtool pyuploadtool
+"$ZAP_BIN" i --github --from=TheAssassin/pyuploadtool --silent pyuploadtool
 "$ZAP_BIN" i --github --from=TheAssassin/pyuploadtool --update --silent pyuploadtool
 "$ZAP_BIN" remove pyuploadtool
 "$ZAP_BIN" list
