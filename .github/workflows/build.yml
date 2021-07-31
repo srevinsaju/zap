@@ -20,7 +20,7 @@ jobs:
 
     - name: Check formatting
       run: |
-        go fmt -l github.com/srevinsaju/zap/...
+        gofmt -e .
 
   test:
     needs: [qa]
