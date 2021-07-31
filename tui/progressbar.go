@@ -6,6 +6,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
+// NewProgressBar creates a new dynamic progressbar instance
 func NewProgressBar(length int, category string) *progressbar.ProgressBar {
 	color := "green"
 	if category == "remove" {

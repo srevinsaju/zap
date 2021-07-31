@@ -8,6 +8,8 @@ import (
 	"github.com/srevinsaju/zap/types"
 )
 
+// InteractiveSurveyOptions provides the possible configuration
+// which can be passed to InteractiveSurvey
 type InteractiveSurveyOptions struct {
 	Classifier string
 	Array      []string
@@ -15,6 +17,9 @@ type InteractiveSurveyOptions struct {
 	Options    types.InstallOptions
 }
 
+// InteractiveSurvey creates a interactive survey command line instance, which will be instantiated
+// if the number of choices are more than one. If the number of choices are one, the only choice will
+// be returned. If the choices are empty, it will create an error
 func InteractiveSurvey(options InteractiveSurveyOptions) (string, error) {
 	userResponse := ""
 	if len(options.Array) == 0 {
