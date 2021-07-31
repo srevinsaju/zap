@@ -12,5 +12,6 @@ set -euxo pipefail
 
 "$ZAP_BIN" i --github --from=TheAssassin/pyuploadtool --silent pyuploadtool
 "$ZAP_BIN" i --github --from=TheAssassin/pyuploadtool --update --silent pyuploadtool
+"$ZAP_BIN" list
 "$ZAP_BIN" remove pyuploadtool
 "$ZAP_BIN" list
