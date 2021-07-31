@@ -196,11 +196,6 @@ func Install(options types.InstallOptions, config config.Store) error {
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
 
-	stat, err := os.Lstat(binFile)
-	if stat == nil {
-
-	}
-
 	if helpers.CheckIfSymlinkExists(binFile) {
 		logger.Debugf("%s file exists. Attempting to find path", binFile)
 		binAbsPath, err := filepath.EvalSymlinks(binFile)
