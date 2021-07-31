@@ -36,6 +36,7 @@ func installAppImageOptionsFromCLIContext(context *cli.Context) (types.InstallOp
 		Executable:             strings.Trim(executable, " "),
 		FromGithub:             context.Bool("github"),
 		RemovePreviousVersions: false,
+		UpdateInplace:          context.Bool("update"),
 	}
 	logger.Debug(app)
 	return app, nil

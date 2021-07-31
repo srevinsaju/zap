@@ -60,6 +60,11 @@ func main() {
 					Name:  "github",
 					Usage: "Use --from as repository slug to fetch from GitHub",
 				},
+				&cli.BoolFlag{
+					Name:    "update",
+					Aliases: []string{"u"},
+					Usage:   "Update installed apps while updating metadata.",
+				},
 			},
 		},
 		{

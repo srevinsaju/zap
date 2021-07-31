@@ -21,6 +21,7 @@ type InstallOptions struct {
 	RemovePreviousVersions bool
 	DoNotFilter            bool
 	Silent                 bool
+	UpdateInplace          bool
 }
 
 func (options InstallOptions) ToRemoveOptions() RemoveOptions {

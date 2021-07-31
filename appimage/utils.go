@@ -37,9 +37,7 @@ func List(zapConfig config.Store, index bool) ([]string, error) {
 			appName = path
 		} else {
 			appName = filepath.Base(path)
-			if strings.HasSuffix(appName, ".json") {
-				appName = appName[:len(appName)-len(".json")]
-			}
+			appName = strings.TrimSuffix(appName, ".json")
 		}
 		apps = append(apps, appName)
 		return err
@@ -55,11 +53,18 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
 	logger.Debugf("Checking if %s exists", indexFile)
-	if helpers.CheckIfFileExists(indexFile) {
-		// check if the app is already installed
-		// if it is, do not continue
+
+	// check if the app is already installed
+	// if it is, do not continue
+	if helpers.CheckIfFileExists(indexFile) && !options.UpdateInplace {
 		fmt.Printf("%s is already installed \n", tui.Yellow(options.Executable))
 		return nil
+	} else if helpers.CheckIfFileExists(indexFile) {
+		// has the user requested to update the app in-place?
+		err := Remove(options.ToRemoveOptions(), config)
+		if err != nil {
+			return err
+		}
 	}
 
 	if options.RemovePreviousVersions {
@@ -190,11 +195,6 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
-
-	stat, err := os.Lstat(binFile)
-	if stat == nil {
-
-	}
 
 	if helpers.CheckIfSymlinkExists(binFile) {
 		logger.Debugf("%s file exists. Attempting to find path", binFile)
