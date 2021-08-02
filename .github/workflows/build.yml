@@ -10,9 +10,34 @@ on:
     branches: [ main ]
 
 jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+
+    - name: Check formatting
+      run: |
+        gofmt -e .
+
+  test:
+    needs: [qa]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+      - name: Build
+        run: |
+          go build -v .
+      - name: Test
+        run: |
+          ZAP_BIN="$(realpath zap)" ./scripts/test.sh
 
   build:
-  
+    needs: [test]
     runs-on: ubuntu-latest
     strategy:
       matrix:
