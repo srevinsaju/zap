@@ -1,4 +1,4 @@
-<p align="center"
+<p align="center">
     <img src="https://github.com/srevinsaju/zap/raw/main/assets/logo.svg" alt="zap Zap" width=128 height=128>
 
 <h2 align="center">⚡️ Zap</h2>
