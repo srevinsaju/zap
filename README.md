@@ -29,7 +29,7 @@
 
 For system-wide installation (needs `sudo`)
 ```bash
-sudo wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap-amd64 -O /usr/local/bin/zap
+sudo wget https://github.com/srevinsaju/zap/releases/download/continuous/zap-amd64 -O /usr/local/bin/zap
 sudo chmod +x /usr/local/bin/zap
 zap --help
 ```
@@ -37,7 +37,7 @@ zap --help
 For local installation, (requires `~/.local/bin` to be on `$PATH`)
 ```bash
 mkdir -p ~/.local/bin
-wget https://github.com/srevinsaju/zap/releases/download/v2-continuous/zap-amd64 -O ~/.local/bin/zap
+wget https://github.com/srevinsaju/zap/releases/download/continuous/zap-amd64 -O ~/.local/bin/zap
 chmod +x ~/.local/bin/zap
 zap --help
 ```
