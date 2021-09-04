@@ -67,7 +67,12 @@ It is also possible to install AppImage from URLs
 zap install --from https://f.sed.lol/wow.AppImage
 ```
 
-To integrate a pre-downloaded AppImage using zap, you will have to use the `file://` protocol
+To integrate a locally downloaded AppImage,
+```bash
+zap install libresprite ~/Downloads/Libresprite-x86_64.AppImage
+```
+
+... or using the `file://` protocol
 ```bash
 zap install --from file:///home/username/Downloads/My_Super_Cool-x86_64.AppImage name_of_the_app_here
 ```

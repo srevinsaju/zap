@@ -31,9 +31,16 @@ func installAppImageOptionsFromCLIContext(context *cli.Context) (types.InstallOp
 		executable = appName
 	}
 
+	// get the second argument if provided, and if --from is not passed, to make the command line
+	// interface more intuitive (originally suggested by @eadmaster at https://github.com/srevinsaju/zap/issues/31)
+	fromFileAutomatic := context.Args().Get(1)
+	if from == "" && fromFileAutomatic != "" {
+		from = fromFileAutomatic
+	}
+
 	app := types.InstallOptions{
 		Name:                   appName,
-		From:                   context.String("from"),
+		From:                   from,
 		Executable:             strings.Trim(executable, " "),
 		FromGithub:             context.Bool("github"),
 		RemovePreviousVersions: false,

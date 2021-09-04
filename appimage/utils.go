@@ -91,9 +91,19 @@ func Install(options types.InstallOptions, config config.Store) error {
 	} else {
 		sourceIdentifier = SourceDirectURL
 		sourceSlug = options.From
+
+		// if the from argument is without the file:// protocol, match that
+		if helpers.CheckIfFileExists(sourceSlug) {
+			sourceSlug, err = filepath.Abs(sourceSlug)
+			if err != nil {
+				return err
+			}
+			sourceSlug = fmt.Sprintf("file://%s", sourceSlug)
+		}
+
 		asset = types.ZapDlAsset{
 			Name:     options.Executable,
-			Download: options.From,
+			Download: sourceSlug,
 			Size:     "(unknown)",
 		}
 	}
