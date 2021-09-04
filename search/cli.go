@@ -3,12 +3,12 @@ package search
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"github.com/ktr0731/go-fuzzyfinder"
 	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 func splitByWidth(str string, size int) []string {
