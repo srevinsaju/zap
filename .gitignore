@@ -2,3 +2,4 @@
 /zap
 .idea
 .vscode
+*.AppImage
