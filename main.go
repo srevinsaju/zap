@@ -15,7 +15,10 @@ var logger = logging.GetLogger()
 var (
 	BuildVersion string = "(local dev build)"
 	BuildTime    string = ""
+	BuildSource  string = ""
 )
+
+const DefaultUpdateUrlPrefix string = "https://github.com/srevinsaju/zap/releases/download/continuous"
 
 func getVersion() string {
 	return fmt.Sprintf("Build:%s %s", BuildVersion, BuildTime)
@@ -97,7 +100,7 @@ func main() {
 			Name:   "self-update",
 			Usage:  "Check for updates and update zap",
 			Action: selfUpdateCliContextWrapper,
-			Hidden: true,
+			Hidden: BuildSource != "github",
 		},
 		{
 			Name:   "search",

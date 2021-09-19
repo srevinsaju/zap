@@ -6,9 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -145,39 +143,10 @@ func Install(options types.InstallOptions, config config.Store) error {
 		}
 
 	} else {
-		logger.Debug("Attempting to do http request")
-		req, err := http.NewRequest("GET", asset.Download, nil)
+		err = tui.DownloadFileWithProgressBar(asset.Download, targetAppImagePath, options.Executable)
 		if err != nil {
 			return err
 		}
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return err
-		}
-
-		defer resp.Body.Close()
-
-		f, _ := os.OpenFile(targetAppImagePath, os.O_CREATE|os.O_WRONLY, 0755)
-
-		fmt.Printf("Downloading %s\n", options.Executable)
-		logger.Debug("Setting up progressbar")
-		bar := tui.NewProgressBar(
-			int(resp.ContentLength),
-			"i",
-		)
-
-		_, err = io.Copy(io.MultiWriter(f, bar), resp.Body)
-		if err != nil {
-			return err
-		}
-
-		err = f.Close()
-		if err != nil {
-			return err
-		}
-		// need a newline here
-		fmt.Print("\n")
 	}
 
 	app := &AppImage{Filepath: targetAppImagePath, Executable: options.Executable}
