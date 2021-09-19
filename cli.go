@@ -1,12 +1,21 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"github.com/srevinsaju/zap/search"
+	"io"
+	"net/http"
+	"os"
+	"runtime"
+	"strings"
+
+	"github.com/AlecAivazis/survey/v2"
 
 	"github.com/srevinsaju/zap/appimage"
 	"github.com/srevinsaju/zap/config"
 	"github.com/srevinsaju/zap/daemon"
+	"github.com/srevinsaju/zap/internal/helpers"
+	"github.com/srevinsaju/zap/search"
 	"github.com/srevinsaju/zap/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -171,6 +180,71 @@ func daemonCliContextWrapper(context *cli.Context) error {
 }
 
 func selfUpdateCliContextWrapper(c *cli.Context) error {
+	if BuildSource != "github" {
+		return nil
+	}
+	ex, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	updateCheckUrl := fmt.Sprintf("%s/zap-release-metadata", DefaultUpdateUrlPrefix)
+	r, err := http.Get(updateCheckUrl)
+	if err != nil {
+		fmt.Println("Failed to check for updates.")
+		return err
+	}
+	newVersionBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	if (strings.TrimRight(string(newVersionBytes), "\n")) != BuildVersion {
+		fmt.Printf("Updates found %s -> %s\n", tui.Yellow(BuildVersion), tui.Green(string(newVersionBytes)))
+	} else {
+		fmt.Println(tui.Green("You are already up-to-date!"))
+		return nil
+	}
+
+	arch := runtime.GOARCH
+	updateUrl := fmt.Sprintf("%s/zap-%s", DefaultUpdateUrlPrefix, arch)
+
+	if !c.Bool("silent") {
+		// let the user know what is going to happen next
+		fmt.Println("Downloading latest version of zap")
+		confirmDownload := false
+		confirmDownloadPrompt := &survey.Confirm{
+			Message: "Proceed?",
+		}
+		err = survey.AskOne(confirmDownloadPrompt, &confirmDownload)
+		if err != nil {
+			return err
+		} else if !confirmDownload {
+			return errors.New("aborting on user request")
+		}
+	}
+
+	tempDestination := fmt.Sprintf("%s.tmp", ex)
+	err = os.Remove(tempDestination)
+
+	if helpers.CheckIfFileExists(tempDestination) {
+		return err
+	}
+
+	err = tui.DownloadFileWithProgressBar(updateUrl, tempDestination, "zap")
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(ex)
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(tempDestination, ex)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

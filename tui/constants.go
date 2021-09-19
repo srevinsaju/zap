@@ -13,7 +13,7 @@ Author:
    {{range .Authors}}{{ . }}, {{end}}
    {{end}}{{if .Commands}}
 Commands:
-{{range .Commands}}{{if not .HideHelp}}   %s{{ "\t"}}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+{{range .Commands}}{{if not .Hidden}}   %s{{ "\t"}}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 Global Options:
    {{range .VisibleFlags}}{{.}}
    {{end}}{{end}}{{if .Copyright }}
