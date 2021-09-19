@@ -45,13 +45,17 @@ jobs:
         
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Set up Go
       uses: actions/setup-go@v2
 
     - name: Build
       run: |
-        GOOS=linux GOARCH=${{ matrix.ARCH }} go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always --match 'v*') -X main.BuildTime=$(date +%s) -X main.BuildSource=github" -o zap-${{ matrix.ARCH }} .
+        git fetch --force --tags
+        export ZAP_VERSION="$(git describe --tags --always --match 'v*.*' | sed 's,-,.,g')"
+        GOOS=linux GOARCH=${{ matrix.ARCH }} go build -ldflags "-s -w -X main.BuildVersion=$ZAP_VERSION -X main.BuildTime=$(date +%s) -X main.BuildSource=github" -o zap-${{ matrix.ARCH }} .
 
     - name: Upload Asset
       uses: actions/upload-artifact@v2
@@ -64,6 +68,8 @@ jobs:
     needs: [build]
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     
     - name: download actions
       uses: actions/download-artifact@v2
@@ -73,7 +79,9 @@ jobs:
 
     - name: Generate supported metadata
       run: |
-        git describe --tags --always --match 'v*' > zap-release-metadata 
+        git fetch --force --tags
+        export ZAP_VERSION="$(git describe --tags --always --match 'v*.*' | sed 's,-,.,g')"
+        echo $ZAP_VERSION > zap-release-metadata 
 
     - name: Create release and upload artifacts
       env:
