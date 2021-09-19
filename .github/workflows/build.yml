@@ -51,8 +51,8 @@ jobs:
 
     - name: Build
       run: |
-        GOOS=linux GOARCH=${{ matrix.ARCH }} go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always --match 'v*') -X main.BuildTime=$(date +%s)" -o zap-${{ matrix.ARCH }} .
-        
+        GOOS=linux GOARCH=${{ matrix.ARCH }} go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always --match 'v*') -X main.BuildTime=$(date +%s) -X main.BuildSource=github" -o zap-${{ matrix.ARCH }} .
+
     - name: Upload Asset
       uses: actions/upload-artifact@v2
       with:
@@ -63,15 +63,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+    - uses: actions/checkout@v2
+    
     - name: download actions
       uses: actions/download-artifact@v2
       
     - name: Show releases
       run: ls -al
+
+    - name: Generate supported metadata
+      run: |
+        git describe --tags --always --match 'v*' > zap-release-metadata 
+
     - name: Create release and upload artifacts
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         wget https://github.com/TheAssassin/pyuploadtool/releases/download/continuous/pyuploadtool-x86_64.AppImage
         chmod +x pyuploadtool-x86_64.AppImage
-        ./pyuploadtool-x86_64.AppImage zap-*/zap-*
+        ./pyuploadtool-x86_64.AppImage zap-*/zap-* ./zap-release-metadata
