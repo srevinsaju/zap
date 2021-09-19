@@ -193,7 +193,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 			// this link points to config.LocalStore, where all AppImages are stored
 			// I guess we need to remove them, no asking and all
 			// make sure we remove the file first to prevent conflicts in future
-			logger.Debugf("%s is a previously installed symlink because of zap. Attempting to remove it")
+			logger.Debugf("%s is a previously installed symlink because of zap. Attempting to remove it", binFile)
 			err := os.Remove(binFile)
 			if err != nil {
 				logger.Warn("Failed to remove the symlink. %s", err)
@@ -204,9 +204,8 @@ func Install(options types.InstallOptions, config config.Store) error {
 			// we dont want users to be confused tbh
 			// so we need to ask them which of them, they would like to keep
 			logger.Debug("Detected another app which is not installed by zap. Refusing to remove")
-			if options.Silent {
-				logger.Fatalf("%s already exists. ")
-			}
+			// TODO: add a user prompt
+			logger.Fatalf("%s already exists. ", binFile)
 		} else {
 			// the file is probably a symlink, but just doesnt resolve properly
 			// we can safely remove it
@@ -323,7 +322,7 @@ func RemoveAndInstall(options types.InstallOptions, config config.Store, app *Ap
 }
 
 func update(options types.Options, config config.Store) (*AppImage, error) {
-	logger.Debugf("Bootstrapping updater", options.Name)
+	logger.Debugf("Bootstrapping updater for %s", options.Name)
 	app := &AppImage{}
 
 	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
