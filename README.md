@@ -27,6 +27,25 @@
 
 ## Getting Started ✨
 
+### Automated Installation
+For installing zap you can use our little [bash script](https://github.com/srevinsaju/zap/blob/main/install.sh).
+
+The installer requires `curl`, `grep` `jq` and `wget` (optional). Please make sure you have it installed.
+
+For system-wide installation (needs `sudo`)
+```bash
+curl https://raw.githubusercontent.com/srevinsaju/zap/main/install.sh | sudo sh
+```
+
+**Note:** Always Check bash scripts before running as sudo. You can feel free to check out install.sh, it's safe.
+
+For local installation run
+```bash
+curl https://raw.githubusercontent.com/srevinsaju/zap/main/install.sh | sh
+```
+
+### Manual Installation
+
 For system-wide installation (needs `sudo`)
 ```bash
 sudo wget https://github.com/srevinsaju/zap/releases/download/continuous/zap-amd64 -O /usr/local/bin/zap
