@@ -149,7 +149,7 @@ echo
 # Installation
 
 # Root and No Root
-if [ "$(whoami)" == "root"]; then
+if [ "$EUID" -ne 0 ]; then
 	echo [~] Script is running as root.
 	echo
 	echo [~] Installing System-Wide
@@ -169,7 +169,7 @@ else
 	PATH="$PATH;~/.local/bin/"
 	if [ -f ~/.zshrc ]; then
 		echo '[~] Adding .local/bin to ~/.zshrc'
-		echo "PATH=\$PATH;~/.local/bin/" >> ~/.zshrc
+		echo "PATH=\$PATH:~/.local/bin/" >> ~/.zshrc
 	fi
 	if [ -f ~/.bashrc ]; then
 		echo '[~] Adding .local/bin to ~/.bashrc'
