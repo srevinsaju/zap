@@ -26,30 +26,30 @@ REPO="srevinsaju/zap"
 # Architecture
 if [ -z ${ARCH+x} ]; then
 	MACHINE_ARCH="$(uname -m)"
-	if [ $MACHINE_ARCH = "amd64" ]; then
+	if [ "$MACHINE_ARCH" = "amd64" ]; then
 		ARCH="amd64"
-        elif [ $MACHINE_ARCH = "x86_64" ]; then
+        elif [ "$MACHINE_ARCH" = "x86_64" ]; then
                 ARCH="amd64"
-	elif [ $MACHINE_ARCH = "i386" ]; then
+	elif [ "$MACHINE_ARCH" = "i386" ]; then
 		ARCH="386"
-	elif [ $MACHINE_ARCH = "i686" ]; then
+	elif [ "$MACHINE_ARCH" = "i686" ]; then
 		ARCH="386" # both are 32bit, should be compatible
-	elif [ $MACHINE_ARCH = "aarch64" ]; then
+	elif [ "$MACHINE_ARCH" = "aarch64" ]; then
 		ARCH="arm64"
-	elif [ $MACHINE_ARCH = "arm64" ]; then
+	elif [ "$MACHINE_ARCH" = "arm64" ]; then
 		ARCH="arm64"
-	elif [ $MACHINE_ARCH = "arm" ]; then
+	elif [ "$MACHINE_ARCH" = "arm" ]; then
 		ARCH="arm"
 	fi
         export ARCH
 fi
 
 
-echo [~] Platform Arch: $ARCH
+echo "[~] Platform Arch: $ARCH"
 echo
 
 
-echo [~] Requirements Check:
+echo "[~] Requirements Check:"
 
 # required: curl
 if ! command -v curl &>/dev/null; then
@@ -106,7 +106,7 @@ RELEASES="$(curl -sN $RELEASE_API_URL)"
 
 COMPATIBLE_RELEASE="$(echo "$RELEASES" | jq -rc '.[].assets[].browser_download_url' | grep -m 1 "$ARCH")"
 
-if [ -z $COMPATIBLE_RELEASE ]; then
+if [ -z "$COMPATIBLE_RELEASE" ]; then
 	echo [!] No compatible releases found....
 	exit 1
 fi
@@ -119,7 +119,7 @@ echo
 
 # Download release
 echo [~] Downloading....
-echo '[>] Download URL:' $COMPATIBLE_RELEASE
+echo "[>] Download URL: $COMPATIBLE_RELEASE"
 echo
 
 TEMP_FILE="$(mktemp zap.installer.XXXXXXXXXX)"
@@ -127,11 +127,11 @@ TEMP_FILE="$(mktemp zap.installer.XXXXXXXXXX)"
 if [ -z "$(which wget)" ]; then
 	echo [~] Using Curl
 	echo
-        curl -L $COMPATIBLE_RELEASE -o $TEMP_FILE
+        curl -L "$COMPATIBLE_RELEASE" -o "$TEMP_FILE"
 else
 	echo [~] wget is available, using wget.
 	echo
-	wget $COMPATIBLE_RELEASE -O $TEMP_FILE
+	wget "$COMPATIBLE_RELEASE" -O "$TEMP_FILE"
 fi
 
 
@@ -144,7 +144,7 @@ if [ "$EUID" -eq 0 ]; then
 	echo [~] Script is running as root.
 	echo
 	echo [~] Installing System-Wide
-	sudo mv $TEMP_FILE /usr/local/bin/zap
+	sudo mv "$TEMP_FILE" /usr/local/bin/zap
 	sudo chmod +x /usr/local/bin/zap
 	# Done
 	echo [~] Done....
@@ -157,14 +157,16 @@ else
 	chmod +x ~/.local/bin/zap
 	# Add to $PATH
 	echo '[~] Adding ~/.local/bin to PATH'
-	PATH="$PATH;~/.local/bin/"
+	PATH="$PATH:$HOME/.local/bin/"
 	if [ -f ~/.zshrc ]; then
 		echo '[~] Adding .local/bin to ~/.zshrc'
-		echo "PATH=\$PATH:~/.local/bin/" >> ~/.zshrc
+                echo "# Added by zap installation script" >> ~/.zshrc
+		echo "PATH=\$PATH:\$HOME/.local/bin/" >> ~/.zshrc
 	fi
 	if [ -f ~/.bashrc ]; then
 		echo '[~] Adding .local/bin to ~/.bashrc'
-		echo "PATH=\$PATH;~/.local/bin" >> ~/.bashrc
+                echo "# Added by zap installation script" >> ~/.bashrc
+		echo "PATH=\$PATH:\$HOME/.local/bin" >> ~/.bashrc
 	fi
 	# Done
 	echo [~] Done....
