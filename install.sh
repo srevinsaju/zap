@@ -1,8 +1,13 @@
 #!/bin/bash
 # curl https://github.com/srevinsaju/zap/raw/main/install.sh | sh
 
-
 # A Bash Script to auto fetch latest release from srevinsaju/zap releases
+
+# Error Handling
+# Pipefall instead of error checks to retain original error
+set -euxo pipefail
+
+
 
 echo
 echo "####################"
@@ -17,17 +22,6 @@ echo
 
 # Config
 REPO="srevinsaju/zap"
-
-
-# function
-function error_check {
-	if [ $? -ne 0 ]; then
-		echo [!] Error in downloading zap....
-		echo [!] Exiting.
-		exit 1
-	fi
-}
-
 
 # Architecture
 if [ -z $ARCH ]; then
@@ -47,7 +41,7 @@ if [ -z $ARCH ]; then
 	fi
 fi
 
-error_check
+
 
 echo [~] Platform Arch: $ARCH
 echo
@@ -103,7 +97,7 @@ if [ "$(which wget)" ]; then
 fi
 
 
-error_check
+
 echo
 
 
@@ -115,7 +109,7 @@ echo [~] Getting Latest zap release....
 RELEASES="$($CURL_PATH -sN $RELEASE_API_URL)"
 # RELEASES="$(cat r.json)"
 
-error_check
+
 
 # List releases
 
@@ -126,7 +120,7 @@ if [ -z $COMPATIBLE_RELEASE ]; then
 	exit 1
 fi
 
-error_check
+
 echo
 
 echo [~] Found latest zap version....
@@ -149,7 +143,7 @@ else
 	wget $COMPATIBLE_RELEASE -O $TEMP_FILE
 fi
 
-error_check
+
 echo
 
 # Installation
@@ -184,9 +178,6 @@ else
 	# Done
 	echo [~] Done....
 fi
-
-# Check errors
-error_check
 
 # Installation Complete
 echo
