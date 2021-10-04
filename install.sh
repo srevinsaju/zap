@@ -5,7 +5,7 @@
 
 # Error Handling
 # Pipefall instead of error checks to retain original error
-set -euxo pipefail
+set -euo pipefail
 
 
 
@@ -24,10 +24,12 @@ echo
 REPO="srevinsaju/zap"
 
 # Architecture
-if [ -z $ARCH ]; then
+if [ -z ${ARCH+x} ]; then
 	MACHINE_ARCH="$(uname -m)"
 	if [ $MACHINE_ARCH = "amd64" ]; then
 		ARCH="amd64"
+        elif [ $MACHINE_ARCH = "x86_64" ]; then
+                ARCH="amd64"
 	elif [ $MACHINE_ARCH = "i386" ]; then
 		ARCH="386"
 	elif [ $MACHINE_ARCH = "i686" ]; then
@@ -39,22 +41,18 @@ if [ -z $ARCH ]; then
 	elif [ $MACHINE_ARCH = "arm" ]; then
 		ARCH="arm"
 	fi
+        export ARCH
 fi
-
 
 
 echo [~] Platform Arch: $ARCH
 echo
 
-# Requirements
-CURL_PATH="$(which curl)"
-GREP_PATH="$(which grep)"
-
 
 echo [~] Requirements Check:
 
 # required: curl
-if [ -z $CURL_PATH ]; then
+if ! command -v curl &>/dev/null; then
 	echo
 	echo [!] Command curl is required. Please install curl.
 	exit 1
@@ -63,7 +61,7 @@ else
 fi
 
 # required: grep
-if [ -z $GREP_PATH ]; then
+if ! command -v grep &>/dev/null; then
 	echo
 	echo [!] Command grep was not found. Please install package containing grep tool.
 	exit 1
@@ -73,15 +71,8 @@ fi
 
 
 # required: jq
-if [ -f "./jq" ]; then
-	JQ_PATH="./jq"
-	chmod 755 $JQ_PATH
-else
-	JQ_PATH="$(which jq)"
-fi
 
-
-if [ -z $JQ_PATH ]; then
+if ! command -v jq &>/dev/null; then
 	echo
 	echo [!] Command jq was not found. Please install jq from your package manager....
 	echo
@@ -106,14 +97,14 @@ RELEASE_API_URL="https://api.github.com/repos/$REPO/releases"
 
 echo [~] Getting Latest zap release....
 
-RELEASES="$($CURL_PATH -sN $RELEASE_API_URL)"
+RELEASES="$(curl -sN $RELEASE_API_URL)"
 # RELEASES="$(cat r.json)"
 
 
 
 # List releases
 
-COMPATIBLE_RELEASE="$(echo "$RELEASES" | $JQ_PATH -rc .[].assets[].browser_download_url | grep -m 1 "$ARCH")"
+COMPATIBLE_RELEASE="$(echo "$RELEASES" | jq -rc '.[].assets[].browser_download_url' | grep -m 1 "$ARCH")"
 
 if [ -z $COMPATIBLE_RELEASE ]; then
 	echo [!] No compatible releases found....
@@ -131,12 +122,12 @@ echo [~] Downloading....
 echo '[>] Download URL:' $COMPATIBLE_RELEASE
 echo
 
-TEMP_FILE="$(mktemp)"
+TEMP_FILE="$(mktemp zap.installer.XXXXXXXXXX)"
 
 if [ -z "$(which wget)" ]; then
 	echo [~] Using Curl
 	echo
-	$CURL_PATH -L $COMPATIBLE_RELEASE -o $TEMP_FILE
+        curl -L $COMPATIBLE_RELEASE -o $TEMP_FILE
 else
 	echo [~] wget is available, using wget.
 	echo
@@ -149,7 +140,7 @@ echo
 # Installation
 
 # Root and No Root
-if [ "$EUID" -ne 0 ]; then
+if [ "$EUID" -eq 0 ]; then
 	echo [~] Script is running as root.
 	echo
 	echo [~] Installing System-Wide
@@ -162,7 +153,7 @@ else
 	echo
 	echo '[~] Installing Locally to ~/.local/bin/'
 	mkdir -p ~/.local/bin
-	mv $TEMP_FILE "~/.local/bin/zap"
+	mv "$TEMP_FILE" ~/.local/bin/zap
 	chmod +x ~/.local/bin/zap
 	# Add to $PATH
 	echo '[~] Adding ~/.local/bin to PATH'
