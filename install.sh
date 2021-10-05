@@ -122,7 +122,7 @@ echo [~] Downloading....
 echo "[>] Download URL: $COMPATIBLE_RELEASE"
 echo
 
-TEMP_FILE="$(mktemp zap.installer.XXXXXXXXXX)"
+TEMP_FILE="$(mktemp /tmp/zap.installer.XXXXXXXXXX)"
 
 if [ -z "$(which wget)" ]; then
 	echo [~] Using Curl
