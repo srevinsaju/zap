@@ -74,7 +74,7 @@ func parseSourceFromAppName(context *cli.Context, appName string) (*cli.Context,
 		filePath := "file://" + appName
 		context.Set("from", filePath)
 		splitted := strings.Split(appName, "/")
-		return context, splitted[len(splitted)-1]
+		return context, strings.ReplaceAll(splitted[len(splitted)-1], "-x86_64.AppImage", "")
 	}
 
 	// local file with relative path
@@ -86,7 +86,7 @@ func parseSourceFromAppName(context *cli.Context, appName string) (*cli.Context,
 		splitted := strings.Split(appName, "/")
 		filePath := "file://" + path.Join(pwd, appName)
 		context.Set("from", filePath)
-		return context, splitted[len(splitted)-1]
+		return context, strings.ReplaceAll(splitted[len(splitted)-1], "-x86_64.AppImage", "")
 	}
 
 	return context, appName
