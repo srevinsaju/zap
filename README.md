@@ -34,14 +34,14 @@ The installer requires `curl`, `grep` `jq` and `wget` (optional). Please make su
 
 For system-wide installation (needs `sudo`)
 ```bash
-curl https://raw.githubusercontent.com/srevinsaju/zap/main/install.sh | sudo sh
+curl https://raw.githubusercontent.com/srevinsaju/zap/main/install.sh | sudo bash -s
 ```
 
 **Note:** Always Check bash scripts before running as sudo. You can feel free to check out install.sh, it's safe.
 
 For local installation run
 ```bash
-curl https://raw.githubusercontent.com/srevinsaju/zap/main/install.sh | sh
+curl https://raw.githubusercontent.com/srevinsaju/zap/main/install.sh | bash -s
 ```
 
 ### Manual Installation
@@ -162,7 +162,7 @@ This project has been possible with the help and support provided by the AppImag
 ```
 MIT License
 
-Copyright (c) 2020 Srevin Saju
+Copyright (c) 2020-21 Srevin Saju, and other zap contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -182,6 +182,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-## Copyright ©️
-(C) Srevin Saju 2020
