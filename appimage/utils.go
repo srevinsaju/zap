@@ -46,6 +46,7 @@ func List(zapConfig config.Store, index bool) ([]string, error) {
 func Install(options types.InstallOptions, config config.Store) error {
 	var asset types.ZapDlAsset
 	var err error
+	var tmpTargetImagePath string
 	sourceIdentifier := ""
 	sourceSlug := ""
 
@@ -57,14 +58,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 	if helpers.CheckIfFileExists(indexFile) && !options.UpdateInplace {
 		fmt.Printf("%s is already installed \n", tui.Yellow(options.Executable))
 		return nil
-	} else if helpers.CheckIfFileExists(indexFile) {
-		// has the user requested to update the app in-place?
-		err := Remove(options.ToRemoveOptions(), config)
-		if err != nil {
-			return err
-		}
 	}
-
 	if options.RemovePreviousVersions {
 		err := Remove(options.ToRemoveOptions(), config)
 		if err != nil {
@@ -124,6 +118,10 @@ func Install(options types.InstallOptions, config config.Store) error {
 	logger.Debugf("Connecting to %s", asset.Download)
 
 	targetAppImagePath := path.Join(config.LocalStore, asset.GetBaseName())
+	if options.UpdateInplace {
+		tmpTargetImagePath = targetAppImagePath
+		targetAppImagePath = path.Join(config.LocalStore, asset.GetBaseName() + "_tmp")
+	}
 	targetAppImagePath, err = filepath.Abs(targetAppImagePath)
 	if err != nil {
 		return err
@@ -147,6 +145,13 @@ func Install(options types.InstallOptions, config config.Store) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if options.UpdateInplace {
+		os.Rename(targetAppImagePath, tmpTargetImagePath)
+		removeOptions := types.RemoveOptions{Executable: options.Executable}
+		Remove(removeOptions, config)
+		targetAppImagePath = tmpTargetImagePath
 	}
 
 	app := &AppImage{Filepath: targetAppImagePath, Executable: options.Executable}
@@ -321,6 +326,25 @@ func RemoveAndInstall(options types.InstallOptions, config config.Store, app *Ap
 	return app, err
 }
 
+// UpdateInPlace is used to first of all download a appImage and then after is safe remove the old one
+func UpdateInPlace(options types.InstallOptions, config config.Store, app *AppImage) (*AppImage, error) {
+	options.UpdateInplace = true
+	err := Install(options, config)
+	if err != nil {
+		return nil, err
+	}
+
+	// after installing, we need to resolve the name of the new app
+	binDir := path.Join(xdg.Home, ".local", "bin")
+	binFile := path.Join(binDir, app.Executable)
+	app.Filepath, err = filepath.EvalSymlinks(binFile)
+	if err != nil {
+		logger.Fatalf("Failed to resolve symlink to %s. E: %s", binDir, err)
+		return nil, err
+	}
+	return app, err
+}
+
 func update(options types.Options, config config.Store) (*AppImage, error) {
 	logger.Debugf("Bootstrapping updater for %s", options.Name)
 	app := &AppImage{}
@@ -358,7 +382,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 				FromGithub: true,
 				Silent:     options.Silent,
 			}
-			return RemoveAndInstall(installOptions, config, app)
+			return UpdateInPlace(installOptions, config, app)
 
 		} else if app.Source.Identifier == SourceZapIndex {
 			logger.Debug("Fallback to zap index from appimage.github.io")
@@ -369,7 +393,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 				FromGithub: false,
 				Silent:     options.Silent,
 			}
-			return RemoveAndInstall(installOptions, config, app)
+			return UpdateInPlace(installOptions, config, app)
 
 		} else {
 			if options.Silent {
