@@ -11,6 +11,7 @@ type Options struct {
 	FromGithub        bool
 	Silent            bool
 	UseAppImageUpdate bool
+	ForceRemove       bool
 }
 
 type InstallOptions struct {

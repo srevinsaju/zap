@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
@@ -22,6 +23,7 @@ import (
 	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
 )
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func List(zapConfig config.Store, index bool) ([]string, error) {
 	var apps []string
@@ -119,8 +121,9 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	targetAppImagePath := path.Join(config.LocalStore, asset.GetBaseName())
 	if options.UpdateInplace {
+		rand.Seed(time.Now().UnixNano())
 		tmpTargetImagePath = targetAppImagePath
-		targetAppImagePath = path.Join(config.LocalStore, asset.GetBaseName() + "_tmp")
+		targetAppImagePath = path.Join(config.LocalStore, asset.GetBaseName() + randomTempName())
 	}
 	targetAppImagePath, err = filepath.Abs(targetAppImagePath)
 	if err != nil {
@@ -148,7 +151,10 @@ func Install(options types.InstallOptions, config config.Store) error {
 	}
 
 	if options.UpdateInplace {
-		os.Rename(targetAppImagePath, tmpTargetImagePath)
+		err = os.Rename(targetAppImagePath, tmpTargetImagePath)
+		if err != nil {
+			return err
+		}
 		removeOptions := types.RemoveOptions{Executable: options.Executable}
 		Remove(removeOptions, config)
 		targetAppImagePath = tmpTargetImagePath
@@ -368,6 +374,10 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 	}
 
 	if !options.UseAppImageUpdate || !checkIfUpdateInformationExists(app.Filepath) {
+		funcToApply := UpdateInPlace
+		if options.ForceRemove {
+			funcToApply = RemoveAndInstall
+		}
 
 		logger.Debug("This app has no update information embedded")
 
@@ -382,7 +392,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 				FromGithub: true,
 				Silent:     options.Silent,
 			}
-			return UpdateInPlace(installOptions, config, app)
+			return funcToApply(installOptions, config, app)
 
 		} else if app.Source.Identifier == SourceZapIndex {
 			logger.Debug("Fallback to zap index from appimage.github.io")
@@ -393,7 +403,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 				FromGithub: false,
 				Silent:     options.Silent,
 			}
-			return UpdateInPlace(installOptions, config, app)
+			return funcToApply(installOptions, config, app)
 
 		} else {
 			if options.Silent {
@@ -543,4 +553,12 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 	logger.Debugf("Removing all files completed successfully")
 
 	return bar.Finish()
+}
+
+func randomTempName() string {
+	b := make([]rune, 5)
+    for i := range b {
+        b[i] = letters[rand.Intn(len(letters))]
+    }
+    return string(b)
 }
