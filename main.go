@@ -94,6 +94,10 @@ func main() {
 					Aliases: []string{"with-appimageupdate", "appimageupdate", "au"},
 					Usage:   "Use AppImageUpdate to delta update your appimage using zsync.",
 				},
+				&cli.BoolFlag{
+					Name: "force-remove",
+					Usage: "Force a remove of a package before updating it",
+				},
 			},
 		},
 		{

@@ -63,6 +63,7 @@ func updateAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, e
 		From:              context.String("from"),
 		Executable:        executable,
 		UseAppImageUpdate: context.Bool("with-au"),
+		ForceRemove:       context.Bool("force-remove"),
 	}, nil
 
 }
