@@ -121,9 +121,9 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	targetAppImagePath := path.Join(config.LocalStore, asset.GetBaseName())
 	if options.UpdateInplace {
-		rand.Seed(time.Now().UnixNano())
+		file, _ := ioutil.TempFile(config.LocalStore, "temp*.AppImage")
 		tmpTargetImagePath = targetAppImagePath
-		targetAppImagePath = path.Join(config.LocalStore, asset.GetBaseName() + randomTempName())
+		targetAppImagePath = file.Name()
 	}
 	targetAppImagePath, err = filepath.Abs(targetAppImagePath)
 	if err != nil {
@@ -152,6 +152,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	if options.UpdateInplace {
 		err = os.Rename(targetAppImagePath, tmpTargetImagePath)
+		err = os.Chmod(targetAppImagePath, 0700)
 		if err != nil {
 			return err
 		}
@@ -191,7 +192,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 	binFile := path.Join(binDir, options.Executable)
 
 	if !helpers.CheckIfDirectoryExists(binDir) {
-		err = os.MkdirAll(binDir, 0o755)
+		err = os.MkdirAll(binDir, 0755)
 		if err != nil {
 			return err
 		}
