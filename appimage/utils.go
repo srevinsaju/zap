@@ -152,7 +152,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	if options.UpdateInplace {
 		err = os.Rename(targetAppImagePath, tmpTargetImagePath)
-		err = os.Chmod(targetAppImagePath, 0700)
+		err = os.Chmod(tmpTargetImagePath, 0700)
 		if err != nil {
 			return err
 		}
