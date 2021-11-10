@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
@@ -23,7 +22,6 @@ import (
 	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
 )
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func List(zapConfig config.Store, index bool) ([]string, error) {
 	var apps []string
@@ -157,7 +155,10 @@ func Install(options types.InstallOptions, config config.Store) error {
 			return err
 		}
 		removeOptions := types.RemoveOptions{Executable: options.Executable}
-		Remove(removeOptions, config)
+		err = Remove(removeOptions, config)
+		if err != nil {
+			panic(err)
+		}
 		targetAppImagePath = tmpTargetImagePath
 	}
 
@@ -213,8 +214,8 @@ func Install(options types.InstallOptions, config config.Store) error {
 		} else if err == nil {
 			// this is some serious app which shares the same name
 			// as that of the target appimage
-			// we dont want users to be confused tbh
-			// so we need to ask them which of them, they would like to keep
+			// we don't want users to be confused tbh
+			// so, we need to ask them which of them, they would like to keep
 			logger.Debug("Detected another app which is not installed by zap. Refusing to remove")
 			// TODO: add a user prompt
 			logger.Fatalf("%s already exists. ", binFile)
@@ -287,7 +288,7 @@ func Upgrade(config config.Store, silent bool) ([]string, error) {
 }
 
 // Update method is a safe wrapper script which exposes update to the Command Line interface
-// also handles those appimages which are up to date
+// also handles those appimages which are up-to-date
 func Update(options types.Options, config config.Store) error {
 	app, err := update(options, config)
 	if err != nil {
@@ -309,9 +310,9 @@ func Update(options types.Options, config config.Store) error {
 // this is particularly used in updating the AppImages from GitHub and Zap Index when
 // the update information is missing
 func RemoveAndInstall(options types.InstallOptions, config config.Store, app *AppImage) (*AppImage, error) {
-	// for github releases, we have to force the removal of the old
+	// for GitHub releases, we have to force the removal of the old
 	// appimage before continuing, because there is no verification
-	// of the method which can be used to check if the appimage is up to date
+	// of the method which can be used to check if the appimage is up-to-date
 	// or not.
 	err := Remove(types.RemoveOptions{Executable: app.Executable}, config)
 	if err != nil {
@@ -333,7 +334,7 @@ func RemoveAndInstall(options types.InstallOptions, config config.Store, app *Ap
 	return app, err
 }
 
-// UpdateInPlace is used to first of all download a appImage and then after is safe remove the old one
+// UpdateInPlace is used to first download a appImage and then after is safe remove the old one
 func UpdateInPlace(options types.InstallOptions, config config.Store, app *AppImage) (*AppImage, error) {
 	options.UpdateInplace = true
 	err := Install(options, config)
@@ -382,7 +383,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 
 		logger.Debug("This app has no update information embedded")
 
-		// the appimage does nofalset contain update information
+		// the appimage does not contain update information
 		// we need to fetch the metadata from the index
 		if app.Source.Identifier == SourceGitHub {
 			logger.Debug("Fallback to GitHub API call from installation method")
@@ -409,7 +410,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 		} else {
 			if options.Silent {
 				logger.Warn("%s has no update information. " +
-					"Please ask the AppImage author to include updateinformation for the best experience. " +
+					"Please ask the AppImage author to include update-information for the best experience. " +
 					"Skipping.")
 				return nil, nil
 			} else {
@@ -501,7 +502,7 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 	if err != nil {
 		return err
 	}
-	bar.Add(1)
+	_ = bar.Add(1)
 
 	err = json.Unmarshal(indexBytes, app)
 	if err != nil {
@@ -510,21 +511,21 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 
 	if app.IconPath != "" {
 		logger.Debugf("Removing thumbnail, %s", app.IconPath)
-		os.Remove(app.IconPath)
+		_ = os.Remove(app.IconPath)
 	}
-	bar.Add(1)
+	_ = bar.Add(1)
 
 	if app.IconPathHicolor != "" {
 		logger.Debugf("Removing symlink to hicolor theme, %s", app.IconPathHicolor)
-		os.Remove(app.IconPathHicolor)
+		_ = os.Remove(app.IconPathHicolor)
 	}
-	bar.Add(1)
+	_ = bar.Add(1)
 
 	if app.DesktopFile != "" {
 		logger.Debugf("Removing desktop file, %s", app.DesktopFile)
-		os.Remove(app.DesktopFile)
+		_ = os.Remove(app.DesktopFile)
 	}
-	bar.Add(1)
+	_ = bar.Add(1)
 
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, options.Executable)
@@ -538,28 +539,20 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 			_ = os.Remove(binFile)
 		}
 	}
-	bar.Add(1)
+	_ = bar.Add(1)
 
 	logger.Debugf("Removing appimage, %s", app.Filepath)
 	_ = os.Remove(app.Filepath)
-	bar.Add(1)
+	_ = bar.Add(1)
 
 	logger.Debugf("Removing index file, %s", indexFile)
 	_ = os.Remove(indexFile)
-	bar.Add(1)
+	_ = bar.Add(1)
 
-	bar.Finish()
+	_ = bar.Finish()
 	fmt.Printf("\n")
 	fmt.Printf("✅ %s removed successfully\n", app.Executable)
 	logger.Debugf("Removing all files completed successfully")
 
 	return bar.Finish()
-}
-
-func randomTempName() string {
-	b := make([]rune, 5)
-    for i := range b {
-        b[i] = letters[rand.Intn(len(letters))]
-    }
-    return string(b)
 }
