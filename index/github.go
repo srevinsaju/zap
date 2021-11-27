@@ -71,7 +71,7 @@ func GitHubSurveyUserReleases(options types.InstallOptions, config config.Store)
 
 	var assets []string
 	for i := range release.Assets {
-		if strings.HasSuffix(*release.Assets[i].Name, ".AppImage") {
+		if strings.HasSuffix(*release.Assets[i].Name, ".AppImage") || strings.HasSuffix(*release.Assets[i].Name, ".appimage") {
 			assets = append(assets, *release.Assets[i].Name)
 		}
 	}

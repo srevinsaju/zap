@@ -214,8 +214,29 @@ func NewZapConfigInteractive(configPath string) (*Store, error) {
 
 	cfg.LocalStore = whereToSave
 
-	cfg.IndexStore = filepath.Join(whereToSave, "index")
-	cfg.IconStore = filepath.Join(whereToSave, "icons")
+	cfgLocalStore, err := filepath.EvalSymlinks(cfg.LocalStore)
+	if err == nil {
+		cfg.LocalStore = cfgLocalStore
+	} else {
+		logger.Warn(err)
+	}
+	cfg.IndexStore = filepath.Join(cfg.LocalStore, "index")
+	cfg.IconStore = filepath.Join(cfg.LocalStore, "icons")
+
+	// get the real path of the provided paths
+	// this is because some systems like Fedora Silverblue has /home as symlink to /var/home
+	cfgIndexStore, err := filepath.EvalSymlinks(cfg.IndexStore)
+	if err == nil {
+		cfg.IndexStore = cfgIndexStore
+	} else {
+		logger.Warn(err)
+	}
+	cfgIconStore, err := filepath.EvalSymlinks(cfg.IconStore)
+	if err == nil {
+		cfg.IconStore = cfgIconStore
+	}
+	os.MkdirAll(cfg.IndexStore, 0755)
+	os.MkdirAll(cfg.IconStore, 0755)
 
 	integrate := ""
 	err = survey.AskOne(&survey.Select{
