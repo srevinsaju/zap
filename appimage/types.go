@@ -2,10 +2,6 @@ package appimage
 
 import (
 	"fmt"
-	"github.com/adrg/xdg"
-	"github.com/srevinsaju/zap/config"
-	"github.com/srevinsaju/zap/internal/helpers"
-	"gopkg.in/ini.v1"
 	"image"
 	_ "image/png"
 	"io/ioutil"
@@ -14,6 +10,11 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/adrg/xdg"
+	"github.com/srevinsaju/zap/config"
+	"github.com/srevinsaju/zap/internal/helpers"
+	"gopkg.in/ini.v1"
 )
 
 const (
@@ -64,7 +65,7 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 		return
 	}
 
-	baseIconName := fmt.Sprintf("zap-%s.png", appimage.Executable)
+	baseIconName := fmt.Sprintf("%s.png", appimage.Executable)
 	targetIconPath := path.Join(target, baseIconName)
 	_, err = helpers.CopyFile(dirIcon, targetIconPath)
 	if err != nil {
@@ -265,7 +266,7 @@ func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 	if config.CustomIconTheme {
 		desktopEntry.Key("Icon").SetValue(appImageIcon)
 	} else {
-		desktopEntry.Key("Icon").SetValue(fmt.Sprintf("zap-%s", appimage.Executable))
+		desktopEntry.Key("Icon").SetValue(appimage.Executable)
 	}
 
 	// set the name again, so that the name looks like
