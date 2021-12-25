@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,6 +29,9 @@ func DownloadFileWithProgressBar(url string, destination string, name string) er
 	}
 
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("The file asset cannot be accessed, possibly it was removed.")
+	}
 
 	f, _ := os.OpenFile(destination, os.O_CREATE|os.O_WRONLY, 0755)
 
