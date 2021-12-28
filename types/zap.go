@@ -17,11 +17,12 @@ func (asset ZapDlAsset) GetBaseName() string {
 
 // ZapIndex is used to marshal the index.min.json
 type ZapIndex struct {
-	Id         string `json:"id"`
-	Name       string `json:"name"`
-	Image      string `json:"image"`
-	Maintainer string `json:"maintainer"`
-	Summary    string `json:"summary"`
+	Id         string      `json:"id"`
+	Name       string      `json:"name"`
+	Image      string      `json:"image"`
+	Maintainer string      `json:"maintainer"`
+	Summary    string      `json:"summary"`
+	Links      []ZapSource `json:"links"`
 }
 
 type ZapRelease struct {

@@ -56,14 +56,18 @@ func WithCli(mirror string) error {
 				return ""
 			}
 			app := apps[i]
-
+			summaryLinks := ""
 			summaryFormattedArray := splitByWidth(app.Summary, w/2-4)
 			summaryFormatted := strings.Join(summaryFormattedArray, "\n")
+			for i := range app.Links {
+				summaryLinks += fmt.Sprintf("- %s: %s\n", app.Links[i].Type, app.Links[i].Url)
+			}
 
-			return fmt.Sprintf("%s \nsubmitted by %s\n%s",
+			return fmt.Sprintf("%s \nsubmitted by %s\n%s\n\n%s",
 				app.Name,
 				app.Maintainer,
-				summaryFormatted)
+				summaryFormatted,
+				summaryLinks)
 		}))
 	if err != nil {
 		logger.Fatal(err)
