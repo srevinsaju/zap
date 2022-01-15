@@ -156,17 +156,19 @@ else
 	mv "$TEMP_FILE" ~/.local/bin/zap
 	chmod +x ~/.local/bin/zap
 	# Add to $PATH
-	echo '[~] Adding ~/.local/bin to PATH'
-	PATH="$PATH:$HOME/.local/bin/"
-	if [ -f ~/.zshrc ]; then
-		echo '[~] Adding .local/bin to ~/.zshrc'
-                echo "# Added by zap installation script" >> ~/.zshrc
-		echo "PATH=\$PATH:\$HOME/.local/bin/" >> ~/.zshrc
-	fi
-	if [ -f ~/.bashrc ]; then
-		echo '[~] Adding .local/bin to ~/.bashrc'
-                echo "# Added by zap installation script" >> ~/.bashrc
-		echo "PATH=\$PATH:\$HOME/.local/bin" >> ~/.bashrc
+	if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+		echo '[~] Adding ~/.local/bin to $PATH'
+		PATH="$PATH:$HOME/.local/bin/"
+		if [ -f ~/.zshrc ]; then
+			echo '[~] Adding .local/bin to ~/.zshrc'
+            echo "# Added by zap installation script" >> ~/.zshrc
+			echo "PATH=\$PATH:\$HOME/.local/bin/" >> ~/.zshrc
+		fi
+		if [ -f ~/.bashrc ]; then
+			echo '[~] Adding .local/bin to ~/.bashrc'
+            echo "# Added by zap installation script" >> ~/.bashrc
+			echo "PATH=\$PATH:\$HOME/.local/bin" >> ~/.bashrc
+		fi
 	fi
 	# Done
 	echo [~] Done....
