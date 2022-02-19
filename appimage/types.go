@@ -236,6 +236,8 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 	return data, nil
 }
 
+// ProcessDesktopFile extracts the desktop file, adds appimage
+// specific keys, and updates them.
 func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 	ini.PrettyFormat = false
 
