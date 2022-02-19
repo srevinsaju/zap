@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/adrg/xdg"
 	"github.com/srevinsaju/zap/config"
 	"github.com/srevinsaju/zap/internal/helpers"
@@ -238,7 +239,7 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 
 // ProcessDesktopFile extracts the desktop file, adds appimage
 // specific keys, and updates them.
-func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
+func (appimage *AppImage) ProcessDesktopFile(cfg config.Store) {
 	ini.PrettyFormat = false
 
 	data, err := appimage.ExtractDesktopFile()
@@ -258,14 +259,36 @@ func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 
 	// the appimage has explicitly requested not to be integrated
 	if desktopEntry.Key("X-AppImage-Integrate").String() == "true" {
-
 		return
+	}
+
+	if cfg.Integrate == config.IntegrateNever {
+		// user has configured not to integrate
+		// newly installed appimages
+		return
+	}
+
+	if cfg.Integrate == config.IntegrateAsk {
+		integrateEnabled := false
+		integrateEnabledPrompt := &survey.Confirm{
+			Message: "Do you want to integrate this appimage?",
+			Help:    "This will create shortcuts, icons and desktop files for this appimage",
+		}
+		err = survey.AskOne(integrateEnabledPrompt, &integrateEnabled)
+		if err != nil {
+			logger.Warnf("Failed to ask prompt, %s", err)
+			return
+		}
+		if !integrateEnabled {
+			// user has asked not to integrate the appimage explicitly
+			return
+		}
 	}
 
 	appImageIcon := desktopEntry.Key("Icon").String()
 	desktopEntry.Key("X-Zap-Id").SetValue(appimage.Executable)
 
-	if config.CustomIconTheme {
+	if cfg.CustomIconTheme {
 		desktopEntry.Key("Icon").SetValue(appImageIcon)
 	} else {
 		desktopEntry.Key("Icon").SetValue(appimage.Executable)
@@ -277,7 +300,7 @@ func (appimage *AppImage) ProcessDesktopFile(config config.Store) {
 	name := desktopEntry.Key("Name").String()
 	desktopEntry.Key("Name").SetValue(fmt.Sprintf("%s (AppImage)", name))
 
-	targetDesktopFile := path.Join(config.ApplicationStore, fmt.Sprintf("%s.desktop", appimage.Executable))
+	targetDesktopFile := path.Join(cfg.ApplicationStore, fmt.Sprintf("%s.desktop", appimage.Executable))
 	logger.Debugf("Preparing %s for writing new desktop file", targetDesktopFile)
 
 	// add Exec
