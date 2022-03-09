@@ -240,6 +240,13 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 // ProcessDesktopFile extracts the desktop file, adds appimage
 // specific keys, and updates them.
 func (appimage *AppImage) ProcessDesktopFile(cfg config.Store) {
+	// check if dependencies are present
+	if !commandExists("xdg-desktop-menu") {
+		logger.Fatal("Could not find 'xdg-desktop-menu' on your system. " +
+			"Please refer to https://command-not-found.com/xdg-desktop-menu " +
+			"for more information.")
+	}
+
 	ini.PrettyFormat = false
 
 	data, err := appimage.ExtractDesktopFile()
@@ -300,11 +307,17 @@ func (appimage *AppImage) ProcessDesktopFile(cfg config.Store) {
 	name := desktopEntry.Key("Name").String()
 	desktopEntry.Key("Name").SetValue(fmt.Sprintf("%s (AppImage)", name))
 
-	targetDesktopFile := path.Join(cfg.ApplicationStore, fmt.Sprintf("%s.desktop", appimage.Executable))
-	logger.Debugf("Preparing %s for writing new desktop file", targetDesktopFile)
-
 	// add Exec
+	binDir := path.Join(xdg.Home, ".local", "bin")
+	binFile := path.Join(binDir, appimage.Executable)
 	desktopEntry.Key("Exec").SetValue(fmt.Sprintf("%s %%U", appimage.Executable))
+	desktopEntry.Key("TryExec").SetValue(fmt.Sprintf("%s", binFile))
+
+	tempDesktopDir := path.Join(cfg.LocalStore, "desktop")
+	os.MkdirAll(tempDesktopDir, 0755)
+
+	targetDesktopFile := path.Join(tempDesktopDir, fmt.Sprintf("%s.desktop", appimage.Executable))
+	logger.Debugf("Preparing %s for writing new desktop file", targetDesktopFile)
 
 	err = desktopFile.SaveTo(targetDesktopFile)
 	if err != nil {
@@ -313,6 +326,8 @@ func (appimage *AppImage) ProcessDesktopFile(cfg config.Store) {
 	}
 	appimage.DesktopFile = targetDesktopFile
 
+	xdgDesktopMenuInstall(targetDesktopFile)
+
 	// and they completed, happily ever after
-	logger.Debugf("Desktop file successfully written to %s", targetDesktopFile)
+	logger.Debugf("Desktop file successfully written to %s, and installed with 'xdg-desktop-menu'", targetDesktopFile)
 }

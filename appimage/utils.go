@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -22,6 +23,33 @@ import (
 	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
 )
+
+func commandExists(command string) bool {
+	_, err := exec.LookPath(command)
+	return err == nil
+}
+
+func xdgDesktopMenuInstall(targetDesktopFile string) {
+	cmd := exec.Command("xdg-desktop-menu", "install", targetDesktopFile, "--novendor")
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		logger.Warnf("Failed to run xdg-desktop-menu, %s", err)
+		return
+	}
+}
+
+func xdgDesktopMenuUninstall(targetDesktopFile string) {
+	cmd := exec.Command("xdg-desktop-menu", "uninstall", targetDesktopFile, "--novendor")
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		logger.Warnf("Failed to run xdg-desktop-menu, %s", err)
+		return
+	}
+}
 
 func List(zapConfig config.Store, index bool) ([]string, error) {
 	var apps []string
@@ -486,6 +514,13 @@ func checkIfUpdateInformationExists(f string) bool {
 // Remove function helps to remove an appimage, given its executable name
 // with which it was registered
 func Remove(options types.RemoveOptions, config config.Store) error {
+	// check for dependencies
+	if !commandExists("xdg-desktop-menu") {
+		logger.Fatal("Could not find 'xdg-desktop-menu' on your system. " +
+			"Please refer to https://command-not-found.com/xdg-desktop-menu " +
+			"for more information.")
+	}
+
 	app := &AppImage{}
 
 	indexFile := fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
@@ -523,6 +558,7 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 
 	if app.DesktopFile != "" {
 		logger.Debugf("Removing desktop file, %s", app.DesktopFile)
+		xdgDesktopMenuUninstall(app.DesktopFile)
 		_ = os.Remove(app.DesktopFile)
 	}
 	_ = bar.Add(1)
