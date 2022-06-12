@@ -310,7 +310,7 @@ func (appimage *AppImage) ProcessDesktopFile(cfg config.Store) {
 	// add Exec
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, appimage.Executable)
-	desktopEntry.Key("Exec").SetValue(fmt.Sprintf("%s %%U", appimage.Executable))
+	desktopEntry.Key("Exec").SetValue(fmt.Sprintf("%s %%U", binFile))
 	desktopEntry.Key("TryExec").SetValue(fmt.Sprintf("%s", binFile))
 
 	tempDesktopDir := path.Join(cfg.LocalStore, "desktop")
