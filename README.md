@@ -83,7 +83,7 @@ will put some options which will let you choose the best version for your system
 It is also possible to install AppImage from URLs
 
 ```bash
-zap install --from https://f.sed.lol/wow.AppImage
+zap install --from https://f.sed.lol/wow.AppImage wow
 ```
 
 To integrate a locally downloaded AppImage,
