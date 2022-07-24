@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -177,12 +178,20 @@ func Install(options types.InstallOptions, config config.Store) error {
 	}
 
 	if options.UpdateInplace {
+		logger.Debugf("Renaming %s to %s", targetAppImagePath, tmpTargetImagePath)
 		err = os.Rename(targetAppImagePath, tmpTargetImagePath)
+		if err != nil {
+			logger.Fatalf("Failed to update appimage in place: %s -> %s", targetAppImagePath, tmpTargetImagePath)
+		}
 		err = os.Chmod(tmpTargetImagePath, 0700)
 		if err != nil {
 			return err
 		}
-		removeOptions := types.RemoveOptions{Executable: options.Executable}
+		removeOptions := types.RemoveOptions{
+			Executable:    options.Executable,
+			NewFilepath:   tmpTargetImagePath,
+			RemoveInPlace: options.UpdateInplace,
+		}
 		err = Remove(removeOptions, config)
 		if err != nil {
 			panic(err)
@@ -256,7 +265,12 @@ func Install(options types.InstallOptions, config config.Store) error {
 			logger.Debugf("Attempting to remove the symlink regardless")
 			err := os.Remove(binFile)
 			if err != nil {
-				logger.Debugf("Failed to remove symlink: %s", err)
+				logger.Debugf("Failed to remove symlink using os.Remove: %s", err)
+				err = syscall.Unlink(binFile)
+				if err != nil {
+					logger.Debugf("Failed to remove symlink using syscall.Unlink: %s", err)
+				}
+
 			}
 		}
 	}
@@ -375,10 +389,10 @@ func UpdateInPlace(options types.InstallOptions, config config.Store, app *AppIm
 	binFile := path.Join(binDir, app.Executable)
 	app.Filepath, err = filepath.EvalSymlinks(binFile)
 	if err != nil {
-		logger.Fatalf("Failed to resolve symlink to %s. E: %s", binDir, err)
-		return nil, err
+		logger.Warnf("Failed to resolve symlink to %s. E: %s", binFile, err)
+		logger.Infof("Found existing corrupted installation for %s. Overwriting...", app.Executable)
 	}
-	return app, err
+	return app, nil
 }
 
 func update(options types.Options, config config.Store) (*AppImage, error) {
@@ -577,8 +591,14 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 	}
 	_ = bar.Add(1)
 
-	logger.Debugf("Removing appimage, %s", app.Filepath)
-	_ = os.Remove(app.Filepath)
+	// the appimage file name hasn't changed over time
+	// so we can remove it in place
+	if !options.RemoveInPlace || options.NewFilepath != app.Filepath {
+		logger.Debugf("Removing appimage, %s", app.Filepath)
+		_ = os.Remove(app.Filepath)
+	} else {
+		logger.Debugf("Old appimage has the same filename as the new appimage. Skipping removal.")
+	}
 	_ = bar.Add(1)
 
 	logger.Debugf("Removing index file, %s", indexFile)

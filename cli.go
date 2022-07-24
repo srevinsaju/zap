@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"k8s.io/utils/exec"
 
 	"github.com/srevinsaju/zap/appimage"
 	"github.com/srevinsaju/zap/config"
@@ -44,6 +45,8 @@ func installAppImageCliContextWrapper(context *cli.Context) error {
 	}
 
 	err = appimage.Install(installAppImageOptionsInstance, *zapConfig)
+	
+	exec.Cmd("")
 	return err
 }
 

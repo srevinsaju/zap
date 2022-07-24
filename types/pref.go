@@ -31,4 +31,8 @@ func (options InstallOptions) ToRemoveOptions() RemoveOptions {
 
 type RemoveOptions struct {
 	Executable string
+
+	// optional for inplace updates
+	NewFilepath   string
+	RemoveInPlace bool
 }
