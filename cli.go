@@ -45,7 +45,7 @@ func installAppImageCliContextWrapper(context *cli.Context) error {
 	}
 
 	err = appimage.Install(installAppImageOptionsInstance, *zapConfig)
-	
+
 	exec.Cmd("")
 	return err
 }
