@@ -18,7 +18,6 @@ echo
 REPO="srevinsaju/zap"
 
 # Uninstallation
-
 if [ "$EUID" -eq 0 ]; then
 	echo [~] Script is running as root.
 	echo
