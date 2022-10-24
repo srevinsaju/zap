@@ -166,8 +166,8 @@ func NewZapConfigInteractive(configPath string) (*Store, error) {
 		return nil, err
 	}
 
+	autoUpdateEnabled := false
 	if _, err = os.Stat("/etc/systemd/user/zapd.service"); os.IsNotExist(err) {
-		autoUpdateEnabled := false
 		autoUpdateEnabledPrompt := &survey.Confirm{
 			Message: "Do you want to enable auto-update?",
 			Help:    "Auto update will install a systemd service which will periodically check for updates and install the latest version.",
@@ -175,12 +175,6 @@ func NewZapConfigInteractive(configPath string) (*Store, error) {
 		err = survey.AskOne(autoUpdateEnabledPrompt, &autoUpdateEnabled)
 		if err != nil {
 			return nil, err
-		}
-		if autoUpdateEnabled {
-			err = daemon.SetupToRunThroughSystemd()
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 
@@ -254,5 +248,14 @@ func NewZapConfigInteractive(configPath string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// If auto update was enabled, we (re-)start with systemd
+	if autoUpdateEnabled {
+		err := daemon.SetupToRunThroughSystemd()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return cfg, nil
 }

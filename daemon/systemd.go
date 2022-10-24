@@ -126,8 +126,6 @@ func SetupToRunThroughSystemd() error {
 			if err != nil {
 				logger.Debug(prc.String())
 				logger.Debug(err)
-			} else {
-				os.Exit(0)
 			}
 		} else {
 			logger.Infof("Enabling systemd service...")
