@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/srevinsaju/zap/tui"
@@ -12,7 +14,7 @@ import (
 
 func installAppImageOptionsFromCLIContext(context *cli.Context) (types.InstallOptions, error) {
 	executable := context.String("executable")
-	appName := context.Args().First()
+	context, appName := parseSourceFromAppName(context, context.Args().First())
 
 	from := context.String("from")
 	if context.Bool("github") && from == "" {
@@ -51,6 +53,43 @@ func installAppImageOptionsFromCLIContext(context *cli.Context) (types.InstallOp
 	logger.Debug(app)
 	return app, nil
 
+}
+
+// parseSourceFromAppName setup context with some cases, for example:
+// github, local file with relative path, local file with absolute path
+func parseSourceFromAppName(context *cli.Context, appName string) (*cli.Context, string) {
+	// [username repository] for github
+	// [. filename] for local file with relative path
+	splitted := strings.Split(appName, "/")
+
+	// github
+	if len(splitted) == 2 && splitted[0] != "." {
+		context.Set("github", "true")
+		context.Set("from", appName)
+		return context, splitted[1]
+	}
+
+	// local file with absolute path
+	if strings.HasPrefix(appName, "/") {
+		filePath := "file://" + appName
+		context.Set("from", filePath)
+		splitted := strings.Split(appName, "/")
+		return context, strings.ReplaceAll(splitted[len(splitted)-1], "-x86_64.AppImage", "")
+	}
+
+	// local file with relative path
+	if strings.HasPrefix(appName, "./") {
+		pwd, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+		splitted := strings.Split(appName, "/")
+		filePath := "file://" + path.Join(pwd, appName)
+		context.Set("from", filePath)
+		return context, strings.ReplaceAll(splitted[len(splitted)-1], "-x86_64.AppImage", "")
+	}
+
+	return context, appName
 }
 
 func updateAppImageOptionsFromCLIContext(context *cli.Context) (types.Options, error) {
