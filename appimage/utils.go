@@ -246,7 +246,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 			logger.Debugf("%s is a previously installed symlink because of zap. Attempting to remove it", binFile)
 			err := os.Remove(binFile)
 			if err != nil {
-				logger.Warn("Failed to remove the symlink. %s", err)
+				logger.Warnf("Failed to remove the symlink. %s", err)
 			}
 		} else if err == nil {
 			// this is some serious app which shares the same name
@@ -451,9 +451,9 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 
 		} else {
 			if options.Silent {
-				logger.Warn("%s has no update information. " +
-					"Please ask the AppImage author to include update-information for the best experience. " +
-					"Skipping.")
+				logger.Warnf("%s has no update information. "+
+					"Please ask the AppImage author to include update-information for the best experience. "+
+					"Skipping.", app.Filepath)
 				return nil, nil
 			} else {
 				return nil, errors.New("appimage has no update information")

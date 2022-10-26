@@ -1,0 +1,15 @@
+version: 1
+
+stages:
+  - id: go 
+    source: 
+      type: git
+      url: "https://github.com/srevinsaju/togomak-template-go"
+
+      parameters: 
+        - name: go_module_path 
+          default: github.com/srevinsaju/zap 
+        - name: go_bin_name 
+          default: zap
+      
+  
