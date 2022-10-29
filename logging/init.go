@@ -7,8 +7,11 @@ import (
 
 var Logger *log.Logger
 
-/* GetLogger returns a pre-initialized logger instance if its available, else creates
-a new one and return them after checking debug specifications */
+/*
+	GetLogger returns a pre-initialized logger instance if its available, else creates
+
+a new one and return them after checking debug specifications
+*/
 func GetLogger() *log.Logger {
 	if Logger != nil {
 		return Logger
