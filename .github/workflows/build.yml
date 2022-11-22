@@ -13,10 +13,12 @@ jobs:
   qa:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
+      with:
+        go-version: '>=1.19'
 
     - name: Check formatting
       run: |
@@ -26,9 +28,13 @@ jobs:
     needs: [qa]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.19'
+
       - name: Build
         run: |
           go build -v .
@@ -49,7 +55,9 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
+      with:
+        go-version: '>=1.19'
 
     - name: Build
       run: |
@@ -67,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     
