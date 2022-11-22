@@ -2,6 +2,7 @@ package appimage
 
 import (
 	"fmt"
+	"github.com/gabriel-vasile/mimetype"
 	"image"
 	_ "image/png"
 	"io/ioutil"
@@ -66,7 +67,43 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 		return
 	}
 
-	baseIconName := fmt.Sprintf("%s.png", appimage.Executable)
+	buf, err := os.Open(dirIcon)
+	logger.Debug("Trying to detect file type of the icon: supports .svg, .png")
+
+	// move to beginning of the DirIcon, since the image dimensions check might fail
+	// otherwise
+	mtype, err := mimetype.DetectReader(buf)
+	ext := "png"
+	if err != nil && os.Getenv("ZAP_IGNORE_MIMETYPE_CONFLICTS") != "1" {
+		logger.Fatal("Failed to detect file type from the .DirIcon image. Please create an issue on zap repository. Set ZAP_IGNORE_MIMETYPE_CONFLICTS=1 as environment variable to ignore thie error.")
+	} else if err != nil && os.Getenv("ZAP_IGNORE_MIMETYPE_CONFLICTS") == "1" {
+		logger.Warn("Failed retrieving mimetype from the .Diricon image, ignoring this error because ZAP_IGNORE_MIMETYPE_CONFLICTS is set as 1, on environment variables")
+	} else {
+		ext = mtype.Extension()
+	}
+
+	buf.Seek(0, 0)
+	var im image.Config
+	if ext == "png" {
+		logger.Debugf("Trying to read image dimensions from %s", dirIcon)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		logger.Debug("Decoding PNG image")
+		im, _, err = image.DecodeConfig(buf)
+		if err != nil {
+			logger.Warn(err)
+			return
+		}
+	}
+	err = buf.Close()
+	if err != nil {
+		logger.Warn("failed to close the icon file", err)
+		return
+	}
+
+	baseIconName := fmt.Sprintf("%s.%s", appimage.Executable, ext)
+
 	targetIconPath := path.Join(target, baseIconName)
 	_, err = helpers.CopyFile(dirIcon, targetIconPath)
 	if err != nil {
@@ -74,27 +111,13 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 		return
 	}
 
-	logger.Debugf("Trying to read image dimensions from %s", targetIconPath)
-	file, err := os.Open(targetIconPath)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	logger.Debug("Decoding PNG image")
-	im, _, err := image.DecodeConfig(file)
-	if err != nil {
-		logger.Warn(err)
-		return
-	}
-
-	err = file.Close()
-	if err != nil {
-		logger.Warn(err)
-		return
-	}
-
 	logger.Debugf("Calculating symlink location")
-	xdgIconPath, err := xdg.DataFile(fmt.Sprintf("icons/hicolor/%dx%d/apps/", im.Width, im.Width))
+	var xdgIconPath string
+	if ext == "png" {
+		xdgIconPath, err = xdg.DataFile(fmt.Sprintf("icons/hicolor/%dx%d/apps/", im.Width, im.Width))
+	} else {
+		xdgIconPath, err = xdg.DataFile("icons/hicolor/scalable/apps/")
+	}
 	if err != nil {
 		logger.Warn(err)
 		return
@@ -145,6 +168,14 @@ func (appimage AppImage) Extract(dir string, relPath string) string {
 	}
 
 	dirIcon := path.Join(dir, "squashfs-root", relPath)
+	paths, err := filepath.Glob(dirIcon)
+	if err != nil {
+		panic(err)
+	}
+	if len(paths) == 0 {
+		logger.Fatal("Could not find any file matching pattern", relPath)
+	}
+	dirIcon = paths[0]
 
 	fileInfo, err := os.Lstat(dirIcon)
 	if os.IsNotExist(err) {
@@ -182,54 +213,9 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 	defer os.RemoveAll(dir)
 
 	logger.Debug("Trying to extract Desktop files")
-	cmd := exec.Command(appimage.Filepath, "--appimage-extract", "*.desktop")
-	cmd.Dir = dir
+	desktopFile := appimage.Extract(dir, "*.desktop")
 
-	err = cmd.Run()
-	output, _ := cmd.Output()
-	if string(output) != "" {
-		logger.Debugf("%s --appimage-extract *.desktop gave '%s'", appimage.Filepath, string(output))
-	}
-
-	if err != nil {
-		logger.Debugf("%s --appimage-extract *.Desktop failed with %s.", appimage.Filepath, err)
-		return []byte{}, err
-	}
-
-	squashfsDir, err := filepath.Abs(path.Join(dir, "squashfs-root"))
-	if err != nil {
-		logger.Debugf("Failed to get absolute path to squashfs-root, %s", err)
-		return nil, nil
-	}
-	logger.Debugf("Setting squashfs-root's abs path, %s", squashfsDir)
-
-	var desktopFiles []string
-	err = filepath.Walk(squashfsDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-
-		logger.Debugf("Checking if %s is a desktop file", path)
-		if strings.HasSuffix(path, ".desktop") {
-			logger.Debugf("Check for %s as desktop file -> passed", path)
-			desktopFiles = append(desktopFiles, path)
-		}
-		return nil
-	})
-	if err != nil {
-		logger.Warnf("Failed to walk through squashfs, %s", err)
-		return nil, nil
-	}
-
-	// couldn't find a desktop file
-	if len(desktopFiles) == 0 {
-		logger.Debug("Couldn't find a single desktop file")
-		return nil, nil
-	}
-	data, err := ioutil.ReadFile(desktopFiles[0])
+	data, err := ioutil.ReadFile(desktopFile)
 	if err != nil {
 		logger.Warnf("Reading desktop file failed %s", err)
 		return []byte{}, err
