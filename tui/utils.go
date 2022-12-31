@@ -33,7 +33,10 @@ func DownloadFileWithProgressBar(url string, destination string, name string) er
 		return errors.New("The file asset cannot be accessed, possibly it was removed.")
 	}
 
-	f, _ := os.OpenFile(destination, os.O_CREATE|os.O_WRONLY, 0755)
+	f, err := os.OpenFile(destination, os.O_CREATE|os.O_WRONLY, 0755)
+  if err != nil {
+    panic(err)
+  }
 
 	fmt.Printf("Downloading %s\n", name)
 	logger.Debug("Setting up progressbar")
@@ -41,15 +44,15 @@ func DownloadFileWithProgressBar(url string, destination string, name string) er
 		int(resp.ContentLength),
 		"i",
 	)
-
-	_, err = io.Copy(io.MultiWriter(f, bar), resp.Body)
+  mw := io.MultiWriter(f, bar)
+	_, err = io.Copy(mw, resp.Body)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	err = f.Close()
 	if err != nil {
-		return err
+		panic(err)
 	}
 	// need a newline here
 	fmt.Print("\n")

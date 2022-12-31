@@ -162,7 +162,7 @@ This project has been possible with the help and support provided by the AppImag
 ```
 MIT License
 
-Copyright (c) 2020-21 Srevin Saju, and other zap contributors
+Copyright (c) 2020-23 Srevin Saju, and other zap contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -64,6 +64,10 @@ func main() {
 					Usage: "Use --from as repository slug to fetch from GitHub",
 				},
 				&cli.BoolFlag{
+					Name: "select-first",
+					Usage: "Disable all prompts, and select the first item from the prompt if there are more than one choice.",
+				},
+				&cli.BoolFlag{
 					Name:    "update",
 					Aliases: []string{"u"},
 					Usage:   "Update installed apps while updating metadata.",
