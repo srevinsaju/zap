@@ -97,4 +97,4 @@ jobs:
       run: |
         wget https://github.com/TheAssassin/pyuploadtool/releases/download/continuous/pyuploadtool-x86_64.AppImage
         chmod +x pyuploadtool-x86_64.AppImage
-        ./pyuploadtool-x86_64.AppImage zap-*/zap-* ./zap-release-metadata
+        APPIMAGE_EXTRACT_AND_RUN=1 ./pyuploadtool-x86_64.AppImage zap-*/zap-* ./zap-release-metadata
