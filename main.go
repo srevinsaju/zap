@@ -85,13 +85,18 @@ func main() {
 		},
 		{
 			Name:   "update",
-			Usage:  "Update an AppImage",
+			Usage:  "Update, downgrade or change a version of an AppImage",
 			Action: updateAppImageCliContextWrapper,
+			Aliases: []string{"u", "downgrade", "switch"},
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name: "executable",
 					Usage: "Name of the executable which would be used as the unique identifier " +
 						"of the appimage on your system",
+				},
+				&cli.BoolFlag{
+					Name: "select-first",
+					Usage: "Disable all prompts, and select the first item from the prompt if there are more than one choice.",
 				},
 				&cli.BoolFlag{
 					Name:    "with-au",
@@ -101,6 +106,15 @@ func main() {
 				&cli.BoolFlag{
 					Name:  "force-remove",
 					Usage: "Force a remove of a package before updating it",
+				},
+				&cli.BoolFlag{
+					Name:    "silent",
+					Aliases: []string{"q", "no-interactive"},
+					Usage:   "Do not ask interactive questions, and produce less logging",
+				},
+				&cli.BoolFlag{
+					Name:  "no-filter",
+					Usage: "Show all appimages regardless of architecture",
 				},
 			},
 		},

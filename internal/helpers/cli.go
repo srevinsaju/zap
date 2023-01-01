@@ -29,10 +29,13 @@ func InteractiveSurvey(options InteractiveSurveyOptions) (string, error) {
 		// directly select that release coz. there is only one release
 		logger.Debugf("Found one %s. Selecting that as default", options.Classifier)
 		userResponse = options.Array[0]
-	} else if options.Options.Silent {
+	} else if options.Options.Silent && !options.Options.SelectFirst {
 		// user has requested silence
 		// we should not prompt the user and ask for selecting an option from this
 		return "", exceptions.SilenceRequestedError
+	} else if options.Options.SelectFirst {
+		// user has requested to select the first option
+		userResponse = options.Array[0]
 	} else {
 		// there are a lot of items in the release, hmm...
 		logger.Debugf("Preparing survey for %s selection", options.Classifier)

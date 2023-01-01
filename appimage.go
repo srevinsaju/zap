@@ -47,6 +47,7 @@ func installAppImageOptionsFromCLIContext(context *cli.Context) (types.InstallOp
 		UpdateInplace:          context.Bool("update"),
 		DoNotFilter:            context.Bool("no-filter"),
 		Silent:                 context.Bool("silent"),
+		SelectFirst:            context.Bool("select-first"),
 	}
 	logger.Debug(app)
 	return app, nil

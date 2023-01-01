@@ -23,6 +23,7 @@ type InstallOptions struct {
 	DoNotFilter            bool
 	Silent                 bool
 	UpdateInplace          bool
+	SelectFirst            bool
 }
 
 func (options InstallOptions) ToRemoveOptions() RemoveOptions {
