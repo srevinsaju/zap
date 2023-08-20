@@ -20,6 +20,6 @@ require (
 	github.com/srevinsaju/appimage-update v0.1.5-ss2
 	github.com/urfave/cli/v2 v2.20.3
 	github.com/withmandala/go-log v0.1.0
-	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/net v0.14.0 // indirect
 	gopkg.in/ini.v1 v1.67.0
 )

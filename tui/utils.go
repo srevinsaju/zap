@@ -34,9 +34,9 @@ func DownloadFileWithProgressBar(url string, destination string, name string) er
 	}
 
 	f, err := os.OpenFile(destination, os.O_CREATE|os.O_WRONLY, 0755)
-  if err != nil {
-    panic(err)
-  }
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Printf("Downloading %s\n", name)
 	logger.Debug("Setting up progressbar")
@@ -44,7 +44,7 @@ func DownloadFileWithProgressBar(url string, destination string, name string) er
 		int(resp.ContentLength),
 		"i",
 	)
-  mw := io.MultiWriter(f, bar)
+	mw := io.MultiWriter(f, bar)
 	_, err = io.Copy(mw, resp.Body)
 	if err != nil {
 		panic(err)

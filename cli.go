@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"runtime"
@@ -195,7 +195,7 @@ func selfUpdateCliContextWrapper(c *cli.Context) error {
 		fmt.Println("Failed to check for updates.")
 		return err
 	}
-	newVersionBytes, err := ioutil.ReadAll(r.Body)
+	newVersionBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		panic(err)
 	}

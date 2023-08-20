@@ -3,12 +3,13 @@ package search
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
 	"github.com/ktr0731/go-fuzzyfinder"
 	"github.com/srevinsaju/zap/tui"
 	"github.com/srevinsaju/zap/types"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 func splitByWidth(str string, size int) []string {
@@ -35,7 +36,7 @@ func WithCli(mirror string) error {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

@@ -1,13 +1,13 @@
 package daemon
 
 import (
-	"github.com/adrg/xdg"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
+
+	"github.com/adrg/xdg"
 )
 
 // https://github.com/probonopd/go-appimage/blob/23ad67c727fb762867fe96db06d600a7cdaf297d/src/appimaged/prerequisites.go#L463
@@ -62,7 +62,7 @@ Environment=LAUNCHED_BY_SYSTEMD=1
 WantedBy=default.target`)
 
 	logger.Debugf("Writing zapd.service to %s", pathToServiceDir)
-	err = ioutil.WriteFile(path.Join(pathToServiceDir, "zapd.service"), systemdService, 0644)
+	err = os.WriteFile(path.Join(pathToServiceDir, "zapd.service"), systemdService, 0644)
 	if err != nil {
 		return err
 	}
