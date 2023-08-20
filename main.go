@@ -64,7 +64,7 @@ func main() {
 					Usage: "Use --from as repository slug to fetch from GitHub",
 				},
 				&cli.BoolFlag{
-					Name: "select-first",
+					Name:  "select-first",
 					Usage: "Disable all prompts, and select the first item from the prompt if there are more than one choice.",
 				},
 				&cli.BoolFlag{
@@ -84,9 +84,9 @@ func main() {
 			},
 		},
 		{
-			Name:   "update",
-			Usage:  "Update, downgrade or change a version of an AppImage",
-			Action: updateAppImageCliContextWrapper,
+			Name:    "update",
+			Usage:   "Update, downgrade or change a version of an AppImage",
+			Action:  updateAppImageCliContextWrapper,
 			Aliases: []string{"u", "downgrade", "switch"},
 			Flags: []cli.Flag{
 				&cli.StringFlag{
@@ -95,7 +95,7 @@ func main() {
 						"of the appimage on your system",
 				},
 				&cli.BoolFlag{
-					Name: "select-first",
+					Name:  "select-first",
 					Usage: "Disable all prompts, and select the first item from the prompt if there are more than one choice.",
 				},
 				&cli.BoolFlag{
