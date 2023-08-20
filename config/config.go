@@ -2,13 +2,13 @@ package config
 
 import (
 	"errors"
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/srevinsaju/zap/daemon"
-	"github.com/srevinsaju/zap/internal/helpers"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/srevinsaju/zap/daemon"
+	"github.com/srevinsaju/zap/internal/helpers"
 
 	"github.com/adrg/xdg"
 	"gopkg.in/ini.v1"
@@ -127,7 +127,7 @@ func NewZapConfig(configPath string) (*Store, error) {
 	}
 
 	// Init new YAML decode
-	configRaw, err := ioutil.ReadFile(configPath)
+	configRaw, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}

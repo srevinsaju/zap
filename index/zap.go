@@ -3,7 +3,7 @@ package index
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -30,7 +30,7 @@ func GetZapReleases(executable string, config config.Store) (*types.ZapReleases,
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

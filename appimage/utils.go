@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -148,7 +147,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 
 	targetAppImagePath := path.Join(config.LocalStore, asset.GetBaseName())
 	if options.UpdateInplace {
-		file, _ := ioutil.TempFile(config.LocalStore, "temp*.AppImage")
+		file, _ := os.CreateTemp(config.LocalStore, "temp*.AppImage")
 		tmpTargetImagePath = targetAppImagePath
 		targetAppImagePath = file.Name()
 	}
@@ -221,7 +220,7 @@ func Install(options types.InstallOptions, config config.Store) error {
 	}
 	indexFile = fmt.Sprintf("%s.json", path.Join(config.IndexStore, options.Executable))
 	logger.Debugf("Writing JSON index to %s", indexFile)
-	err = ioutil.WriteFile(indexFile, indexBytes, 0644)
+	err = os.WriteFile(indexFile, indexBytes, 0644)
 	if err != nil {
 		return err
 	}
@@ -407,7 +406,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 	}
 
 	logger.Debugf("Unmarshalling JSON from %s", indexFile)
-	indexBytes, err := ioutil.ReadFile(indexFile)
+	indexBytes, err := os.ReadFile(indexFile)
 	if err != nil {
 		return app, err
 	}
@@ -499,7 +498,7 @@ func update(options types.Options, config config.Store) (*AppImage, error) {
 	}
 
 	logger.Debugf("Writing to %s", indexFile)
-	err = ioutil.WriteFile(indexFile, newIdxBytes, 0644)
+	err = os.WriteFile(indexFile, newIdxBytes, 0644)
 	if err != nil {
 		return app, err
 	}
@@ -547,7 +546,7 @@ func Remove(options types.RemoveOptions, config config.Store) error {
 	bar := tui.NewProgressBar(7, "r")
 
 	logger.Debugf("Unmarshalling JSON from %s", indexFile)
-	indexBytes, err := ioutil.ReadFile(indexFile)
+	indexBytes, err := os.ReadFile(indexFile)
 	if err != nil {
 		return err
 	}

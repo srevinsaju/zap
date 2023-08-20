@@ -2,15 +2,15 @@ package appimage
 
 import (
 	"fmt"
-	"github.com/gabriel-vasile/mimetype"
 	"image"
 	_ "image/png"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/gabriel-vasile/mimetype"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/adrg/xdg"
@@ -53,7 +53,7 @@ func (appimage AppImage) getBaseName() string {
  * with the apps' basename and png as the Name */
 func (appimage *AppImage) ExtractThumbnail(target string) {
 
-	dir, err := ioutil.TempDir("", "zap")
+	dir, err := os.MkdirTemp("", "zap")
 	if err != nil {
 		logger.Debug("Creating temporary directory for thumbnail extraction failed")
 		return
@@ -67,7 +67,7 @@ func (appimage *AppImage) ExtractThumbnail(target string) {
 		return
 	}
 
-	buf, err := os.Open(dirIcon)
+	buf, _ := os.Open(dirIcon)
 	logger.Debug("Trying to detect file type of the icon: supports .svg, .png")
 
 	// move to beginning of the DirIcon, since the image dimensions check might fail
@@ -205,7 +205,7 @@ func (appimage AppImage) Extract(dir string, relPath string) string {
 // with the apps' basename and png as the Name */
 func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 
-	dir, err := ioutil.TempDir("", "zap")
+	dir, err := os.MkdirTemp("", "zap")
 	if err != nil {
 		logger.Debug("Creating temporary directory for thumbnail extraction failed")
 		return []byte{}, err
@@ -215,7 +215,7 @@ func (appimage AppImage) ExtractDesktopFile() ([]byte, error) {
 	logger.Debug("Trying to extract Desktop files")
 	desktopFile := appimage.Extract(dir, "*.desktop")
 
-	data, err := ioutil.ReadFile(desktopFile)
+	data, err := os.ReadFile(desktopFile)
 	if err != nil {
 		logger.Warnf("Reading desktop file failed %s", err)
 		return []byte{}, err
@@ -281,10 +281,12 @@ func (appimage *AppImage) ProcessDesktopFile(cfg config.Store) {
 	appImageIcon := desktopEntry.Key("Icon").String()
 	desktopEntry.Key("X-Zap-Id").SetValue(appimage.Executable)
 
+	// This does patch https://github.com/srevinsaju/zap/issues/92
+	// but, we use zap's saved icon for custom icon theme
 	if cfg.CustomIconTheme {
 		desktopEntry.Key("Icon").SetValue(appImageIcon)
 	} else {
-		desktopEntry.Key("Icon").SetValue(appimage.Executable)
+		desktopEntry.Key("Icon").SetValue(appimage.IconPath)
 	}
 
 	// set the name again, so that the name looks like
@@ -297,7 +299,7 @@ func (appimage *AppImage) ProcessDesktopFile(cfg config.Store) {
 	binDir := path.Join(xdg.Home, ".local", "bin")
 	binFile := path.Join(binDir, appimage.Executable)
 	desktopEntry.Key("Exec").SetValue(fmt.Sprintf("%s %%U", binFile))
-	desktopEntry.Key("TryExec").SetValue(fmt.Sprintf("%s", binFile))
+	desktopEntry.Key("TryExec").SetValue(binFile)
 
 	tempDesktopDir := path.Join(cfg.LocalStore, "desktop")
 	os.MkdirAll(tempDesktopDir, 0755)
