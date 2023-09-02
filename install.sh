@@ -177,3 +177,5 @@ fi
 # Installation Complete
 echo
 echo [~] Installation Complete....
+echo [~] Restart the terminal to affect changes.
+exec bash
